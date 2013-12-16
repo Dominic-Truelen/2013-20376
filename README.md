@@ -6,8 +6,7 @@ A project for college...
 To do list:
 
 --Level 1
-----Deleting friends and approving friend requests
-----Messaging system
+----Deleting messages
 ----Profile page
 ----Modifying profile info
 ----Deleting statuses
