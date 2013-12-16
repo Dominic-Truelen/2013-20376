@@ -1,4 +1,5 @@
 import os ##for deleting and renaming files
+import glob
 class CC: ##profile management ##superclass
     def __init__(self):
         self.name = ''
@@ -14,50 +15,63 @@ class CC: ##profile management ##superclass
 
 class create(CC): ##profile creation
     def ask_name(self): ##GUI imput of username
-        self.name = raw_input()
+        while True:
+            self.name = raw_input("Enter username: ")
+            if glob.glob(self.name) == []:
+                break
+            print "Username is taken"
     def ask_password(self): ##GUI imput of password
-        self.password = raw_input()
+        self.password = raw_input("Enter password: ")
     def create(self): ##creating the database and adding the username and password
         f = open(self.name, 'w')
-        f.write(self.name + '\n')
-        f.write(self.password)
+        f.write("Details 2013-20376\n" + self.name + '\n' + self.password + '\n\n' + "Friends 2013-20376\n" + '[]\n\n' + "Status 2013-20376\n" + "\n" + "Messages Recieved 2013-20376\n" + '[]\n\n' + "Messages Sent 2013-20376\n" + '[]\n\n' + "Friend Requests Recieved 2013-20376\n" + "[]\n\n" + "Friend Requests Sent 2013-20376\n" + "[]\n\n" + "Wall 2013-20376\n" + '\n')
         f.close()
 
 class validation(CC): ##validation for logging in and deleting profiles
     def validation(self):
-        self.name = raw_input()
+        self.name = raw_input("Username: ")
+        if glob.glob(self.name) == []:
+            return 0
         f = open(self.name)
         f.readline()
-        self.password = raw_input()
-        if self.password == f.readline():
+        f.readline()
+        self.password = raw_input("Password: ")
+        if self.password + '\n' == f.readline():
             return 1
         return 0
 
 class delete(CC): ##profile deletion
     def __init__(self):
-        super(delete, CC)
+        self.name = ''
+        self.password = ''
         self.valid = validation()
     def delete(self):
         temp = self.valid.validation() ##will return 1 if valid and 0 if invalid
         if temp == 1:
             self.name = self.valid.get_name()
-            os.delete(self.name) ##deleted the file with that name
+            os.remove(self.name) ##delete the file with that name
 
 class login(CC): ##logging in
     def __init__(self):
-        super(login, CC)
+        self.name = ''
+        self.password = ''
         self.valid = validation()
         self.database = import_database()
     def login(self):
         temp = self.valid.validation()##will return 1 if valid and 0 if invalid
         if temp == 1:
-            self.database.set_name(self.valid.get_name) ##see import_database
-            self.database.set_password(self.valid.get_password)
-            self.database.import_friends()
-            self.database.import_status()
-            self.database.import_messages()
+            self.name = self.valid.get_name()
+            self.database.set_name(self.name) ##see import_database
+            self.database.set_password(self.valid.get_password())
+            self.database.import_friends(self.name)
+            self.database.import_status(self.name)
+            self.database.import_messages(self.name)
+            self.database.import_friend_requests(self.name)
+            self.database.import_friend_requests_sent(self.name)
+            self.database.import_messages_sent(self.name)
+            return 1
         else:
-            print "Username/Password is invalid"
+            return 0
 
 class import_database: ##importing data from the profile's database
     def __init__(self):
@@ -67,103 +81,217 @@ class import_database: ##importing data from the profile's database
         self.status = ''
         self.wall = {}
         self.messages = {}
+        self.messages_sent = {}
         self.friend_requests = []
+        self.friend_requests_sent = []
     def set_name(self, name): ##mutator
         self.name = name
     def set_password(self, password): ##mutator
         self.password = password
-    def import_friends(self): ##importing friends list
-        f = open(self.name)
-        while True: ##scanning untill it reaches the newline before the friends list
+    def get_name(self):
+        return self.name
+    def get_password(self):
+        return self.password
+    def get_friends(self):
+        return self.friends
+    def get_messages(self): ##accessor
+        return self.messages
+    def get_messages_sent(self):
+        return self.messages_sent
+    def get_friend_requests(self):
+        return self.friend_requests
+    def get_friend_requests_sent(self):
+        return self.friend_requests_sent
+    def import_friends(self, name): ##importing friends list
+        f = open(name)
+        while True: ##scanning untill it reaches the friends list
             temp = f.readline()
-            if temp == '' or temp == '\n':
+            if "Friends 2013-20376" in temp:
                 break
         temp = f.readline()
-        self.friends.append(temp)
+        self.friends = []
+        self.friends += eval(temp)
         f.close()
-    def import_status(self): ##importing status
-        f = open(self.name)
-        counter = 0
-        while counter < 2: ##scanning untill it reaches the newline before the status
-            if f.readline() == '\n':
-                counter += 1
+    def import_status(self, name): ##importing status
+        f = open(name)
+        while True: ##scanning untill it reaches the status
+            temp = f.readline()
+            if "Status 2013-20376" in temp:
+                break
         self.status = f.readline()
         f.close()
-    def import_messages(self): ##importing messages
+    def import_messages(self, name): ##importing messages
+        self.messages = {}
         friend = []
-        f = open(self.name)
-        counter = 0
-        while counter < 3: ##scanning untill it reaches the newline before the messages
-            if f.readline() == '\n':
-                counter += 1
-        counter = 0
+        f = open(name)
+        while True: ##scanning untill it reaches the messages
+            temp = f.readline()
+            if "Messages Recieved 2013-20376" in temp:
+                break
         while True: ##scanning untill it reaches the newline after the messages
             temp = f.readline()
-            if temp == '' or temp == '\n':
+            if temp == '\n':
                 break
             if ':' in temp: ##if the line is a message, it will be added to the list of messages from that friend
                 temp = temp.split(':')
                 temp_date = temp[0]
-                temp_message = temp[1].split('\n')
-                friend.append({temp_message[0]:temp_date})
+                temp_message = temp[1]
+                temp_message = temp_message.split('\n')
+                temp_message = temp_message[0]
+                friend.append({temp_date:temp_message})
                 self.messages[temp_friend] = friend
-                counter += 1
             else: ##if the line is a friend's name, it will be a key of the dictionary
                 temp = temp.split('\n')
                 self.messages[temp[0]] = ''
                 temp_friend = temp[0]
-    def get_messages(self): ##accessor
-        return self.messages
+                friend = []
+    def import_messages_sent(self, name):
+        self.messages_sent = {}
+        friend = []
+        f = open(name)
+        while True: ##scanning untill it reaches the messages
+            temp = f.readline()
+            if "Messages Sent 2013-20376" in temp:
+                break
+        while True: ##scanning untill it reaches the newline after the messages
+            temp = f.readline()
+            if temp == '\n':
+                break
+            if ':' in temp: ##if the line is a message, it will be added to the list of messages from that friend
+                temp = temp.split(':')
+                temp_date = temp[0]
+                temp_message = temp[1]
+                temp_message = temp_message.split('\n')
+                temp_message = temp_message[0]
+                friend.append({temp_date:temp_message})
+                self.messages_sent[temp_friend] = friend
+            else: ##if the line is a friend's name, it will be a key of the dictionary
+                temp = temp.split('\n')
+                self.messages_sent[temp[0]] = ''
+                temp_friend = temp[0]
+                friend = []
+    def import_friend_requests(self, name):
+        f = open(name)
+        while True:
+            temp = f.readline()
+            if "Friend Requests Recieved 2013-20376" in temp:
+                break
+        temp = f.readline()
+        self.friend_requests = temp
+    def import_friend_requests_sent(self, name):
+        f = open(name)
+        while True:
+            temp = f.readline()
+            if "Friend Requests Sent 2013-20376" in temp:
+                break
+        temp = f.readline()
+        temp = temp.split('\n')
+        temp = temp[0]
+        self.friend_requests_sent = temp
 
 class export_database(import_database): ##exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
     def export_details(self, name, password): ##exporting username and password
-        f = open(self.name)
-        g = open(self.name + "1", 'w')
-        g.write(name)
-        g.write(password)
+        f = open(name, 'r+')
+        g = open(name + "1", 'w+')
+        g.write('Details 2013-2076' + '\n' + name + '\n' + password + '\n')
         for line in f:
-            g.write(line)
-        os.remove(self.name)
-        os.rename(self.name + '1', self.name)
+            g.write(line + '\n')
+        os.remove(name)
+        os.rename(name + '1', name)
         g.close()
-    def export_friends(self, friends): ##exporting friends list
-        f = open(self.name)
-        g = open(self.name + "1", 'w')
-        counter = 0
-        while counter < 1:
+    def export_friends(self, name, friends): ##exporting friends list
+        f = open(name + 'r')
+        g = open(name + "1", 'w')
+        while True:
+            temp = f.readline()
+            g.write(temp + '\n')
+            if 'Friends 2013-20376' in temp:
+                break
+        g.write(friends + '\n')
+        f.readline()
+        for line in f:
+            g.write(line + '\n')
+        os.remove(name)
+        os.rename(name + '1', name)
+        g.close()
+    def export_status(self, name, status): ##exporting status
+        f = open(name)
+        g = open(name + "1", 'w')
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if "Status 2013-20376" in temp:
+                break
+        g.write(status)
+        f.readline()
+        for line in f:
+            g.write(line + '\n')
+        os.remove(name)
+        os.rename(name + '1', name)
+        g.close()
+    def export_messages(self, name, message, time, sender):
+        f = open(name)
+        g = open(name + '1', 'w')
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if "Messages Recieved 2013-20376" in temp:
+                break
+        while True:
             temp = f.readline()
             if temp == '\n':
-                counter += 1
+                g.write(sender + '\n' + time + ':' + message + '\n\n')
+                break
+            if temp == sender + '\n':
+                g.write(temp)
+                while True:
+                    temp = f.readline()
+                    if temp == '\n' or temp == '':
+                        g.write(time + ':' + message + '\n\n')
+                        break
+                    g.write(temp)
+                break
             g.write(temp)
+        for line in f:
+            g.write(line)
+        f.close()
+        g.close()
+        os.remove(name)
+        os.rename(name + '1', name)
+    def export_sent_messages(self, name, message, time, reciever):
+        f = open(name)
+        g = open(name + '1', 'w')
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if "Messages Sent 2013-20376" in temp:
+                break
         counter = 0
         while True:
-            if friends[counter] == '':
-                break
-            g.write(friends[counter])
-        for line in f:
-            g.write(line)
-        os.remove(self.name)
-        os.rename(self.name + '1', self.name)
-        g.close()
-    def export_status(self, status): ##exporting status
-        f = open(self.name)
-        g = open(self.name + "1", 'w')
-        counter = 0
-        while counter < 2:
             temp = f.readline()
             if temp == '\n':
-                counter += 1
+                g.write(reciever + '\n' + time + ':' + message + '\n\n')
+                break
+            if temp == reciever + '\n':
+                g.write(temp)
+                while True:
+                    temp = f.readline()
+                    if temp == '\n' or temp == '':
+                        g.write(time + ':' + message + '\n\n')
+                        break
+                    g.write(temp)
+                break
             g.write(temp)
-        g.write(status)
         for line in f:
             g.write(line)
-        os.remove(self.name)
-        os.rename(self.name + '1', self.name)
+        f.close()
         g.close()
+        os.remove(name)
+        os.rename(name + '1', name)
 
 class logout: ##will reset the name and password of CC after returning to the main GUI
     def __init__(self):
         self.quit = CC()
     def exit(self):
-        quit.set_name('')
-        quit.set_password('')
+        self.quit.set_name('')
+        self.quit.set_password('')
