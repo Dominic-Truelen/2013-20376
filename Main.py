@@ -1,8 +1,7 @@
-from CC import import_database
-from CC import export_database
+from CC import import_database, export_database
 from datetime import datetime
-import glob
-import os
+import glob, os
+
 class messages(import_database):
     def get_messages(self):
         temp = import_database()
