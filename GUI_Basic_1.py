@@ -4,10 +4,12 @@ from CC import *
 from Tkinter import *
 import os, sys
 
-newWindow = Tkinter.Tk()           #Creates an empty window
-newWindow.geometry('1024x768')     #Standard Definition
+loginWindow = Tkinter.Tk()           #Creates an empty window
+loginWindow.geometry('1024x768')     #Standard Definition
+
+#All the other codes / widgets for the Login Page (still inc)
 
 loginButton = Tkinter.Button(top, text = "Login", command = CC.login)
 loginButton.pack()
 
-newWindow.mainloop()
+loginWindow.mainloop()
