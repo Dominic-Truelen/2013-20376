@@ -31,6 +31,7 @@ while True:
                 elif choice == 's':
                     s = status()
                     while True:
+                        s.get_status(name)
                         s.print_status()
                         choice = raw_input("What do you want to do? (C - Create Status, R - Return) ")
                         choice = choice.lower()
