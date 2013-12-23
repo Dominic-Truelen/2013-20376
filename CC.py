@@ -94,6 +94,8 @@ class import_database: ##importing data from the profile's database
         return self.password
     def get_friends(self):
         return self.friends
+    def get_status(self):
+        return self.status
     def get_messages(self): ##accessor
         return self.messages
     def get_messages_sent(self):
@@ -226,6 +228,8 @@ class export_database(import_database): ##exporting data to the database by crea
         f.readline()
         for line in f:
             g.write(line + '\n')
+        f.close()
+        g.close()
         os.remove(name)
         os.rename(name + '1', name)
         g.close()
