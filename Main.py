@@ -51,6 +51,10 @@ class status(import_database):
         self.status = ''
         self.wall = {}
         self.export = export_database()
+    def get_status(self, name):
+        temp = import_database()
+        temp.import_status(name)
+        self.status = temp.get_status()
     def create_status(self):
         self.status = raw_input("Enter your status: ")
     def status_export(self, name):
