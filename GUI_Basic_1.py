@@ -6,6 +6,8 @@ import os, sys
 
 loginWindow = Tk()           #Creates an empty window
 loginWindow.geometry('1138x640')     #Standard Definition
+loginWindow.wm_iconbitmap('CoffeeCup.ico')
+loginWindow.wm_title('Welcome to Caffy')
 
 #All the other codes / widgets for the Login Page (still inc)
 
