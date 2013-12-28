@@ -29,14 +29,14 @@ class create(CC): ##profile creation
 
 class validation(CC): ##validation for logging in and deleting profiles
     def validation(self):
-        self.name = raw_input("Username: ")
-        if glob.glob(self.name) == []:
+        self.set_name(raw_input("Username: "))
+        if glob.glob(self.get_name()) == []:
             return 0
-        f = open(self.name)
+        f = open(self.get_name())
         f.readline()
         f.readline()
-        self.password = raw_input("Password: ")
-        if self.password + '\n' == f.readline():
+        self.set_password(raw_input("Password: "))
+        if (self.get_password() + '\n') == f.readline():
             return 1
         return 0
 
@@ -49,7 +49,9 @@ class delete(CC): ##profile deletion
         temp = self.valid.validation() ##will return 1 if valid and 0 if invalid
         if temp == 1:
             self.name = self.valid.get_name()
-            os.remove(self.name) ##delete the file with that name
+            os.remove(self.name) ##deletes the filename with name of profile
+	else:
+		print "There is no such profile to delete!"
 
 class login(CC): ##logging in
     def __init__(self):

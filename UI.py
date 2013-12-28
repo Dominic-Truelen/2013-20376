@@ -71,7 +71,8 @@ while True:
         else:
             print "Username/Password is invalid"
     elif choice == 'd':
-        d = delete()
+		d = delete()
+		d.delete()
     elif choice == 'q':
         break
     else:

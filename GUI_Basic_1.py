@@ -11,7 +11,7 @@ loginWindow.wm_title('Welcome to Caffy')
 
 #All the other codes / widgets for the Login Page (still inc)
 
-loginButton = Button(text = "Login", command = login)
+loginButton = Button(text = "Login", command = validation.validation)
 loginButton.pack()
 
 loginWindow.mainloop()
