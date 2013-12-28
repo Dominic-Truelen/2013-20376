@@ -1,6 +1,6 @@
 import os ##for deleting and renaming files
 import glob
-class CC: ##profile management ##superclass
+class CC(object): ##profile management ##superclass
     def __init__(self):
         self.name = ''
         self.password = ''
@@ -42,9 +42,8 @@ class validation(CC): ##validation for logging in and deleting profiles
 
 class delete(CC): ##profile deletion
     def __init__(self):
-        self.name = ''
-        self.password = ''
-        self.valid = validation()
+		super(delete, self).__init__()
+		self.valid = validation()
     def delete(self):
         temp = self.valid.validation() ##will return 1 if valid and 0 if invalid
         if temp == 1:
@@ -55,10 +54,9 @@ class delete(CC): ##profile deletion
 
 class login(CC): ##logging in
     def __init__(self):
-        self.name = ''
-        self.password = ''
-        self.valid = validation()
-        self.database = import_database()
+		super(login, self).__init__()
+		self.valid = validation()
+		self.database = import_database()
     def login(self):
         temp = self.valid.validation()##will return 1 if valid and 0 if invalid
         if temp == 1:
@@ -75,7 +73,7 @@ class login(CC): ##logging in
         else:
             return 0
 
-class import_database: ##importing data from the profile's database
+class import_database(object): ##importing data from the profile's database
     def __init__(self):
         self.name = ''
         self.password = ''
@@ -295,7 +293,7 @@ class export_database(import_database): ##exporting data to the database by crea
         os.remove(name)
         os.rename(name + '1', name)
 
-class logout: ##will reset the name and password of CC after returning to the main GUI
+class logout(object): ##will reset the name and password of CC after returning to the main GUI
     def __init__(self):
         self.quit = CC()
     def exit(self):
