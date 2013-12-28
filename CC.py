@@ -28,18 +28,30 @@ class create(CC): #profile creation
         f.close()
 
 class validation(CC): #validation for logging in and deleting profiles
-    def validation(self):
-        self.set_name(raw_input("Username: "))
-        if glob.glob(self.get_name()) == []:
-            return 0
-        f = open(self.get_name())
-        f.readline()
-        f.readline()
-        self.set_password(raw_input("Password: "))
-        if (self.get_password() + '\n') == f.readline():
-            return 1
-        return 0
-
+	def guiv(self, usernameInput, passwordInput):
+		if glob.glob(usernameInput) == []:
+			print "INVALID USERNAME"
+		else:
+			f = open(usernameInput)
+			f.readline()
+			f.readline()
+			if (passwordInput + '\n') == f.readline():
+				print "SUCCESSFUL"
+			else:
+				print "INVALID PASSWORD"
+				
+	def validation(self):
+		self.set_name(raw_input("Username: "))
+		if glob.glob(self.get_name()) == []:
+			return 0
+		f = open(self.get_name())
+		f.readline()
+		f.readline()
+		self.set_password(raw_input("Password: "))
+		if (self.get_password() + '\n') == f.readline():
+			return 1
+		return 0
+	
 class delete(CC): #profile deletion
     def __init__(self):
 		super(delete, self).__init__()
