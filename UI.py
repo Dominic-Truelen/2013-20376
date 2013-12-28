@@ -1,5 +1,6 @@
 from CC import create, login, delete, logout
 from Main import messages, status, friends
+import os
 while True:
     choice = raw_input("What do you want to do? (C - Create, L - Login, D - Delete, Q - Quit) ")
     choice = choice.lower()
@@ -77,3 +78,5 @@ while True:
         break
     else:
         print "Invalid input"
+os.remove('CC.pyc')
+os.remove('Main.pyc')		
