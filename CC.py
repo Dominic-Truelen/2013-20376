@@ -28,19 +28,24 @@ class create(CC): #profile creation
         f.close()
 
 class validation(CC): #validation for logging in and deleting profiles
-	def guiv(self, usernameInput, passwordInput):
-		if glob.glob(usernameInput) == []:
-			print "INVALID USERNAME"
+	def guiv(self, usernameInput, passwordInput):							# GUI Version
+		if usernameInput == "":
+			return "YOU DID NOT INPUT A USERNAME"
+		elif passwordInput == "":
+				return "YOU DID NOT INPUT A PASSWORD"
 		else:
-			f = open(usernameInput)
-			f.readline()
-			f.readline()
-			if (passwordInput + '\n') == f.readline():
-				print "SUCCESSFUL"
+			if glob.glob(usernameInput) == []:
+				return "USERNAME NOT FOUND"
 			else:
-				print "INVALID PASSWORD"
+				f = open(usernameInput)
+				f.readline()
+				f.readline()
+				if (passwordInput + '\n') == f.readline():
+					return 1
+				else:
+					return "INVALID PASSWORD"
 				
-	def validation(self):
+	def validation(self):													# Console Version
 		self.set_name(raw_input("Username: "))
 		if glob.glob(self.get_name()) == []:
 			return 0
@@ -62,7 +67,7 @@ class delete(CC): #profile deletion
             self.name = self.valid.get_name()
             os.remove(self.name) #deletes the filename with name of profile
 	else:
-		print "There is no such profile to delete!"
+		print "NO SUCH PROFILE EXISTS"
 
 class login(CC): #logging in
     def __init__(self):
