@@ -30,12 +30,12 @@ class create(CC): #profile creation
 class validation(CC): #validation for logging in and deleting profiles
 	def guiv(self, usernameInput, passwordInput):							# GUI Version
 		if usernameInput == "":
-			return "YOU DID NOT INPUT A USERNAME"
+			return "USERNAME IS BLANK"
 		elif passwordInput == "":
-				return "YOU DID NOT INPUT A PASSWORD"
+				return "PASSWORD IS BLANK"
 		else:
 			if glob.glob(usernameInput) == []:
-				return "USERNAME NOT FOUND"
+				return "ACCOUNT DOES NOT EXIST"
 			else:
 				f = open(usernameInput)
 				f.readline()
