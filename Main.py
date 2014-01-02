@@ -40,7 +40,7 @@ class messages(import_database):
             print "You cannot send messages to yourself"
         else:
             message = raw_input("Message: ")
-            time = strftime("%m/%d/%Y, %I-%M%p")
+            time = strftime("%m/%d/%Y, %I.%M%p")
             export.export_sent_messages(name, message, time, reciever)
             export.export_messages(reciever, message, time, name)
 

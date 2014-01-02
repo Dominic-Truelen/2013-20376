@@ -7,6 +7,7 @@ import os, sys, glob
 
 defaultEntryStyle = ("Tahoma", 12)												# Initial font settings for styling
 defaultLabelStyle = ("Tahoma", 9)
+defaultCreateStyle = ("Tahoma", 20)
 signatureColor = "#AB3700"														# Shortcut labels for custom color styling
 toplayerColor = "#433833"
 backgroundColor = "#FFEEE5"
@@ -43,6 +44,14 @@ class loginPageClass(Page):														# The login class!
 		
 		midLayer = Frame(self, width=1000, height=490, bg=backgroundColor)		# Code here for the CREATE class
 		midLayer.pack()
+		
+		self.newUsernameVariable = StringVar()
+		newUsernameInput = Entry(midLayer, width=25, textvariable=self.newUsernameVariable, font = defaultCreateStyle, relief=FLAT)
+		newUsernameInput.place(anchor=CENTER, relx=0.7, rely=0.3)
+		
+		self.newPasswordVariable = StringVar()
+		newPasswordInput = Entry(midLayer, width=25, show="•", textvariable=self.newPasswordVariable, font = defaultCreateStyle, relief=FLAT)
+		newPasswordInput.place(anchor=CENTER, relx=0.7, rely=0.45)
 
 		bottomLayer = Frame(self, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
 		bottomLayer.pack()			
@@ -80,7 +89,7 @@ class navClass(Frame):															# navClass because of navigation (button fx
 		verifyLabel = Label(login, text="", fg="#FFF000", bg=toplayerColor, font=defaultLabelStyle) 	# For warning purposes of login entries
 		verifyLabel.place(anchor=E, relx=0.5, rely=0.0786)
 		
-		loginButton = Button(login, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=GROOVE, fg="#FFFFFF", bg=signatureColor, command=lambda: _accept(login.usernameVariable.get(), login.passwordVariable.get()))
+		loginButton = Button(login, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=lambda: _accept(login.usernameVariable.get(), login.passwordVariable.get()))
 		loginButton.place(anchor=CENTER, relx=0.904, rely=0.0786)				# Button of the LoginPage (click to verify entries)
 		
 		login.show()															# Displays first ever page w/c is the login page
