@@ -7,7 +7,7 @@ import os, sys, glob
 
 defaultEntryStyle = ("Tahoma", 12)												# Initial font settings for styling
 defaultLabelStyle = ("Tahoma", 9)
-defaultCreateStyle = ("Tahoma", 20)
+defaultCreateStyle = ("Tahoma", 14)
 signatureColor = "#AB3700"														# Shortcut labels for custom color styling
 toplayerColor = "#433833"
 backgroundColor = "#FFEEE5"
@@ -26,32 +26,31 @@ class loginPageClass(Page):														# The login class!
 		Window.wm_title('Welcome to Caffy')										# Initial title text in the title bar
 		
 		topLayer = Frame(self, height=80, width=1000, bg=toplayerColor)			# Code here for the Log-in classes
-		topLayer.pack()
-		
+		topLayer.pack()		
 		usernameLabel = Label(topLayer, text="Username", fg="#FFF", bg=toplayerColor, font=defaultLabelStyle)	# Labels for the entry fields
 		usernameLabel.place(anchor=CENTER, relx=0.5379, rely=0.28)
 		passwordLabel = Label(topLayer, text="Password", fg="#FFF", bg=toplayerColor, font=defaultLabelStyle)	# Labels for the entry fields	
 		passwordLabel.place(anchor=CENTER, relx=0.7163, rely=0.28)
-
 		self.usernameVariable = StringVar()
-		usernameInput = Entry(topLayer, width=17, textvariable=self.usernameVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the username
-		usernameInput.place(anchor=CENTER,relx=0.59, rely=0.59)
-		usernameInput.focus()													# Puts the cursor automatically at the user_name field
-
+		self.usernameInput = Entry(topLayer, width=17, textvariable=self.usernameVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the username
+		self.usernameInput.place(anchor=CENTER,relx=0.59, rely=0.59)
+		self.usernameInput.focus()													# Puts the cursor automatically at the user_name field
 		self.passwordVariable = StringVar()
-		passwordInput = Entry(topLayer, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
-		passwordInput.place(anchor=CENTER, relx=0.77, rely=0.59)		
+		self.passwordInput = Entry(topLayer, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
+		self.passwordInput.place(anchor=CENTER, relx=0.77, rely=0.59)
 		
 		midLayer = Frame(self, width=1000, height=490, bg=backgroundColor)		# Code here for the CREATE class
 		midLayer.pack()
-		
+		layer1 = Frame(midLayer, width=379, height=40, bg="#FFFFFF")
+		layer1.place(anchor=CENTER, relx=0.7, rely=0.3)
+		layer2 = Frame(midLayer, width=379, height=40, bg="#FFFFFF")
+		layer2.place(anchor=CENTER, relx=0.7, rely=0.45)
 		self.newUsernameVariable = StringVar()
-		newUsernameInput = Entry(midLayer, width=25, textvariable=self.newUsernameVariable, font = defaultCreateStyle, relief=FLAT)
-		newUsernameInput.place(anchor=CENTER, relx=0.7, rely=0.3)
-		
+		newUsernameInput = Entry(layer1, width=35, textvariable=self.newUsernameVariable, font = defaultCreateStyle, relief=FLAT)
+		newUsernameInput.place(anchor=CENTER, relx=0.5, rely=0.5)		
 		self.newPasswordVariable = StringVar()
-		newPasswordInput = Entry(midLayer, width=25, show="•", textvariable=self.newPasswordVariable, font = defaultCreateStyle, relief=FLAT)
-		newPasswordInput.place(anchor=CENTER, relx=0.7, rely=0.45)
+		newPasswordInput = Entry(layer2, width=35, show="•", textvariable=self.newPasswordVariable, font = defaultCreateStyle, relief=FLAT)
+		newPasswordInput.place(anchor=CENTER, relx=0.5, rely=0.5)
 
 		bottomLayer = Frame(self, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
 		bottomLayer.pack()			
@@ -71,10 +70,10 @@ class navClass(Frame):															# navClass because of navigation (button fx
 		homepage = homePageClass()
 		login = loginPageClass()
 		
-		def _accept(userName, passWord):										# Method executed whenever "Log In" button is pressed
+		def _accept():															# Method executed whenever "Log In" button is pressed
 			self.responses=["USERNAME IS BLANK", "PASSWORD IS BLANK", "ACCOUNT DOES NOT EXIST", "INVALID PASSWORD"]
-			self.loginCC.set_name(userName)										# Accessors!
-			self.loginCC.set_password(passWord)
+			self.loginCC.set_name(login.usernameVariable.get())										# Accessors!
+			self.loginCC.set_password(login.passwordVariable.get())
 			if self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password()) in self.responses:	# If return value from imported class CC is inside the list,		
 				verifyLabel.config(text=self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())) # Display the possible warnings;
 			else:
@@ -89,8 +88,11 @@ class navClass(Frame):															# navClass because of navigation (button fx
 		verifyLabel = Label(login, text="", fg="#FFF000", bg=toplayerColor, font=defaultLabelStyle) 	# For warning purposes of login entries
 		verifyLabel.place(anchor=E, relx=0.5, rely=0.0786)
 		
-		loginButton = Button(login, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=lambda: _accept(login.usernameVariable.get(), login.passwordVariable.get()))
+		loginButton = Button(login, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=_accept())
 		loginButton.place(anchor=CENTER, relx=0.904, rely=0.0786)				# Button of the LoginPage (click to verify entries)
+		
+		login.usernameInput.bind("<Return>", lambda event: loginButton.invoke())#Allows the use of the Enter key
+		login.passwordInput.bind("<Return>", lambda event: loginButton.invoke())
 		
 		login.show()															# Displays first ever page w/c is the login page
 		
