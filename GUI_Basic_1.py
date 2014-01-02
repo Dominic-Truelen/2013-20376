@@ -88,7 +88,7 @@ class navClass(Frame):															# navClass because of navigation (button fx
 		verifyLabel = Label(login, text="", fg="#FFF000", bg=toplayerColor, font=defaultLabelStyle) 	# For warning purposes of login entries
 		verifyLabel.place(anchor=E, relx=0.5, rely=0.0786)
 		
-		loginButton = Button(login, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=_accept())
+		loginButton = Button(login, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=_accept)
 		loginButton.place(anchor=CENTER, relx=0.904, rely=0.0786)				# Button of the LoginPage (click to verify entries)
 		
 		login.usernameInput.bind("<Return>", lambda event: loginButton.invoke())#Allows the use of the Enter key
