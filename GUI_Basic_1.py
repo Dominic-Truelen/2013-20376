@@ -12,9 +12,9 @@ signatureColor = "orange"														# Shortcut labels for custom color stylin
 toplayerColor = "#4B2D18"
 backgroundColor = "#FFEEE5"
 
-a=-0.05																				# Adjuster
+a=-0.05																			# Adjuster for widget's y-value placement
 
-#All the other codes / widgets for the Login Page (still inc)
+#All the other codes / widgets for the HOMEPAGE
 
 class Page(Frame):																# Parent Frame that lets all children have show()
 	def __init__(self):
@@ -25,7 +25,7 @@ class Page(Frame):																# Parent Frame that lets all children have sho
 class loginPageClass(Page):														# The login class!
 	def __init__(self):	
 		Frame.__init__(self)
-		Window.wm_title('Welcome to Caffy ☕')										# Initial title text in the title bar
+		Window.wm_title('Welcome to Caffy ☕')									# Initial title text in the title bar
 		
 		topLayer = Frame(self, height=80, width=1000, bg=toplayerColor)			# Code here for the Log-in classes
 		topLayer.pack()		
@@ -34,7 +34,7 @@ class loginPageClass(Page):														# The login class!
 		self.usernameVariable = StringVar()
 		self.usernameInput = Entry(topLayer, width=17, textvariable=self.usernameVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the username
 		self.usernameInput.place(anchor=CENTER,relx=0.59, rely=0.59)
-		self.usernameInput.focus()													# Puts the cursor automatically at the user_name field
+		self.usernameInput.focus()												# Puts the cursor automatically at the user_name field
 		self.passwordVariable = StringVar()
 		self.passwordInput = Entry(topLayer, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
 		self.passwordInput.place(anchor=CENTER, relx=0.77, rely=0.59)
@@ -66,7 +66,7 @@ class loginPageClass(Page):														# The login class!
 		Label(midLayer, text="Take a ☕ break!\nSign up!", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.345+a)
 		Label(midLayer, text="Caffy lets you connect and share with\nfriends from around the corner.", font=("Tahoma", 15), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.58+a)
 		Label(midLayer, text="By signing up, you agree with our Terms and Conditions.", font=("Tahoma", 9), justify=RIGHT, bg=backgroundColor, fg="#999999").place(anchor=E, relx=0.8956, rely=0.7+a)
-		self.verifyCreateLabel = Label(midLayer, text="", bg=backgroundColor, justify=LEFT)
+		self.verifyCreateLabel = Label(midLayer, text="", bg=backgroundColor, justify=LEFT)		# Initialization of the create warnings
 		self.verifyCreateLabel.place(anchor=W, relx=0.509, rely=0.75)
 		
 		bottomLayer = Frame(self, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
@@ -76,8 +76,9 @@ class loginPageClass(Page):														# The login class!
 class homePageClass(Page):														# Code for the News Feed
 	def __init__(self):
 		Frame.__init__(self)		
-		blank = Frame(self, width=1000, height=600, bg="#FFF000")
-		blank.pack()		
+		blank = Frame(self, width=1000, height=600, bg="#FFFF00")
+		blank.pack()
+		Label(blank, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), bg="#FFFF00", fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
 		
 class navClass(Frame):															# Faҫade design pattern navClass because of navigation (button fxns)
 	def __init__(self):
@@ -120,8 +121,8 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 		self.loginCC.set_name(self.login.usernameVariable.get())				# Accessors!
 		self.loginCC.set_password(self.login.passwordVariable.get())
 		self.answer = self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())
-		if self.answer in self.responses:	# If return value from imported class CC is inside the list,		
-			self.login.verifyLoginLabel.config(text=self.answer)				# Display the possible warnings
+		if self.answer in self.responses:										# If return value from imported class CC is inside the list,		
+			self.login.verifyLoginLabel.config(text=self.answer)				# display the possible warnings and perform some formatting actions like clear the entry field:
 			if self.answer == "USERNAME IS BLANK":
 				self.eraseContents(self.login.passwordInput)
 				self.login.usernameInput.focus()
@@ -138,13 +139,13 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 			self.homepage.show()												# otherwise, if entries are correct, execute & display the home page
 	
 	def verifyCreate(self):
-		self.responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "PLEASE RETYPE THE PASSWORD", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD CORRECTLY", "PASSWORD MUST HAVE AT LEAST\n8 CHARACTERS"]
+		self.responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "PLEASE RETYPE THE PASSWORD", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD\nCORRECTLY", "PASSWORD MUST HAVE AT LEAST\n8 CHARACTERS"]
 		self.createCC.set_name(self.login.newUsernameVariable.get())
 		self.createCC.set_password(self.login.newPasswordVariable.get())
-		self.answer = self.cre.guic(self.createCC.get_name(), self.createCC.get_password(), self.login.newPasswordVerifyVariable.get())
-		if self.answer in self.responses:
+		self.answer = self.cre.guic(self.createCC.get_name(), self.createCC.get_password(), self.login.newPasswordVerifyVariable.get())		# Assign the return value of this very long function into variable answer! (actually, self.answer)
+		if self.answer in self.responses:																									# If the answer is included in the list above,
 			self.login.verifyCreateLabel.config(text=self.answer, fg="red", font=("Tahoma", 9, "bold"))
-			if self.answer == "USERNAME IS BLANK" or self.answer == "USERNAME IS ALREADY TAKEN":				
+			if self.answer == "USERNAME IS BLANK" or self.answer == "USERNAME IS ALREADY TAKEN":											# Display that message from the list, then format some widgets
 				self.eraseContents(self.login.newUsernameInput, self.login.newPasswordInput, self.login.newPasswordVerifyInput)
 				self.login.newUsernameInput.focus()
 			elif self.answer == "PASSWORD REQUIRED":
@@ -156,7 +157,7 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 				self.login.newPasswordInput.focus()
 			else:
 				self.eraseContents(self.login.newPasswordVerifyInput)
-		else:
+		else:																																# Otherwise, if create entries are valid, proceed to some formatting, then create the database! YAY!
 			self.createButton.flash()
 			self.cre.create()
 			self.eraseContents(self.login.newUsernameInput, self.login.newPasswordInput, self.login.newPasswordVerifyInput, self.login.usernameInput)

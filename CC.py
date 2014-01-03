@@ -42,7 +42,7 @@ class create(CC): #profile creation
 				return "PASSWORD MUST HAVE AT LEAST\n8 CHARACTERS"
 			elif self.get_password() == password2:
 				return 1
-			return "RETYPE YOUR PASSWORD CORRECTLY"		
+			return "RETYPE YOUR PASSWORD\nCORRECTLY"		
 
 class validation(CC): #validation for logging in and deleting profiles
 	def guiv(self, usernameInput, passwordInput):							# GUI Version
