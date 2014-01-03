@@ -14,33 +14,48 @@ class CC(object): #profile management #superclass
         return self.password
 
 class create(CC): #profile creation
-    def ask_name(self): #GUI imput of username
-        while True:
-            self.name = raw_input("Enter username: ")
-            if glob.glob(self.name) == []:
-                break
-            print "Username is taken"
-    def ask_password(self): #GUI imput of password
-        self.password = raw_input("Enter password: ")
-    def create(self): #creating the database and adding the username and password
-        f = open(self.name, 'w')
-        f.write("Details 2013-20376\n" + self.name + '\n' + self.password + '\n\n' + "Friends 2013-20376\n" + '[]\n\n' + "Status 2013-20376\n" + "\n" + "Messages Recieved 2013-20376\n" + '[]\n\n' + "Messages Sent 2013-20376\n" + '[]\n\n' + "Friend Requests Recieved 2013-20376\n" + "[]\n\n" + "Friend Requests Sent 2013-20376\n" + "[]\n\n" + "Wall 2013-20376\n" + '\n')
-        f.close()
+	def ask_name(self): #GUI imput of username
+		while True:
+			self.set_name(raw_input("Enter username: "))
+			if glob.glob(self.get_name()) == []:
+				break
+			print "Username is taken"
+	def ask_password(self): #GUI imput of password
+		self.set_password(raw_input("Enter password: "))
+	def create(self): #creating the database and adding the username and password
+		f = open(self.get_name(), 'w')
+		f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\n\n' + "Friends 2013-20376\n" + '[]\n\n' + "Status 2013-20376\n" + "\n" + "Messages Recieved 2013-20376\n" + '[]\n\n' + "Messages Sent 2013-20376\n" + '[]\n\n' + "Friend Requests Recieved 2013-20376\n" + "[]\n\n" + "Friend Requests Sent 2013-20376\n" + "[]\n\n" + "Wall 2013-20376\n" + '\n')
+		f.close()
+	def guic(self, usernameInput, password1, password2):
+		self.set_name(usernameInput)
+		self.set_password(password1)
+		if self.get_name() == "":
+			return "USERNAME IS BLANK"
+		elif self.get_password() == "" or password2 == "":
+				return "PASSWORD REQUIRED"
+		else:
+			if glob.glob(self.get_name()) != []:
+				return "USERNAME IS ALREADY TAKEN"
+			elif self.get_password() == password2:
+				return 1
+			return "RETYPE YOUR PASSWORD CORRECTLY"		
 
 class validation(CC): #validation for logging in and deleting profiles
 	def guiv(self, usernameInput, passwordInput):							# GUI Version
-		if usernameInput == "":
+		self.set_name(usernameInput)
+		self.set_password(passwordInput)
+		if self.get_name() == "":
 			return "USERNAME IS BLANK"
-		elif passwordInput == "":
+		elif self.get_password() == "":
 				return "PASSWORD IS BLANK"
 		else:
-			if glob.glob(usernameInput) == []:
+			if glob.glob(self.get_name()) == []:
 				return "ACCOUNT DOES NOT EXIST"
 			else:
-				f = open(usernameInput)
+				f = open(self.get_name())
 				f.readline()
 				f.readline()
-				if (passwordInput + '\n') == f.readline():
+				if (self.get_password() + '\n') == f.readline():
 					return 1
 				else:
 					return "INVALID PASSWORD"

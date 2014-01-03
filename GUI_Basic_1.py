@@ -1,16 +1,18 @@
 #!/usr/bin/python																# Allows the use of Non-ASCII characters in window
 # -*- coding: utf-8 -*-
  
-from CC import validation, CC													# pack() is for stacking, while place() is for a more
+from CC import *																# pack() is for stacking, while place() is for a more
 from Tkinter import *															# accurate placing of widgets. grid() is for tables
 import os, sys, glob
 
 defaultEntryStyle = ("Tahoma", 12)												# Initial font settings for styling
 defaultLabelStyle = ("Tahoma", 9)
 defaultCreateStyle = ("Tahoma", 14)
-signatureColor = "#AB3700"														# Shortcut labels for custom color styling
-toplayerColor = "#433833"
+signatureColor = "orange"														# Shortcut labels for custom color styling
+toplayerColor = "#4B2D18"
 backgroundColor = "#FFEEE5"
+
+a=-0.05																				# Adjuster
 
 #All the other codes / widgets for the Login Page (still inc)
 
@@ -23,7 +25,7 @@ class Page(Frame):																# Parent Frame that lets all children have sho
 class loginPageClass(Page):														# The login class!
 	def __init__(self):	
 		Frame.__init__(self)
-		Window.wm_title('Welcome to Caffy')										# Initial title text in the title bar
+		Window.wm_title('Welcome to Caffy ☕')										# Initial title text in the title bar
 		
 		topLayer = Frame(self, height=80, width=1000, bg=toplayerColor)			# Code here for the Log-in classes
 		topLayer.pack()		
@@ -36,28 +38,37 @@ class loginPageClass(Page):														# The login class!
 		self.passwordVariable = StringVar()
 		self.passwordInput = Entry(topLayer, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
 		self.passwordInput.place(anchor=CENTER, relx=0.77, rely=0.59)
+		Label(topLayer, text="caffy", font=("Verdana", 28), justify=LEFT, bg=toplayerColor, fg="orange").place(anchor=W, relx=0.08, rely=0.5)
+		Label(topLayer, text="☕", font=("Tahoma", 28), justify=LEFT, bg=toplayerColor, fg="#FFFFFF").place(anchor=W, relx=0.175, rely=0.48)
+		self.verifyLoginLabel = Label(topLayer, text="", fg="orange", bg=toplayerColor, font=defaultLabelStyle) 	# For warning purposes of login entries
+		self.verifyLoginLabel.place(anchor=E, relx=0.5, rely=0.59)
 		
 		midLayer = Frame(self, width=1000, height=490, bg=backgroundColor)		# Code here for the CREATE class
 		midLayer.pack()
 		layer1 = Frame(midLayer, width=379, height=40, bg="#FFFFFF")
-		layer1.place(anchor=CENTER, relx=0.7, rely=0.3)
+		layer1.place(anchor=CENTER, relx=0.7, rely=0.3+a)
 		layer2 = Frame(midLayer, width=379, height=40, bg="#FFFFFF")
-		layer2.place(anchor=CENTER, relx=0.7, rely=0.45)
+		layer2.place(anchor=CENTER, relx=0.7, rely=0.45+a)
 		layer3 = Frame(midLayer, width=379, height=40, bg="#FFFFFF")
-		layer3.place(anchor=CENTER, relx=0.7, rely=0.6)
+		layer3.place(anchor=CENTER, relx=0.7, rely=0.6+a)
 		self.newUsernameVariable = StringVar()
-		newUsernameInput = Entry(layer1, width=35, textvariable=self.newUsernameVariable, font = defaultCreateStyle, relief=FLAT)
-		newUsernameInput.place(anchor=CENTER, relx=0.5, rely=0.5)		
+		self.newUsernameInput = Entry(layer1, width=35, textvariable=self.newUsernameVariable, font = defaultCreateStyle, relief=FLAT)
+		self.newUsernameInput.place(anchor=CENTER, relx=0.5, rely=0.5+a)		
 		self.newPasswordVariable = StringVar()
-		newPasswordInput = Entry(layer2, width=35, show="•", textvariable=self.newPasswordVariable, font = defaultCreateStyle, relief=FLAT)
-		newPasswordInput.place(anchor=CENTER, relx=0.5, rely=0.5)
+		self.newPasswordInput = Entry(layer2, width=35, show="•", textvariable=self.newPasswordVariable, font = defaultCreateStyle, relief=FLAT)
+		self.newPasswordInput.place(anchor=CENTER, relx=0.5, rely=0.5+a)
 		self.newPasswordVerifyVariable = StringVar()
-		newPasswordVerifyInput = Entry(layer3, width=35, show="•", textvariable=self.newPasswordVerifyVariable, font = defaultCreateStyle, relief=FLAT)
-		newPasswordVerifyInput.place(anchor=CENTER, relx=0.5, rely=0.5)
-		Label(midLayer, text="Create your own username:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.23)
-		Label(midLayer, text="Create a new password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.38)
-		Label(midLayer, text="Reenter your password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.53)
-
+		self.newPasswordVerifyInput = Entry(layer3, width=35, show="•", textvariable=self.newPasswordVerifyVariable, font = defaultCreateStyle, relief=FLAT)
+		self.newPasswordVerifyInput.place(anchor=CENTER, relx=0.5, rely=0.5+a)
+		Label(midLayer, text="Pick a username:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.23+a)
+		Label(midLayer, text="Create a password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.38+a)
+		Label(midLayer, text="Reenter your password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.53+a)
+		Label(midLayer, text="Take a ☕ break!\nSign up!", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.345+a)
+		Label(midLayer, text="Caffy lets you connect and share with\nfriends from around the corner.", font=("Tahoma", 15), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.58+a)
+		Label(midLayer, text="By signing up, you agree with our Terms and Conditions.", font=("Tahoma", 9), justify=RIGHT, bg=backgroundColor, fg="#999999").place(anchor=E, relx=0.8956, rely=0.7+a)
+		self.verifyCreateLabel = Label(midLayer, text="", fg="red", bg=backgroundColor, font=defaultLabelStyle)
+		self.verifyCreateLabel.place(anchor=W, relx=0.509, rely=0.75)
+		
 		bottomLayer = Frame(self, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
 		bottomLayer.pack()
 		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.5)
@@ -74,6 +85,8 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 		
 		self.val = validation()													# Initial functions for the verifications
 		self.loginCC = CC()
+		self.createCC = CC()
+		self.cre = create()
 		self.homepage = homePageClass()
 		self.login = loginPageClass()		
 		
@@ -83,17 +96,18 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 		self.homepage.place(in_=container)		
 		self.login.place(in_=container)
 		
-		self.verifyLabel = Label(self.login, text="", fg="#FFF000", bg=toplayerColor, font=defaultLabelStyle) 	# For warning purposes of login entries
-		self.verifyLabel.place(anchor=E, relx=0.5, rely=0.0786)
-		
 		self.loginButton = Button(self.login, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=self.verifyLogin)
-		self.loginButton.place(anchor=CENTER, relx=0.904, rely=0.0786)				# Button of the LoginPage (click to verify entries)
+		self.loginButton.place(anchor=CENTER, relx=0.904, rely=0.0786)			# Button of the LoginPage (click to verify entries)
 		
-		self.login.usernameInput.bind("<Return>", lambda event: self.loginButton.invoke())	#Allows the use of the Enter key
+		self.login.usernameInput.bind("<Return>", lambda event: self.loginButton.invoke())	#Allows the use of the Enter key when loggin in
 		self.login.passwordInput.bind("<Return>", lambda event: self.loginButton.invoke())
 		
-		createButton = Button(self.login, text="Sign Me Up!", width=12, font=("Tahoma", 13, "bold"), relief=FLAT, fg="#FFFFFF", bg="#67AE55", command=self.verifyCreate)
-		createButton.place(anchor=CENTER, relx=0.82, rely=0.75)
+		self.createButton = Button(self.login, text="Sign Me Up!", width=12, font=("Tahoma", 13, "bold"), relief=FLAT, fg="#FFFFFF", bg="#52A41D", command=self.verifyCreate)
+		self.createButton.place(anchor=CENTER, relx=0.82, rely=0.75)
+		
+		self.login.newUsernameInput.bind("<Return>", lambda event: self.createButton.invoke())	#Allows the use of the Enter key when creating accounts
+		self.login.newPasswordInput.bind("<Return>", lambda event: self.createButton.invoke())
+		self.login.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
 		
 		self.login.show()														# Displays first ever page w/c is the login page
 	
@@ -101,14 +115,32 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 		self.responses=["USERNAME IS BLANK", "PASSWORD IS BLANK", "ACCOUNT DOES NOT EXIST", "INVALID PASSWORD"]
 		self.loginCC.set_name(self.login.usernameVariable.get())				# Accessors!
 		self.loginCC.set_password(self.login.passwordVariable.get())
-		if self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password()) in self.responses:	# If return value from imported class CC is inside the list,		
-			self.verifyLabel.config(text=self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password()))	# Display the possible warnings;
+		self.answer = self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())
+		if self.answer in self.responses:	# If return value from imported class CC is inside the list,		
+			self.login.verifyLoginLabel.config(text=self.answer)	# Display the possible warnings;
 		else:
 			self.loginButton.flash()
 			self.homepage.show()												# otherwise, if entries are correct, execute & display the home page
-		
+	
+	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
+		for x in args:															# The *args is a tuple, so every element in it must be iterated
+			x.delete(0, END)													# to delete the value of all the 3 Create Entries
+	
 	def verifyCreate(self):
-		pass
+		self.responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD CORRECTLY"]
+		self.createCC.set_name(self.login.newUsernameVariable.get())
+		self.createCC.set_password(self.login.newPasswordVariable.get())
+		self.answer = self.cre.guic(self.createCC.get_name(), self.createCC.get_password(), self.login.newPasswordVerifyVariable.get())
+		if self.answer in self.responses:
+			self.login.verifyCreateLabel.config(text=self.answer)
+			if self.answer == "USERNAME IS BLANK" or self.answer == "USERNAME IS ALREADY TAKEN":				
+				self.eraseContents(self.login.newUsernameInput, self.login.newPasswordInput, self.login.newPasswordVerifyInput)			
+			elif self.answer == "RETYPE YOUR PASSWORD CORRECTLY":
+				self.eraseContents(self.login.newPasswordVerifyInput)
+		else:
+			self.createButton.flash()
+			self.cre.create()
+			self.homepage.show()
 		
 Window = Tk()        		 													# Creates an empty window
 Main = navClass()
