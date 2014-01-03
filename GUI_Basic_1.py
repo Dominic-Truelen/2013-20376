@@ -66,7 +66,7 @@ class loginPageClass(Page):														# The login class!
 		Label(midLayer, text="Take a ☕ break!\nSign up!", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.345+a)
 		Label(midLayer, text="Caffy lets you connect and share with\nfriends from around the corner.", font=("Tahoma", 15), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.58+a)
 		Label(midLayer, text="By signing up, you agree with our Terms and Conditions.", font=("Tahoma", 9), justify=RIGHT, bg=backgroundColor, fg="#999999").place(anchor=E, relx=0.8956, rely=0.7+a)
-		self.verifyCreateLabel = Label(midLayer, text="", fg="red", bg=backgroundColor, font=defaultLabelStyle)
+		self.verifyCreateLabel = Label(midLayer, text="", bg=backgroundColor, justify=LEFT)
 		self.verifyCreateLabel.place(anchor=W, relx=0.509, rely=0.75)
 		
 		bottomLayer = Frame(self, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
@@ -110,6 +110,10 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 		self.login.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
 		
 		self.login.show()														# Displays first ever page w/c is the login page
+		
+	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
+		for x in args:															# The *args is a tuple, so every element in it must be iterated
+			x.delete(0, END)													# to delete the value of all the 3 Create Entries
 	
 	def verifyLogin(self):														# Method executed whenever "Log In" button is pressed
 		self.responses=["USERNAME IS BLANK", "PASSWORD IS BLANK", "ACCOUNT DOES NOT EXIST", "INVALID PASSWORD"]
@@ -117,30 +121,49 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 		self.loginCC.set_password(self.login.passwordVariable.get())
 		self.answer = self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())
 		if self.answer in self.responses:	# If return value from imported class CC is inside the list,		
-			self.login.verifyLoginLabel.config(text=self.answer)	# Display the possible warnings;
+			self.login.verifyLoginLabel.config(text=self.answer)				# Display the possible warnings
+			if self.answer == "USERNAME IS BLANK":
+				self.eraseContents(self.login.passwordInput)
+				self.login.usernameInput.focus()
+			elif self.answer == "PASSWORD IS BLANK":
+				self.login.passwordInput.focus()
+			elif self.answer == "ACCOUNT DOES NOT EXIST":
+				self.eraseContents(self.login.usernameInput, self.login.passwordInput)
+				self.login.usernameInput.focus()
+			else:
+				self.eraseContents(self.login.passwordInput)
+				self.login.passwordInput.focus()
 		else:
 			self.loginButton.flash()
 			self.homepage.show()												# otherwise, if entries are correct, execute & display the home page
 	
-	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
-		for x in args:															# The *args is a tuple, so every element in it must be iterated
-			x.delete(0, END)													# to delete the value of all the 3 Create Entries
-	
 	def verifyCreate(self):
-		self.responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD CORRECTLY"]
+		self.responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "PLEASE RETYPE THE PASSWORD", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD CORRECTLY", "PASSWORD MUST HAVE AT LEAST\n8 CHARACTERS"]
 		self.createCC.set_name(self.login.newUsernameVariable.get())
 		self.createCC.set_password(self.login.newPasswordVariable.get())
 		self.answer = self.cre.guic(self.createCC.get_name(), self.createCC.get_password(), self.login.newPasswordVerifyVariable.get())
 		if self.answer in self.responses:
-			self.login.verifyCreateLabel.config(text=self.answer)
+			self.login.verifyCreateLabel.config(text=self.answer, fg="red", font=("Tahoma", 9, "bold"))
 			if self.answer == "USERNAME IS BLANK" or self.answer == "USERNAME IS ALREADY TAKEN":				
-				self.eraseContents(self.login.newUsernameInput, self.login.newPasswordInput, self.login.newPasswordVerifyInput)			
-			elif self.answer == "RETYPE YOUR PASSWORD CORRECTLY":
+				self.eraseContents(self.login.newUsernameInput, self.login.newPasswordInput, self.login.newPasswordVerifyInput)
+				self.login.newUsernameInput.focus()
+			elif self.answer == "PASSWORD REQUIRED":
+				self.login.newPasswordInput.focus()
+			elif self.answer == "PLEASE RETYPE THE PASSWORD":
+				self.login.newPasswordVerifyInput.focus()
+			elif self.answer == "PASSWORD MUST HAVE AT LEAST\n8 CHARACTERS":
+				self.eraseContents(self.login.newPasswordInput, self.login.newPasswordVerifyInput)
+				self.login.newPasswordInput.focus()
+			else:
 				self.eraseContents(self.login.newPasswordVerifyInput)
 		else:
 			self.createButton.flash()
 			self.cre.create()
-			self.homepage.show()
+			self.eraseContents(self.login.newUsernameInput, self.login.newPasswordInput, self.login.newPasswordVerifyInput, self.login.usernameInput)
+			self.login.usernameInput.focus()
+			self.login.verifyLoginLabel.config(text="")
+			self.login.verifyCreateLabel.config(text="SUCCESSFUL! YOU CAN NOW\nLOG-IN!", fg="#52A41D")			
+			
 		
 Window = Tk()        		 													# Creates an empty window
 Main = navClass()
