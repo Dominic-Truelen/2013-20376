@@ -38,7 +38,7 @@ class create(CC): #profile creation
 				return "USERNAME IS ALREADY TAKEN"
 			elif self.get_password() == password2:
 				return 1
-			return "RETYPE YOUR PASSWORD CORRECTLY"		
+			return "RETYPE YOUR PASSWORD CORRECTLY"
 
 class validation(CC): #validation for logging in and deleting profiles
 	def guiv(self, usernameInput, passwordInput):							# GUI Version
@@ -59,7 +59,7 @@ class validation(CC): #validation for logging in and deleting profiles
 					return 1
 				else:
 					return "INVALID PASSWORD"
-				
+
 	def validation(self):													# Console Version
 		self.set_name(raw_input("Username: "))
 		if glob.glob(self.get_name()) == []:
@@ -71,7 +71,7 @@ class validation(CC): #validation for logging in and deleting profiles
 		if (self.get_password() + '\n') == f.readline():
 			return 1
 		return 0
-	
+
 class delete(CC): #profile deletion
     def __init__(self):
 		super(delete, self).__init__()
@@ -225,16 +225,16 @@ class import_database(object): #importing data from the profile's database
 
 class export_database(import_database): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
     def export_details(self, name, password): #exporting username and password
-        f = open(name, 'r+')
+        f = open(name)
         g = open(name + "1", 'w+')
         g.write('Details 2013-2076' + '\n' + name + '\n' + password + '\n')
         for line in f:
-            g.write(line + '\n')
+            g.write(line)
         os.remove(name)
         os.rename(name + '1', name)
         g.close()
     def export_friends(self, name, friends): #exporting friends list
-        f = open(name + 'r')
+        f = open(name)
         g = open(name + "1", 'w')
         while True:
             temp = f.readline()
@@ -244,7 +244,7 @@ class export_database(import_database): #exporting data to the database by creat
         g.write(friends + '\n')
         f.readline()
         for line in f:
-            g.write(line + '\n')
+            g.write(line)
         os.remove(name)
         os.rename(name + '1', name)
         g.close()
@@ -256,10 +256,10 @@ class export_database(import_database): #exporting data to the database by creat
             g.write(temp)
             if "Status 2013-20376" in temp:
                 break
-        g.write(status)
+        g.write(status + '\n\n')
         f.readline()
         for line in f:
-            g.write(line + '\n')
+            g.write(line)
         f.close()
         g.close()
         os.remove(name)
@@ -302,7 +302,6 @@ class export_database(import_database): #exporting data to the database by creat
             g.write(temp)
             if "Messages Sent 2013-20376" in temp:
                 break
-        counter = 0
         while True:
             temp = f.readline()
             if temp == '\n':
