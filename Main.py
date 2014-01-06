@@ -29,7 +29,7 @@ class messages(import_database):
             message_sent.append({str(friend_name[counter]):str(friend_message[counter])})
             counter += 1
         print message_sent
-        ##sort the messages by name and by date before printing
+        #sort the messages by name and by date before printing (incomplete)
     def send_message(self, name):
         importer = import_database()
         export = export_database()
@@ -86,46 +86,17 @@ class friends(import_database):
         elif add_friend == name:
             print "You cannot send yourself a friend request"
         else:
-            sender = name
             self.import_friends.import_friend_requests_sent(name)
             self.friend_requests_sent = eval(self.import_friends.get_friend_requests_sent())
             if str(add_friend) in self.friend_requests_sent:
                 print "You already sent a friend request"
             else:
                 self.friend_requests_sent.append(str(add_friend))
-                f = open(name)
-                g = open(name + '1', 'w')
-                while True:
-                    temp = f.readline()
-                    g.write(temp)
-                    if "Friend Requests Sent 2013-20376" in temp:
-                        break
-                g.write(str(self.friend_requests_sent) + '\n')
-                f.readline()
-                for line in f:
-                    g.write(line)
-                f.close()
-                g.close()
-                os.remove(name)
-                os.rename(name + '1', name)
+                self.export_friends.export_friend_request_sent(name, add_friend, self.friend_requests_sent)
                 self.import_friends.set_name(add_friend)
                 self.friend_requests = eval(self.import_friends.get_friend_requests())
-                self.friend_requests.append(str(sender))
-                f = open(add_friend)
-                g = open(add_friend + '1', 'w')
-                while True:
-                    temp = f.readline()
-                    g.write(temp)
-                    if "Friend Requests Recieved 2013-20376" in temp:
-                        break
-                g.write(str(self.friend_requests) + '\n')
-                f.readline()
-                for line in f:
-                    g.write(line)
-                f.close()
-                g.close()
-                os.remove(add_friend)
-                os.rename(add_friend + '1', add_friend)
+                self.friend_requests.append(str(name))
+                self.export_friends.export_friend_request(name, add_friend, self.friend_requests)
     def see_friend_requests(self, name):
         self.import_friends.import_friend_requests(name)
         self.import_friends.import_friend_requests_sent(name)

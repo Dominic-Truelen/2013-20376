@@ -327,6 +327,38 @@ class export_database(import_database): #exporting data to the database by creat
         g.close()
         os.remove(name)
         os.rename(name + '1', name)
+    def export_friend_request(self, name, reciever, friend_requests):
+        f = open(reciever)
+        g = open(reciever + '1', 'w')
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if "Friend Requests Recieved 2013-20376" in temp:
+                break
+        g.write(str(friend_requests) + '\n')
+        f.readline()
+        for line in f:
+            g.write(line)
+        f.close()
+        g.close()
+        os.remove(reciever)
+        os.rename(reciever + '1', reciever)
+    def export_friend_request_sent(self, name, reciever, friend_requests_sent):
+        f = open(name)
+        g = open(name + '1', 'w')
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if "Friend Requests Sent 2013-20376" in temp:
+                break
+        g.write(str(friend_requests_sent) + '\n')
+        f.readline()
+        for line in f:
+            g.write(line)
+        f.close()
+        g.close()
+        os.remove(name)
+        os.rename(name + '1', name)
 
 class logout(object): #will reset the name and password of CC after returning to the main GUI
     def __init__(self):
