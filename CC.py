@@ -147,7 +147,6 @@ class import_database(object): #importing data from the profile's database
             if "Friends 2013-20376" in temp:
                 break
         temp = f.readline()
-        self.friends = []
         self.friends += eval(temp)
         f.close()
     def import_status(self, name): #importing status
@@ -232,26 +231,31 @@ class export_database(import_database): #exporting data to the database by creat
         f = open(name)
         g = open(name + "1", 'w+')
         g.write('Details 2013-2076' + '\n' + name + '\n' + password + '\n')
+        f.readline()
+        f.readline()
+        f.readline()
         for line in f:
             g.write(line)
+        f.close()
+        g.close()
         os.remove(name)
         os.rename(name + '1', name)
-        g.close()
     def export_friends(self, name, friends): #exporting friends list
         f = open(name)
         g = open(name + "1", 'w')
         while True:
             temp = f.readline()
-            g.write(temp + '\n')
+            g.write(temp)
             if 'Friends 2013-20376' in temp:
                 break
-        g.write(friends + '\n')
+        g.write(str(friends) + '\n')
         f.readline()
         for line in f:
             g.write(line)
+        f.close()
+        g.close()
         os.remove(name)
         os.rename(name + '1', name)
-        g.close()
     def export_status(self, name, status): #exporting status
         f = open(name)
         g = open(name + "1", 'w')
@@ -260,7 +264,7 @@ class export_database(import_database): #exporting data to the database by creat
             g.write(temp)
             if "Status 2013-20376" in temp:
                 break
-        g.write(status + '\n\n')
+        g.write(status + '\n')
         f.readline()
         for line in f:
             g.write(line)
@@ -268,7 +272,6 @@ class export_database(import_database): #exporting data to the database by creat
         g.close()
         os.remove(name)
         os.rename(name + '1', name)
-        g.close()
     def export_messages(self, name, message, time, sender):
         f = open(name)
         g = open(name + '1', 'w')
