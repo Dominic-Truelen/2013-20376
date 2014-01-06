@@ -45,7 +45,6 @@ while True:
                             print "Invalid input"
                 elif choice == 'f':
                     f = friends()
-                    f.set_name(name)
                     while True:
                         print "Friends:"
                         f.see_friends(name)
@@ -79,4 +78,4 @@ while True:
     else:
         print "Invalid input"
 os.remove('CC.pyc')
-os.remove('Main.pyc')		
+os.remove('Main.pyc')
