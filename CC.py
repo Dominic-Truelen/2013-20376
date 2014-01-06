@@ -31,14 +31,14 @@ class create(CC): #profile creation
 		self.set_password(password1)
 		if self.get_name() == "":
 			return "USERNAME IS BLANK"
+		elif glob.glob(self.get_name()) != []:
+				return "USERNAME IS ALREADY TAKEN"
 		elif self.get_password() == "":
 				return "PASSWORD REQUIRED"
 		elif password2 == "":
 			return "PLEASE RETYPE THE PASSWORD"
-		else:
-			if glob.glob(self.get_name()) != []:
-				return "USERNAME IS ALREADY TAKEN"
-			elif len(self.get_password()) < 8:
+		else:			
+			if len(self.get_password()) < 8:
 				return "PASSWORD MUST HAVE AT LEAST\n8 CHARACTERS"
 			elif self.get_password() == password2:
 				return 1

@@ -24,8 +24,7 @@ class Page(Frame):																# Parent Frame that lets all children have sho
 
 class loginPageClass(Page):														# The login class!
 	def __init__(self):	
-		Frame.__init__(self)
-		Window.wm_title('Welcome to Caffy ☕')									# Initial title text in the title bar
+		Frame.__init__(self)		
 		
 		topLayer = Frame(self, height=80, width=1000, bg=toplayerColor)			# Code here for the Log-in classes
 		topLayer.pack()		
@@ -123,12 +122,12 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 		self.answer = self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())
 		if self.answer in self.responses:										# If return value from imported class CC is inside the list,		
 			self.login.verifyLoginLabel.config(text=self.answer)				# display the possible warnings and perform some formatting actions like clear the entry field:
-			if self.answer == "USERNAME IS BLANK":
+			if self.answer == self.responses[0]:
 				self.eraseContents(self.login.passwordInput)
 				self.login.usernameInput.focus()
-			elif self.answer == "PASSWORD IS BLANK":
+			elif self.answer == self.responses[1]:
 				self.login.passwordInput.focus()
-			elif self.answer == "ACCOUNT DOES NOT EXIST":
+			elif self.answer == self.responses[2]:
 				self.eraseContents(self.login.usernameInput, self.login.passwordInput)
 				self.login.usernameInput.focus()
 			else:
@@ -145,14 +144,15 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 		self.answer = self.cre.guic(self.createCC.get_name(), self.createCC.get_password(), self.login.newPasswordVerifyVariable.get())		# Assign the return value of this very long function into variable answer! (actually, self.answer)
 		if self.answer in self.responses:																									# If the answer is included in the list above,
 			self.login.verifyCreateLabel.config(text=self.answer, fg="red", font=("Tahoma", 9, "bold"))
-			if self.answer == "USERNAME IS BLANK" or self.answer == "USERNAME IS ALREADY TAKEN":											# Display that message from the list, then format some widgets
+			if self.answer == self.responses[0] or self.answer == self.responses[3]:											# Display that message from the list, then format some widgets
 				self.eraseContents(self.login.newUsernameInput, self.login.newPasswordInput, self.login.newPasswordVerifyInput)
 				self.login.newUsernameInput.focus()
-			elif self.answer == "PASSWORD REQUIRED":
+			elif self.answer == self.responses[1]:
+				self.eraseContents(self.login.newPasswordVerifyInput)
 				self.login.newPasswordInput.focus()
-			elif self.answer == "PLEASE RETYPE THE PASSWORD":
+			elif self.answer == self.responses[2]:
 				self.login.newPasswordVerifyInput.focus()
-			elif self.answer == "PASSWORD MUST HAVE AT LEAST\n8 CHARACTERS":
+			elif self.answer == self.responses[5]:
 				self.eraseContents(self.login.newPasswordInput, self.login.newPasswordVerifyInput)
 				self.login.newPasswordInput.focus()
 			else:
@@ -167,10 +167,11 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 			
 		
 Window = Tk()        		 													# Creates an empty window
+Window.wm_title('Welcome to Caffy!')											# Initial title text in the title bar
 Main = navClass()
 Window.geometry('1000x600+170+80')												# Set dimensions to 1000x600 pos @ screen center
 Window.resizable(0,0)			 												# Does not resize the window, ever 	
-Window.wm_iconbitmap('CoffeeCup.ico')											# Adds a little mug icon over the top left corner
+Window.wm_iconbitmap('CoffeeCup1.ico')											# Adds a little mug icon over the top left corner
 Window.mainloop()																# Executes code above in a loop
 
 os.remove('CC.pyc')																# Removes the temporary files inside the (" ")
