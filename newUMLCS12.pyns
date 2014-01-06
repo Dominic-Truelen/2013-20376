@@ -1,0 +1,34 @@
+# PynSource Version 1.1
+{'type':'meta', 'info1':'Lorem ipsum dolor sit amet, consectetur adipiscing elit is latin.'}
+{'type':'umlshape', 'id':'CC', 'x':472, 'y':252, 'width':106, 'height':157, 'attrs':'name|password', 'meths':'set_name|set_password|get_name|get_password'}
+{'type':'umlshape', 'id':'create', 'x':472, 'y':93, 'width':106, 'height':115, 'attrs':'', 'meths':'ask_name|ask_password|create|guic'}
+{'type':'umlshape', 'id':'logout', 'x':302, 'y':276, 'width':76, 'height':109, 'attrs':'quit', 'meths':'__init__|exit'}
+{'type':'umlshape', 'id':'export_database', 'x':926, 'y':814, 'width':218, 'height':163, 'attrs':'', 'meths':'export_details|export_friends|export_status|export_messages|export_sent_messages|export_friend_request|export_friend_request_sent'}
+{'type':'umlshape', 'id':'import_database', 'x':597, 'y':657, 'width':226, 'height':477, 'attrs':'name|password|friends|status|wall|messages|messages_sent|friend_requests|friend_requests_sent', 'meths':'__init__|set_name|set_password|get_name|get_password|get_friends|get_status|get_messages|get_messages_sent|get_friend_requests|get_friend_requests_sent|import_friends|import_status|import_messages|import_messages_sent|import_friend_requests|import_friend_requests_sent'}
+{'type':'umlshape', 'id':'login', 'x':673, 'y':445, 'width':74, 'height':141, 'attrs':'valid|database|name', 'meths':'__init__|login'}
+{'type':'umlshape', 'id':'validation', 'x':465, 'y':474, 'width':120, 'height':83, 'attrs':'', 'meths':'guiv|validation'}
+{'type':'umlshape', 'id':'delete', 'x':302, 'y':453, 'width':76, 'height':125, 'attrs':'valid|name', 'meths':'__init__|delete'}
+{'type':'umlshape', 'id':'status', 'x':1173, 'y':488, 'width':114, 'height':205, 'attrs':'name|status|importer|exporter', 'meths':'__init__|get_status|create_status|status_export|print_status'}
+{'type':'umlshape', 'id':'friends', 'x':955, 'y':461, 'width':170, 'height':269, 'attrs':'name|friends|friend_requests|friend_requests_sent|exporter|importer', 'meths':'__init__|see_friends|add_friend|see_friend_requests|friends_export|delete_friends|approve_request'}
+{'type':'umlshape', 'id':'messages', 'x':1334, 'y':491, 'width':122, 'height':189, 'attrs':'messages|messages_sent|importer|exporter', 'meths':'__init__|get_messages|print_messages|send_message'}
+{'type':'umlshape', 'id':'homePageClass', 'x':639, 'y':370, 'width':153, 'height':31, 'attrs':'', 'meths':''}
+{'type':'umlshape', 'id':'loginPageClass', 'x':915, 'y':16, 'width':210, 'height':269, 'attrs':'usernameVariable|usernameInput|passwordVariable|passwordInput|verifyLoginLabel|newUsernameVariable|newUsernameInput|newPasswordVariable|newPasswordInput|newPasswordVerifyVariable|newPasswordVerifyInput|verifyCreateLabel', 'meths':'__init__'}
+{'type':'umlshape', 'id':'Page', 'x':993, 'y':352, 'width':54, 'height':67, 'attrs':'', 'meths':'show'}
+{'type':'umlshape', 'id':'navClass', 'x':658, 'y':8, 'width':114, 'height':285, 'attrs':'val|loginCC|createCC|cre|homepage|login|loginButton|createButton|responses|answer', 'meths':'__init__|eraseContents|verifyLogin|verifyCreate'}
+{'type':'edge', 'id':'create_to_CC', 'source':'create', 'target':'CC', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'export_database_to_import_database', 'source':'export_database', 'target':'import_database', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'login_to_CC', 'source':'login', 'target':'CC', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'validation_to_CC', 'source':'validation', 'target':'CC', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'delete_to_CC', 'source':'delete', 'target':'CC', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'CC_to_logout', 'source':'CC', 'target':'logout', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'validation_to_login', 'source':'validation', 'target':'login', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'import_database_to_login', 'source':'import_database', 'target':'login', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'validation_to_delete', 'source':'validation', 'target':'delete', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'homePageClass_to_Page', 'source':'homePageClass', 'target':'Page', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'loginPageClass_to_Page', 'source':'loginPageClass', 'target':'Page', 'uml_edge_type':'generalisation'}
+{'type':'edge', 'id':'CC_to_navClass', 'source':'CC', 'target':'navClass', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'homePageClass_to_navClass', 'source':'homePageClass', 'target':'navClass', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'loginPageClass_to_navClass', 'source':'loginPageClass', 'target':'navClass', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'navClass_to_create', 'source':'navClass', 'target':'create', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'create_to_navClass', 'source':'create', 'target':'navClass', 'uml_edge_type':'composition'}
+{'type':'edge', 'id':'validation_to_navClass', 'source':'validation', 'target':'navClass', 'uml_edge_type':'composition'}
