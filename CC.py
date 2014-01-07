@@ -1,15 +1,20 @@
 import os #for deleting and renaming files
 import glob
+
 class CC(object): #profile management #superclass
     def __init__(self):
         self.name = ''
         self.password = ''
+
     def set_name(self, name): #mutator
         self.name = name
+
     def set_password(self, password): #mutator
         self.password = password
+
     def get_name(self): #accessor
         return self.name
+
     def get_password(self): #accessor
         return self.password
 
@@ -20,12 +25,15 @@ class create(CC): #profile creation
 			if glob.glob(self.get_name()) == []:
 				break
 			print "Username is taken"
+
 	def ask_password(self): #GUI imput of password
 		self.set_password(raw_input("Enter password: "))
+
 	def create(self): #creating the database and adding the username and password
 		f = open(self.get_name(), 'w')
 		f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\n\n' + "Friends 2013-20376\n" + '[]\n\n' + "Status 2013-20376\n" + "\n" + "Messages Recieved 2013-20376\n" + '[]\n\n' + "Messages Sent 2013-20376\n" + '[]\n\n' + "Friend Requests Recieved 2013-20376\n" + "[]\n\n" + "Friend Requests Sent 2013-20376\n" + "[]\n\n" + "Wall 2013-20376\n" + '\n')
 		f.close()
+
 	def guic(self, usernameInput, password1, password2):
 		self.set_name(usernameInput)
 		self.set_password(password1)
@@ -37,7 +45,7 @@ class create(CC): #profile creation
 				return "PASSWORD REQUIRED"
 		elif password2 == "":
 			return "PLEASE RETYPE THE PASSWORD"
-		else:			
+		else:
 			if len(self.get_password()) < 8:
 				return "PASSWORD MUST HAVE AT LEAST\n8 CHARACTERS"
 			elif self.get_password() == password2:
@@ -93,6 +101,7 @@ class login(CC): #logging in
 		super(login, self).__init__()
 		self.valid = validation()
 		self.database = import_database()
+
     def login(self):
         temp = self.valid.validation()#will return 1 if valid and 0 if invalid
         if temp == 1:
@@ -120,26 +129,37 @@ class import_database(object): #importing data from the profile's database
         self.messages_sent = {}
         self.friend_requests = []
         self.friend_requests_sent = []
+
     def set_name(self, name): #mutator
         self.name = name
+
     def set_password(self, password): #mutator
         self.password = password
+
     def get_name(self):
         return self.name
+
     def get_password(self):
         return self.password
+
     def get_friends(self):
         return self.friends
+
     def get_status(self):
         return self.status
+
     def get_messages(self): #accessor
         return self.messages
+
     def get_messages_sent(self):
         return self.messages_sent
+
     def get_friend_requests(self):
         return self.friend_requests
+
     def get_friend_requests_sent(self):
         return self.friend_requests_sent
+
     def import_friends(self, name): #importing friends list
         f = open(name)
         while True: #scanning untill it reaches the friends list
@@ -147,8 +167,9 @@ class import_database(object): #importing data from the profile's database
             if "Friends 2013-20376" in temp:
                 break
         temp = f.readline()
-        self.friends += eval(temp)
+        self.friends = eval(temp)
         f.close()
+
     def import_status(self, name): #importing status
         f = open(name)
         while True: #scanning untill it reaches the status
@@ -157,6 +178,7 @@ class import_database(object): #importing data from the profile's database
                 break
         self.status = f.readline()
         f.close()
+
     def import_messages(self, name): #importing messages
         self.messages = {}
         friend = []
@@ -182,6 +204,7 @@ class import_database(object): #importing data from the profile's database
                 self.messages[temp[0]] = ''
                 temp_friend = temp[0]
                 friend = []
+
     def import_messages_sent(self, name):
         self.messages_sent = {}
         friend = []
@@ -207,6 +230,7 @@ class import_database(object): #importing data from the profile's database
                 self.messages_sent[temp[0]] = ''
                 temp_friend = temp[0]
                 friend = []
+
     def import_friend_requests(self, name):
         f = open(name)
         while True:
@@ -215,6 +239,7 @@ class import_database(object): #importing data from the profile's database
                 break
         temp = f.readline()
         self.friend_requests = temp
+
     def import_friend_requests_sent(self, name):
         f = open(name)
         while True:
@@ -240,6 +265,7 @@ class export_database(import_database): #exporting data to the database by creat
         g.close()
         os.remove(name)
         os.rename(name + '1', name)
+
     def export_friends(self, name, friends): #exporting friends list
         f = open(name)
         g = open(name + "1", 'w')
@@ -256,6 +282,7 @@ class export_database(import_database): #exporting data to the database by creat
         g.close()
         os.remove(name)
         os.rename(name + '1', name)
+
     def export_status(self, name, status): #exporting status
         f = open(name)
         g = open(name + "1", 'w')
@@ -272,6 +299,7 @@ class export_database(import_database): #exporting data to the database by creat
         g.close()
         os.remove(name)
         os.rename(name + '1', name)
+
     def export_messages(self, name, message, time, sender):
         f = open(name)
         g = open(name + '1', 'w')
@@ -301,6 +329,7 @@ class export_database(import_database): #exporting data to the database by creat
         g.close()
         os.remove(name)
         os.rename(name + '1', name)
+
     def export_sent_messages(self, name, message, time, reciever):
         f = open(name)
         g = open(name + '1', 'w')
@@ -330,9 +359,10 @@ class export_database(import_database): #exporting data to the database by creat
         g.close()
         os.remove(name)
         os.rename(name + '1', name)
-    def export_friend_request(self, name, reciever, friend_requests):
-        f = open(reciever)
-        g = open(reciever + '1', 'w')
+
+    def export_friend_request(self, name, friend_requests):
+        f = open(name)
+        g = open(name + '1', 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -344,9 +374,10 @@ class export_database(import_database): #exporting data to the database by creat
             g.write(line)
         f.close()
         g.close()
-        os.remove(reciever)
-        os.rename(reciever + '1', reciever)
-    def export_friend_request_sent(self, name, reciever, friend_requests_sent):
+        os.remove(name)
+        os.rename(name + '1', name)
+
+    def export_friend_request_sent(self, name, friend_requests_sent):
         f = open(name)
         g = open(name + '1', 'w')
         while True:
@@ -366,6 +397,7 @@ class export_database(import_database): #exporting data to the database by creat
 class logout(object): #will reset the name and password of CC after returning to the main GUI
     def __init__(self):
         self.quit = CC()
+
     def exit(self):
         self.quit.set_name('')
         self.quit.set_password('')
