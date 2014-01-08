@@ -19,22 +19,38 @@ class CC(object): #profile management #superclass
         return self.password
 
 class create(CC): #profile creation
-	def ask_name(self): #GUI imput of username
-		while True:
-			self.set_name(raw_input("Enter username: "))
-			if glob.glob(self.get_name()) == []:
-				break
-			print "Username is taken"
+    def ask_name(self): #GUI imput of username
+        if glob.glob("DATABASE") != []:
+            f = open("DATABASE", 'w')
+            f.close()
+        while True:
+            counter = 1
+            self.set_name(raw_input("Enter username: "))
+            f = open("DATABASE")
+            for line in f:
+                if self.get_name() in line:
+                    print "Username is taken"
+                    counter = 0
+                    break
+            if counter == 1:
+                break
+        f.close()
 
 	def ask_password(self): #GUI imput of password
 		self.set_password(raw_input("Enter password: "))
 
-	def create(self): #creating the database and adding the username and password
-		f = open(self.get_name(), 'w')
-		f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\n\n' + "Friends 2013-20376\n" + '[]\n\n' + "Status 2013-20376\n" + "\n" + "Messages Recieved 2013-20376\n" + '[]\n\n' + "Messages Sent 2013-20376\n" + '[]\n\n' + "Friend Requests Recieved 2013-20376\n" + "[]\n\n" + "Friend Requests Sent 2013-20376\n" + "[]\n\n" + "Wall 2013-20376\n" + '\n')
-		f.close()
+    def create(self): #creating the database and adding the username and password
+        if glob.glob("DATABASE") != []:
+            f = open("DATABASE")
+            f.close()
+        f = open("DATABASE", 'a')
+        f.write(self.get_name() + ': ' + self.get_password() + '\n')
+        f.close()
+        f = open(self.get_name(), 'w')
+        f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\n\n' + "Friends 2013-20376\n" + '[]\n\n' + "Status 2013-20376\n" + "\n" + "Messages Recieved 2013-20376\n" + '[]\n\n' + "Messages Sent 2013-20376\n" + '[]\n\n' + "Friend Requests Recieved 2013-20376\n" + "[]\n\n" + "Friend Requests Sent 2013-20376\n" + "[]\n\n" + "Wall 2013-20376\n" + '\n')
+        f.close()
 
-	def guic(self, usernameInput, password1, password2):
+    def guic(self, usernameInput, password1, password2):
 		self.set_name(usernameInput)
 		self.set_password(password1)
 		if self.get_name() == "":
@@ -282,6 +298,23 @@ class export_database(import_database): #exporting data to the database by creat
         g.close()
         os.remove(name)
         os.rename(name + '1', name)
+        f = open("DATABASE")
+        g = open("DATABASE" + '1', 'w')
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if name + ': ' in temp:
+                break
+        for counter in range(len(friends) - 1):
+            f.readline()
+        for counter in range(len(friends)):
+            g.write('\t' + friends[counter] + '\n')
+        for line in f:
+            g.write(line)
+        f.close()
+        g.close()
+        os.remove("DATABASE")
+        os.rename("DATABASE" + '1', "DATABASE")
 
     def export_status(self, name, status): #exporting status
         f = open(name)
