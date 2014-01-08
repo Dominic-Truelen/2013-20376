@@ -109,11 +109,11 @@ class friends():
                     print "You already sent a friend request"
                 else:
                     self.friend_requests_sent.append(str(add_friend)) #Append the friend to the list of your sent friend requests
-                    self.exporter.export_friend_request_sent(name, add_friend, self.friend_requests_sent) #Exporting the list of friend requests sent
+                    self.exporter.export_friend_request_sent(name, self.friend_requests_sent) #Exporting the list of friend requests sent
                     self.importer.import_friend_requests(add_friend) #Import list of friend requests of the reciever
                     self.friend_requests = eval(self.importer.get_friend_requests())
                     self.friend_requests.append(str(name)) #Append yourself to the list of the reciever's friend requests
-                    self.exporter.export_friend_request(name, add_friend, self.friend_requests) #Exporting the list of friend requests
+                    self.exporter.export_friend_request(add_friend, self.friend_requests) #Exporting the list of friend requests
 
     def see_friend_requests(self, name): #Displaying the friend requests recieved and sent
         self.importer.import_friend_requests(name)
@@ -163,8 +163,6 @@ class friends():
                 self.friend_requests_sent.remove(name)
                 self.importer.import_friends(friend)
                 self.friends = self.importer.get_friends()
-                print "Friends ------ " + str(self.friends)
                 self.friends.append(str(name))
-                print "Friends ------ " + str(self.friends)
                 self.exporter.export_friends(friend, self.friends)
                 self.exporter.export_friend_request_sent(friend, self.friend_requests_sent)
