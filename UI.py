@@ -20,11 +20,14 @@ while True:
                     m = messages()
                     while True:
                         m.get_messages(name)
+                        m.get_messages_sent(name)
                         m.print_messages()
-                        choice = raw_input("What do you want to do? (S - Send Message, R - Return) ")
+                        choice = raw_input("What do you want to do? (S - Send Message, D - Delete Message, R - Return) ")
                         choice = choice.lower()
                         if choice == 's':
                             m.send_message(name)
+                        elif choice == 'd':
+                            m.delete_message(name)
                         elif choice =='r':
                             break
                         else:

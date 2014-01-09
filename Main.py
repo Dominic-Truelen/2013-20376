@@ -5,52 +5,54 @@ import os
 
 class messages():
     def __init__(self):
-        self.messages = []
-        self.messages_sent = []
+        self.messages = {}
+        self.messages_sent = {}
         self.importer = import_database()
         self.exporter = export_database()
 
     def get_messages(self, name): #Importing the messages
-        temp = import_database()
-        temp.import_messages(name)
-        self.messages = temp.get_messages()
-        temp.import_messages_sent(name)
-        self.messages_sent = temp.get_messages_sent()
+        self.importer.import_messages(name)
+        self.messages = self.importer.get_messages()
+
+    def get_messages_sent(self, name):
+        self.importer.import_messages_sent(name)
+        self.messages_sent = self.importer.get_messages_sent()
 
     def print_messages(self): #Displaying the messages
-        message = []
-        message_sent = []
-        friend_name = self.messages.keys()
-        friend_message = self.messages.values()
-        counter = 0
-        while True:
-            if counter + 1 > len(friend_name):
-                break
-            message.append({str(friend_name[counter]):str(friend_message[counter])})
-            counter += 1
-        print message #Printing the messages recieved
-        friend_name = self.messages_sent.keys()
-        friend_message = self.messages_sent.values()
-        counter = 0
-        while True:
-            if counter + 1 > len(friend_name):
-                break
-            message_sent.append({str(friend_name[counter]):str(friend_message[counter])})
-            counter += 1
-        print message_sent #Printing the messages sent
+        print self.messages #Printing the messages recieved
+        print self.messages_sent #Printing the messages sent
         #sort the messages by name and by date before printing (incomplete)
 
     def send_message(self, name): #Sending messages
-        reciever = raw_input("Send to: ")
+        reciever = str(raw_input("Send to: "))
         if glob.glob(reciever) == []: #Searching for a file with the inputed name in the directory
             print "User does not exist"
         elif reciever == name:
             print "You cannot send messages to yourself"
         else:
-            message = raw_input("Message: ")
-            time = strftime("%m/%d/%Y, %I.%M%p") #Format for the time
+            message = str(raw_input("Message: "))
+            time = strftime("%m/%d/%Y, %I.%M.%S%p") #Format for the time
             self.exporter.export_sent_messages(name, message, time, reciever) #Exporting sent message
             self.exporter.export_messages(reciever, message, time, name) #Exporting the recieved message
+
+    def delete_message(self, name):
+        sender = str(raw_input("Delete whose message: "))
+        date = str(raw_input("Date of the message:"))
+        self.get_messages(name)
+        messages = self.messages[sender]
+        if date in messages:
+            f = open(name)
+            g = open(name + '1')
+            for line in f:
+                temp = f.readline()
+                if sender and date not in line:
+                    g.write(line)
+            f.close()
+            g.close()
+            os.remove(name)
+            os.rename(name + '1', name)
+        else:
+            print "Message does not exist"
 
 class status():
     def __init__(self):
@@ -84,12 +86,8 @@ class friends():
     def see_friends(self, name): #Displaying the friends of the active user
         self.importer.import_friends(name) #Imported the friends
         self.friends = self.importer.get_friends() #Accessed the friends
-        counter = 0
-        while True:
-            if counter + 1 > len(self.friends):
-                break
+        for counter in range(len(self.friends)):
             print self.friends[counter]
-            counter += 1
 
     def add_friend(self, name): #Adding new friends
         add_friend = str(raw_input("Add who? "))

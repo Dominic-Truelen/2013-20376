@@ -47,7 +47,7 @@ class create(CC): #profile creation
         f.write(self.get_name() + ': ' + self.get_password() + '\n')
         f.close()
         f = open(self.get_name(), 'w')
-        f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\n\n' + "Friends 2013-20376\n" + '[]\n\n' + "Status 2013-20376\n" + "\n" + "Messages Recieved 2013-20376\n" + '[]\n\n' + "Messages Sent 2013-20376\n" + '[]\n\n' + "Friend Requests Recieved 2013-20376\n" + "[]\n\n" + "Friend Requests Sent 2013-20376\n" + "[]\n\n" + "Wall 2013-20376\n" + '\n')
+        f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n\n")
         f.close()
 
     def guic(self, usernameInput, password1, password2):
@@ -197,55 +197,25 @@ class import_database(object): #importing data from the profile's database
 
     def import_messages(self, name): #importing messages
         self.messages = {}
-        friend = []
+        friend = {}
         f = open(name)
         while True: #scanning untill it reaches the messages
             temp = f.readline()
             if "Messages Recieved 2013-20376" in temp:
                 break
-        while True: #scanning untill it reaches the newline after the messages
-            temp = f.readline()
-            if temp == '\n':
-                break
-            if ':' in temp: #if the line is a message, it will be added to the list of messages from that friend
-                temp = temp.split(':')
-                temp_date = temp[0]
-                temp_message = temp[1]
-                temp_message = temp_message.split('\n')
-                temp_message = temp_message[0]
-                friend.append({temp_date:temp_message})
-                self.messages[temp_friend] = friend
-            else: #if the line is a friend's name, it will be a key of the dictionary
-                temp = temp.split('\n')
-                self.messages[temp[0]] = ''
-                temp_friend = temp[0]
-                friend = []
+        self.messages = f.readline()
+        f.close()
 
     def import_messages_sent(self, name):
         self.messages_sent = {}
-        friend = []
+        friend = {}
         f = open(name)
         while True: #scanning untill it reaches the messages
             temp = f.readline()
             if "Messages Sent 2013-20376" in temp:
                 break
-        while True: #scanning untill it reaches the newline after the messages
-            temp = f.readline()
-            if temp == '\n':
-                break
-            if ':' in temp: #if the line is a message, it will be added to the list of messages from that friend
-                temp = temp.split(':')
-                temp_date = temp[0]
-                temp_message = temp[1]
-                temp_message = temp_message.split('\n')
-                temp_message = temp_message[0]
-                friend.append({temp_date:temp_message})
-                self.messages_sent[temp_friend] = friend
-            else: #if the line is a friend's name, it will be a key of the dictionary
-                temp = temp.split('\n')
-                self.messages_sent[temp[0]] = ''
-                temp_friend = temp[0]
-                friend = []
+        self.messages_sent = f.readline()
+        f.close()
 
     def import_friend_requests(self, name):
         f = open(name)
@@ -333,7 +303,10 @@ class export_database(import_database): #exporting data to the database by creat
         os.remove(name)
         os.rename(name + '1', name)
 
-    def export_messages(self, name, message, time, sender):
+    def export_messages(self, name, message, time, reciever):
+        message = str(message)
+        time = str(time)
+        reciever = str(reciever)
         f = open(name)
         g = open(name + '1', 'w')
         while True:
@@ -341,21 +314,11 @@ class export_database(import_database): #exporting data to the database by creat
             g.write(temp)
             if "Messages Recieved 2013-20376" in temp:
                 break
-        while True:
-            temp = f.readline()
-            if temp == '\n':
-                g.write(sender + '\n' + time + ':' + message + '\n\n')
-                break
-            if temp == sender + '\n':
-                g.write(temp)
-                while True:
-                    temp = f.readline()
-                    if temp == '\n' or temp == '':
-                        g.write(time + ':' + message + '\n\n')
-                        break
-                    g.write(temp)
-                break
-            g.write(temp)
+        temp = eval(f.readline())
+        if reciever not in temp:
+            temp[reciever] = []
+        temp[reciever].append(time + ':' + message)
+        g.write(str(temp) + '\n')
         for line in f:
             g.write(line)
         f.close()
@@ -363,7 +326,10 @@ class export_database(import_database): #exporting data to the database by creat
         os.remove(name)
         os.rename(name + '1', name)
 
-    def export_sent_messages(self, name, message, time, reciever):
+    def export_sent_messages(self, name, message, time, sender):
+        message = str(message)
+        time = str(time)
+        sender = str(sender)
         f = open(name)
         g = open(name + '1', 'w')
         while True:
@@ -371,21 +337,11 @@ class export_database(import_database): #exporting data to the database by creat
             g.write(temp)
             if "Messages Sent 2013-20376" in temp:
                 break
-        while True:
-            temp = f.readline()
-            if temp == '\n':
-                g.write(reciever + '\n' + time + ':' + message + '\n\n')
-                break
-            if temp == reciever + '\n':
-                g.write(temp)
-                while True:
-                    temp = f.readline()
-                    if temp == '\n' or temp == '':
-                        g.write(time + ':' + message + '\n\n')
-                        break
-                    g.write(temp)
-                break
-            g.write(temp)
+        temp = eval(f.readline())
+        if sender not in temp:
+            temp[sender] = []
+        temp[sender].append(time + ':' + message)
+        g.write(str(temp) + '\n')
         for line in f:
             g.write(line)
         f.close()
