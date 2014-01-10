@@ -44,7 +44,7 @@ class create(CC): #profile creation
 		f.close()
 		os.makedirs(os.getcwd() + "/" + str(self.get_name()) + "/pictures")
 		f = open(os.getcwd() + "/" + self.get_name() + "/" + self.get_name(), 'w')
-		f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n\n")
+		f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n\n")
 		f.close()
 
 	def guic(self, usernameInput, password1, password2):
@@ -153,7 +153,7 @@ class import_database(object): #importing data from the profile's database
 		self.name = ''
 		self.password = ''
 		self.friends = []
-		self.status = ''
+		self.status = {}
 		self.wall = {}
 		self.messages = {}
 		self.messages_sent = {}
@@ -300,7 +300,7 @@ class export_database(import_database): #exporting data to the database by creat
 		os.remove("DATABASE")
 		os.rename("DATABASE" + '1', "DATABASE")
 
-	def export_status(self, name, status): #exporting status
+	def export_status(self, name, status, time): #exporting status
 		f = open(os.getcwd() + "/" + name + "/" + name)
 		g = open(os.getcwd() + "/" + name + "/" + name + "1", 'w')
 		while True:
@@ -308,8 +308,9 @@ class export_database(import_database): #exporting data to the database by creat
 			g.write(temp)
 			if "Status 2013-20376" in temp:
 				break
-		g.write(status + '\n')
-		f.readline()
+		temp = eval(f.readline())
+		temp[time] = status
+		g.write(str(temp) + '\n')
 		for line in f:
 			g.write(line)
 		f.close()

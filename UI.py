@@ -40,8 +40,7 @@ while True:
 						choice = raw_input("What do you want to do? (C - Create Status, R - Return) ")
 						choice = choice.lower()
 						if choice == 'c':
-							s.create_status()
-							s.status_export(name)
+							s.create_status(name)
 						elif choice == 'r':
 							break
 						else:
