@@ -36,22 +36,33 @@ class messages():
 			self.exporter.export_messages(reciever, message, time, name) #Exporting the recieved message
 
 	def delete_message(self, name):
-		sender = str(raw_input("Delete whose message: "))
+		while True:
+			sender = str(raw_input("Delete whose message: "))
+			if os.path.isdir(os.getcwd() + "/" + sender) is False:
+				print "User does not exist"
+			else:
+				break
 		date = str(raw_input("Date of the message:"))
-		self.get_messages(name)
+		self.importer.import_messages(name)
+		self.messages = eval(self.importer.get_messages())
 		messages = self.messages[sender]
-		if date in messages:
-			f = open(name)
-			g = open(name + '1')
-			for line in f:
-				temp = f.readline()
-				if sender and date not in line:
-					g.write(line)
-			f.close()
-			g.close()
-			os.remove(name)
-			os.rename(name + '1', name)
-		else:
+		counter = 0
+		for item in messages:
+			if date in item:
+				messages.pop(counter)
+				f = open(os.getcwd() + "/" + name + "/" + name)
+				g = open(os.getcwd() + "/" + name + "/" + name + '1', 'w')
+				for line in f:
+					if sender and date not in line:
+						g.write(line)
+					else:
+						g.write(str({str(sender):messages}) + '\n')
+				f.close()
+				g.close()
+				os.remove(os.getcwd() + "/" + name + "/" + name)
+				os.rename(os.getcwd() + "/" + name + "/" + name + '1', os.getcwd() + "/" + name + "/" + name)
+			counter += 1
+		if counter == 0:
 			print "Message does not exist"
 
 class status():
@@ -65,16 +76,17 @@ class status():
 		self.importer.import_status(name)
 		self.status = self.importer.get_status()
 
-	def create_status(self): #Overwritting the status
-		self.status = raw_input("Enter your status: ")
-
-	def status_export(self, name): #Exporting the status
-		self.exporter.export_status(name, self.status)
+	def create_status(self, name): #Overwritting the status
+		status = str(raw_input("Enter your status: "))
+		time = strftime("%m/%d/%Y, %I.%M.%S%p")
+		self.exporter.export_status(name, status, time)
 
 	def print_status(self):
 		print self.status
 
-	#def delete_status(self):
+	def delete_status(self):
+		status = str(raw_input("Delete which status: "))
+
 
 class friends():
 	def __init__(self):
