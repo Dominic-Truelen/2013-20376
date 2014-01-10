@@ -37,10 +37,12 @@ while True:
 					while True:
 						s.get_status(name)
 						s.print_status()
-						choice = raw_input("What do you want to do? (C - Create Status, R - Return) ")
+						choice = raw_input("What do you want to do? (C - Create Status, D - Delete Status, R - Return) ")
 						choice = choice.lower()
 						if choice == 'c':
 							s.create_status(name)
+						elif choice == 'd':
+							s.delete_status(name)
 						elif choice == 'r':
 							break
 						else:

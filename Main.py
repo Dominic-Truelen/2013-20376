@@ -36,12 +36,13 @@ class messages():
 			self.exporter.export_messages(reciever, message, time, name) #Exporting the recieved message
 
 	def delete_message(self, name):
-		while True:
-			sender = str(raw_input("Delete whose message: "))
-			if os.path.isdir(os.getcwd() + "/" + sender) is False:
-				print "User does not exist"
-			else:
-				break
+		sender = str(raw_input("Delete whose message: "))
+		if os.path.isdir(os.getcwd() + "/" + sender) is False:
+			print "User does not exist"
+			return
+		elif self.messages.has_key is False:
+			print "User did not send a message"
+			return
 		date = str(raw_input("Date of the message:"))
 		self.importer.import_messages(name)
 		self.messages = eval(self.importer.get_messages())
@@ -68,13 +69,13 @@ class messages():
 class status():
 	def __init__(self):
 		self.name = ''
-		self.status = ''
+		self.status = {}
 		self.importer = import_database()
 		self.exporter = export_database()
 
 	def get_status(self, name): #Importing the status
 		self.importer.import_status(name)
-		self.status = self.importer.get_status()
+		self.status = eval(self.importer.get_status())
 
 	def create_status(self, name): #Overwritting the status
 		status = str(raw_input("Enter your status: "))
@@ -84,9 +85,27 @@ class status():
 	def print_status(self):
 		print self.status
 
-	def delete_status(self):
-		status = str(raw_input("Delete which status: "))
-
+	def delete_status(self, name):
+		time = str(raw_input("Date of status: "))
+		self.get_status(name)
+		if self.status.has_key(time) is False:
+			return
+		self.status.pop(time)
+		f = open(os.getcwd() + "/" + name + "/" + name)
+		g = open(os.getcwd() + "/" + name + "/" + name + '1', 'w')
+		while True:
+			temp = f.readline()
+			g.write(temp)
+			if "Status 2013-20376" in temp:
+				break
+		g.write(str(self.status) + '\n')
+		f.readline()
+		for line in f:
+			g.write(line)
+		f.close()
+		g.close()
+		os.remove(os.getcwd() + "/" + name + "/" + name)
+		os.rename(os.getcwd() + "/" + name + "/" + name + "1", os.getcwd() + "/" + name + "/" + name)
 
 class friends():
 	def __init__(self):
