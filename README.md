@@ -7,14 +7,20 @@ To do list:
 
 Level 1
 
-Profile page
-
-Modifying profile info
-
-Deleting statuses
+Profile picture
 
 
 Level 2
+
+Newsfeed
+
+Profile Deletion
+
+User Blocking
+
+Multiple Instantiation of Accounts
+
+Profile Properties
 
 
 Level 3
