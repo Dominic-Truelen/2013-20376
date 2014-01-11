@@ -5,22 +5,16 @@ A project for college...
 
 To do list:
 
-Level 1
 
-Profile picture
+Profile pictures
 
+Delete Profile
 
-Level 2
+Hide Friend
 
-Newsfeed
+Profile Info
 
-Profile Deletion
-
-User Blocking
-
-Multiple Instantiation of Accounts
-
-Profile Properties
+Multiple Active Profiles
 
 
 Level 3
