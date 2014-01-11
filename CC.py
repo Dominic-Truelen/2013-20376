@@ -1,4 +1,4 @@
-import os #for deleting and renaming files
+import os, shutil #for deleting and renaming files
 import glob
 
 class CC(object): #profile management #superclass
@@ -21,16 +21,16 @@ class CC(object): #profile management #superclass
 class create(CC): #profile creation
     def ask_name(self): #GUI imput of username
         if glob.glob("DATABASE") != []:
-            f = open("DATABASE", 'w')
+            f = open("DATABASE", 'a+')
             f.close()
         while True:
             counter = 1
             self.set_name(raw_input("Enter username: "))
-            if os.path.isdir(os.getcwd() + "/" + self.get_name()) is True:
+            if os.path.isdir(os.getcwd() + "\\" + self.get_name()) is True:
                 counter = 0
             if counter == 1:
                 break
-        f.close()
+        #f.close()
 
     def ask_password(self): #GUI imput of password
         self.set_password(raw_input("Enter password: "))
@@ -39,11 +39,11 @@ class create(CC): #profile creation
         if glob.glob("DATABASE") != []:
             f = open("DATABASE")
             f.close()
-        f = open("DATABASE", 'a')
+        f = open("DATABASE", 'a+')
         f.write(self.get_name() + ': ' + self.get_password() + '\n')
         f.close()
-        os.makedirs(os.getcwd() + "/" + str(self.get_name()) + "/pictures")
-        f = open(os.getcwd() + "/" + self.get_name() + "/" + self.get_name(), 'w')
+        os.makedirs(os.getcwd() + "\\" + str(self.get_name()) + "\pictures")
+        f = open(os.getcwd() + "\\" + self.get_name() + "\\" + self.get_name(), 'w')
         f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\nOffline\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n\n")
         f.close()
 
@@ -52,7 +52,7 @@ class create(CC): #profile creation
         self.set_password(password1)
         if self.get_name() == "":
             return "USERNAME IS BLANK"
-        elif os.path.isdir(os.getcwd() + "/" + self.get_name()) is True:
+        elif os.path.isdir(os.getcwd() + "\\" + self.get_name()) is True:
                 return "USERNAME IS ALREADY TAKEN"
         elif self.get_password() == "":
                 return "PASSWORD REQUIRED"
@@ -74,7 +74,7 @@ class validation(CC): #validation for logging in and deleting profiles
         elif self.get_password() == "":
                 return "PASSWORD IS BLANK"
         else:
-            if os.path.isdir(os.getcwd() + "/" + self.get_name()) is False:
+            if os.path.isdir(os.getcwd() + "\\" + self.get_name()) is False:
                 return "ACCOUNT DOES NOT EXIST"
             else:
                 f = open(self.get_name())
@@ -87,9 +87,9 @@ class validation(CC): #validation for logging in and deleting profiles
 
     def validation(self):													# Console Version
         self.set_name(str(raw_input("Username: ")))
-        if os.path.isdir(os.getcwd() + "/" + self.get_name()) is False:
+        if os.path.isdir(os.getcwd() + "\\" + self.get_name()) is False:
             return 0
-        f = open(os.getcwd() + "/" + self.get_name() + "/" + self.get_name())
+        f = open(os.getcwd() + "\\" + self.get_name() + "\\" + self.get_name())
         f.readline()
         f.readline()
         self.set_password(str(raw_input("Password: ")))
@@ -98,33 +98,51 @@ class validation(CC): #validation for logging in and deleting profiles
         return 0
 
 class delete(CC): #profile deletion
-    def __init__(self):
-        super(delete, self).__init__()
-        self.valid = validation()
-    def delete(self):
-        temp = self.valid.validation() #will return 1 if valid and 0 if invalid
-        if temp == 1:
-            os.removedirs(os.getcwd() + '/' + self.valid.get_name()) #deletes the filename with name of profile
-            f = open("DATABASE")
-            g = open("DATABASE1")
-            for line in f:
-                line1 = None
-                if ':' in line:
-                    line = line.split(':')
-                    line = line[0]
-                    line1 = line[1]
-                if self.valid.get_name() in line:
-                    f.readline()
-                if line1 == None:
-                    g.write(line)
-                else:
-                    g.write(line + ':' + line1)
-            f.close()
-            g.close()
-            os.remove("DATABASE")
-            os.rename("DATABASE1", "DATABASE")
-        else:
-          print "NO SUCH PROFILE EXISTS"
+	def __init__(self):
+		super(delete, self).__init__()
+		self.valid = validation()
+	def delete2(self):				   # ATTENTION! XD *** THIS IS THE ORIGINAL DELETE FUNCTION BY DOMINIC. (I CHANGED THE NAME TO DELETE 2 FOR BACKUP) def has errors & doesn't yet output as expected
+		temp = self.valid.validation() #will return 1 if valid and 0 if invalid
+		if temp == 1:            
+			f = open("DATABASE")
+			g = open("DATABASE1", 'w')	#Temp file name for deleting names in the registry
+			for line in f:
+				line1 = None
+				if ':' in line:
+					lineT = line.split(':')
+					lineN = lineT[0]
+					line1 = lineT[1]
+				if self.valid.get_name() in lineT:
+					pass
+				if line1 == None:
+					g.write(line)
+				else:
+					g.write(line + ':' + line1)
+			f.close()
+			g.close()
+			os.remove("DATABASE")
+			os.rename("DATABASE1", "DATABASE")
+			shutil.rmtree(os.getcwd() + '\\' + self.valid.get_name()) #deletes the filename with name of profile
+		else:
+			print "NO SUCH PROFILE EXISTS"
+			
+	def delete(self):				   #  *** THIS IS MY VERSION OF THE DELETE FUNCTION. This code needs adding in terms of friend deletion (this code kinda works, but needs improvement)
+		temp = self.valid.validation() #will return 1 if valid and 0 if invalid
+		if temp == 1:            
+			f = open("DATABASE", 'r')
+			g = open("DATABASE1", 'w')	#Temp file name for deleting names in the registry
+			lines = f.readlines()
+			f.close()
+			a = self.valid.get_name() + ": " + self.valid.get_password() + "\n"
+			for x in lines:
+				if x != a:
+					g.write(x)			
+			g.close()
+			os.remove("DATABASE")
+			os.rename("DATABASE1", "DATABASE")
+			shutil.rmtree(os.getcwd() + '\\' + self.valid.get_name()) #deletes the filename with name of profile
+		else:
+			print "NO SUCH PROFILE EXISTS"
 
 class login(CC): #logging in
     def __init__(self):
@@ -196,14 +214,14 @@ class import_database(object): #importing data from the profile's database
         return self.wall
 
     def import_details(self, name):
-        f = open(os.getcwd() + "/" + name + "/" + name)
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
         f.readline()
         self.name = eval(f.readline())
         self.password = eval(f.readline())
         f.close()
 
     def import_friends(self, name): #importing friends list
-        f = open(os.getcwd() + "/" + name + "/" + name)
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
         while True: #scanning untill it reaches the friends list
             temp = f.readline()
             if "Friends 2013-20376" in temp:
@@ -213,7 +231,7 @@ class import_database(object): #importing data from the profile's database
         f.close()
 
     def import_status(self, name): #importing status
-        f = open(os.getcwd() + "/" + name + "/" + name)
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
         while True: #scanning untill it reaches the status
             temp = f.readline()
             if "Status 2013-20376" in temp:
@@ -224,7 +242,7 @@ class import_database(object): #importing data from the profile's database
     def import_messages(self, name): #importing messages
         self.messages = {}
         friend = {}
-        f = open(os.getcwd() + "/" + name + "/" + name)
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
         while True: #scanning untill it reaches the messages
             temp = f.readline()
             if "Messages Recieved 2013-20376" in temp:
@@ -235,7 +253,7 @@ class import_database(object): #importing data from the profile's database
     def import_messages_sent(self, name):
         self.messages_sent = {}
         friend = {}
-        f = open(os.getcwd() + "/" + name + "/" + name)
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
         while True: #scanning untill it reaches the messages
             temp = f.readline()
             if "Messages Sent 2013-20376" in temp:
@@ -244,7 +262,7 @@ class import_database(object): #importing data from the profile's database
         f.close()
 
     def import_friend_requests(self, name):
-        f = open(os.getcwd() + "/" + name + "/" + name)
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
         while True:
             temp = f.readline()
             if "Friend Requests Recieved 2013-20376" in temp:
@@ -253,7 +271,7 @@ class import_database(object): #importing data from the profile's database
         self.friend_requests = temp
 
     def import_friend_requests_sent(self, name):
-        f = open(os.getcwd() + "/" + name + "/" + name)
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
         while True:
             temp = f.readline()
             if "Friend Requests Sent 2013-20376" in temp:
@@ -264,7 +282,7 @@ class import_database(object): #importing data from the profile's database
         self.friend_requests_sent = temp
 
     def import_wall(self, name):
-        f = open(os.getcwd() + "/" + name + "/" + name)
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
         while True:
             if "Wall 2013-20376" in f.readline():
                 break
@@ -272,8 +290,8 @@ class import_database(object): #importing data from the profile's database
 
 class export_database(): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
     def export_details(self, name, password, status): #exporting username and password
-        f = open(os.getcwd() + "/" + name + "/" + name)
-        g = open(os.getcwd() + "/" + name + "/" + name + "1", 'w')
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
+        g = open(os.getcwd() + "\\" + name + "\\" + name + "1", 'w')
         g.write('Details 2013-2076' + '\n' + name + '\n' + password + '\n' + status + '\n')
         f.readline()
         f.readline()
@@ -283,12 +301,12 @@ class export_database(): #exporting data to the database by creating a temporary
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "/" + name + "/" + name)
-        os.rename(os.getcwd() + "/" + name + "/" + name + '1', os.getcwd() + "/" + name + "/" + name)
+        os.remove(os.getcwd() + "\\" + name + "\\" + name)
+        os.rename(os.getcwd() + "\\" + name + "\\" + name + '1', os.getcwd() + "\\" + name + "\\" + name)
 
     def export_friends(self, name, friends): #exporting friends list
-        f = open(os.getcwd() + "/" + name + "/" + name)
-        g = open(os.getcwd() + "/" + name + "/" + name + "1", 'w')
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
+        g = open(os.getcwd() + "\\" + name + "\\" + name + "1", 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -300,8 +318,8 @@ class export_database(): #exporting data to the database by creating a temporary
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "/" + name + "/" + name)
-        os.rename(os.getcwd() + "/" + name + "/" + name + '1', os.getcwd() + "/" + name + "/" + name)
+        os.remove(os.getcwd() + "\\" + name + "\\" + name)
+        os.rename(os.getcwd() + "\\" + name + "\\" + name + '1', os.getcwd() + "\\" + name + "\\" + name)
         f = open("DATABASE")
         g = open("DATABASE" + '1', 'w')
         while True:
@@ -321,8 +339,8 @@ class export_database(): #exporting data to the database by creating a temporary
         os.rename("DATABASE" + '1', "DATABASE")
 
     def export_status(self, name, status, time): #exporting status
-        f = open(os.getcwd() + "/" + name + "/" + name)
-        g = open(os.getcwd() + "/" + name + "/" + name + "1", 'w')
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
+        g = open(os.getcwd() + "\\" + name + "\\" + name + "1", 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -335,15 +353,15 @@ class export_database(): #exporting data to the database by creating a temporary
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "/" + name + "/" + name)
-        os.rename(os.getcwd() + "/" + name + "/" + name + '1', os.getcwd() + "/" + name + "/" + name)
+        os.remove(os.getcwd() + "\\" + name + "\\" + name)
+        os.rename(os.getcwd() + "\\" + name + "\\" + name + '1', os.getcwd() + "\\" + name + "\\" + name)
 
     def export_messages(self, name, message, time, reciever):
         message = str(message)
         time = str(time)
         reciever = str(reciever)
-        f = open(os.getcwd() + "/" + name + "/" + name)
-        g = open(os.getcwd() + "/" + name + "/" + name + '1', 'w')
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
+        g = open(os.getcwd() + "\\" + name + "\\" + name + '1', 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -358,15 +376,15 @@ class export_database(): #exporting data to the database by creating a temporary
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "/" + name + "/" + name)
-        os.rename(os.getcwd() + "/" + name + "/" + name + '1', os.getcwd() + "/" + name + "/" + name)
+        os.remove(os.getcwd() + "\\" + name + "\\" + name)
+        os.rename(os.getcwd() + "\\" + name + "\\" + name + '1', os.getcwd() + "\\" + name + "\\" + name)
 
     def export_sent_messages(self, name, message, time, sender):
         message = str(message)
         time = str(time)
         sender = str(sender)
-        f = open(os.getcwd() + "/" + name + "/" + name)
-        g = open(os.getcwd() + "/" + name + "/" + name + '1', 'w')
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
+        g = open(os.getcwd() + "\\" + name + "\\" + name + '1', 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -381,12 +399,12 @@ class export_database(): #exporting data to the database by creating a temporary
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "/" + name + "/" + name)
-        os.rename(os.getcwd() + "/" + name + "/" + name + '1', os.getcwd() + "/" + name + "/" + name)
+        os.remove(os.getcwd() + "\\" + name + "\\" + name)
+        os.rename(os.getcwd() + "\\" + name + "\\" + name + '1', os.getcwd() + "\\" + name + "\\" + name)
 
     def export_friend_request(self, name, friend_requests):
-        f = open(os.getcwd() + "/" + name + "/" + name)
-        g = open(os.getcwd() + "/" + name + "/" + name + '1', 'w')
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
+        g = open(os.getcwd() + "\\" + name + "\\" + name + '1', 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -398,12 +416,12 @@ class export_database(): #exporting data to the database by creating a temporary
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "/" + name + "/" + name)
-        os.rename(os.getcwd() + "/" + name + "/" + name + '1', os.getcwd() + "/" + name + "/" + name)
+        os.remove(os.getcwd() + "\\" + name + "\\" + name)
+        os.rename(os.getcwd() + "\\" + name + "\\" + name + '1', os.getcwd() + "\\" + name + "\\" + name)
 
     def export_friend_request_sent(self, name, friend_requests_sent):
-        f = open(os.getcwd() + "/" + name + "/" + name)
-        g = open(os.getcwd() + "/" + name + "/" + name + '1', 'w')
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
+        g = open(os.getcwd() + "\\" + name + "\\" + name + '1', 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -415,13 +433,13 @@ class export_database(): #exporting data to the database by creating a temporary
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "/" + name + "/" + name)
-        os.rename(os.getcwd() + "/" + name + "/" + name + '1', os.getcwd() + "/" + name + "/" + name)
+        os.remove(os.getcwd() + "\\" + name + "\\" + name)
+        os.rename(os.getcwd() + "\\" + name + "\\" + name + '1', os.getcwd() + "\\" + name + "\\" + name)
 
     def export_wall(self, name, wall):
         wall = str(wall)
-        f = open(os.getcwd() + "/" + name + "/" + name)
-        g = open(os.getcwd() + "/" + name + "/" + name + '1', 'w')
+        f = open(os.getcwd() + "\\" + name + "\\" + name)
+        g = open(os.getcwd() + "\\" + name + "\\" + name + '1', 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -433,8 +451,8 @@ class export_database(): #exporting data to the database by creating a temporary
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "/" + name + "/" + name)
-        os.rename(os.getcwd() + "/" + name + "/" + name+ '1', os.getcwd() + "/" + name + "/" + name)
+        os.remove(os.getcwd() + "\\" + name + "\\" + name)
+        os.rename(os.getcwd() + "\\" + name + "\\" + name+ '1', os.getcwd() + "\\" + name + "\\" + name)
 
 class logout(object): #will reset the name and password of CC after returning to the main GUI
     def __init__(self):
