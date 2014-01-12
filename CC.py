@@ -21,7 +21,7 @@ class CC(object): #profile management #superclass
 class create(CC): #profile creation
     def ask_name(self): #GUI imput of username
         if glob.glob("DATABASE") != []:
-            f = open("DATABASE", 'a+')
+            f = open("DATABASE", 'w')
             f.close()
         while True:
             counter = 1
@@ -39,7 +39,7 @@ class create(CC): #profile creation
         if glob.glob("DATABASE") != []:
             f = open("DATABASE")
             f.close()
-        f = open("DATABASE", 'a+')
+        f = open("DATABASE", 'a')
         f.write(self.get_name() + ': ' + self.get_password() + '\n')
         f.close()
         os.makedirs(os.getcwd() + "\\" + str(self.get_name()) + "\pictures")
@@ -77,7 +77,7 @@ class validation(CC): #validation for logging in and deleting profiles
             if os.path.isdir(os.getcwd() + "\\" + self.get_name()) is False:
                 return "ACCOUNT DOES NOT EXIST"
             else:
-                f = open(self.get_name())
+                f = open(os.getcwd() + "\\" + self.get_name() + "\\" + self.get_name())
                 f.readline()
                 f.readline()
                 if (self.get_password() + '\n') == f.readline():
@@ -101,6 +101,7 @@ class delete(CC): #profile deletion
 	def __init__(self):
 		super(delete, self).__init__()
 		self.valid = validation()
+	
 	def delete2(self):				   # ATTENTION! XD *** THIS IS THE ORIGINAL DELETE FUNCTION BY DOMINIC. (I CHANGED THE NAME TO DELETE 2 FOR BACKUP) def has errors & doesn't yet output as expected
 		temp = self.valid.validation() #will return 1 if valid and 0 if invalid
 		if temp == 1:            
@@ -129,7 +130,7 @@ class delete(CC): #profile deletion
 	def delete(self):				   #  *** THIS IS MY VERSION OF THE DELETE FUNCTION. This code needs adding in terms of friend deletion (this code kinda works, but needs improvement)
 		temp = self.valid.validation() #will return 1 if valid and 0 if invalid
 		if temp == 1:            
-			f = open("DATABASE", 'r')
+			f = open("DATABASE")
 			g = open("DATABASE1", 'w')	#Temp file name for deleting names in the registry
 			lines = f.readlines()
 			f.close()
