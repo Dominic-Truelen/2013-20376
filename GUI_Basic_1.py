@@ -44,7 +44,7 @@ class loginPageClass(Page):														# The login class!
 		self.verifyLoginLabel = Label(topLayer, text="", fg="orange", bg=toplayerColor, font=defaultLabelStyle) 	# For warning purposes of login entries
 		self.verifyLoginLabel.place(anchor=E, relx=0.5, rely=0.59)
 		self.coffcup.bind("<Enter>", lambda f: self.coffcup.config(fg="orange"))
-		self.coffcup.bind("<Leave>", lambda g: self.coffcup.config(fg="white"))
+		self.coffcup.bind("<Leave>", lambda f: self.coffcup.config(fg="white"))
 		
 		midLayer = Frame(self, width=1000, height=490)		# Code here for the CREATE class
 		midLayer.pack()
@@ -73,7 +73,11 @@ class loginPageClass(Page):														# The login class!
 		Label(midLayer, text="Pick a username:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.23+a)
 		Label(midLayer, text="Create a password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.38+a)
 		Label(midLayer, text="Reenter your password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.53+a)
-		Label(midLayer, text="Take a ☕ break!\nSign up!", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.345+a)
+		Label(midLayer, text="Take a    break!\nSign up!", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.345+a)
+		self.coffcup2 = Label(midLayer, text="☕", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg=toplayerColor)
+		self.coffcup2.place(anchor=W, relx=0.23, rely=0.28+a)
+		self.coffcup2.bind("<Enter>", lambda f: self.coffcup2.config(fg="orange"))
+		self.coffcup2.bind("<Leave>", lambda f: self.coffcup2.config(fg=toplayerColor))
 		Label(midLayer, text="Caffy lets you connect and share with\nfriends from around the corner.", font=("Tahoma", 15), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.58+a)
 		Label(midLayer, text="By signing up, you agree with our Terms and Conditions.", font=("Tahoma", 9), justify=RIGHT, bg=backgroundColor, fg="#999999").place(anchor=E, relx=0.8956, rely=0.7+a)
 		self.verifyCreateLabel = Label(midLayer, text="", bg=backgroundColor, justify=LEFT)		# Initialization of the create warnings
