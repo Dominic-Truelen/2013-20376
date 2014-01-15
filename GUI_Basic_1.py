@@ -3,14 +3,15 @@
  
 from CC import *																# pack() is for stacking, while place() is for a more
 from Tkinter import *															# accurate placing of widgets. grid() is for tables
+from PIL import ImageTk, Image
 import os, sys, glob
 
 defaultEntryStyle = ("Tahoma", 12)												# Initial font settings for styling
 defaultLabelStyle = ("Tahoma", 9)
 defaultCreateStyle = ("Tahoma", 14)
 signatureColor = "orange"														# Shortcut labels for custom color styling
-toplayerColor = "#4B2D18"
-backgroundColor = "#FFEEE5"
+toplayerColor = "#555555"
+backgroundColor = "#EEEEEE"
 
 a=-0.05																			# Adjuster for widget's y-value placement
 
@@ -38,12 +39,22 @@ class loginPageClass(Page):														# The login class!
 		self.passwordInput = Entry(topLayer, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
 		self.passwordInput.place(anchor=CENTER, relx=0.77, rely=0.59)
 		Label(topLayer, text="caffy", font=("Verdana", 28), justify=LEFT, bg=toplayerColor, fg="orange").place(anchor=W, relx=0.08, rely=0.5)
-		Label(topLayer, text="☕", font=("Tahoma", 28), justify=LEFT, bg=toplayerColor, fg="#FFFFFF").place(anchor=W, relx=0.175, rely=0.48)
+		self.coffcup = Label(topLayer, text="☕", font=("Tahoma", 28), justify=LEFT, bg=toplayerColor, fg="#FFFFFF")
+		self.coffcup.place(anchor=W, relx=0.175, rely=0.48)
 		self.verifyLoginLabel = Label(topLayer, text="", fg="orange", bg=toplayerColor, font=defaultLabelStyle) 	# For warning purposes of login entries
 		self.verifyLoginLabel.place(anchor=E, relx=0.5, rely=0.59)
+		self.coffcup.bind("<Enter>", lambda f: self.coffcup.config(fg="orange"))
+		self.coffcup.bind("<Leave>", lambda g: self.coffcup.config(fg="white"))
 		
-		midLayer = Frame(self, width=1000, height=490, bg=backgroundColor)		# Code here for the CREATE class
+		midLayer = Frame(self, width=1000, height=490)		# Code here for the CREATE class
 		midLayer.pack()
+		
+		canvasSky = Canvas(midLayer, width=1000, height=490, highlightthickness=0, bg=backgroundColor)
+		canvasSky.pack()
+		sky = ImageTk.PhotoImage(file="GUIE\\LoginSky.png")
+		canvasSky.create_image(500, 245, image=sky)
+		canvasSky.image = sky
+		
 		layer1 = Frame(midLayer, width=379, height=40, bg="#FFFFFF")
 		layer1.place(anchor=CENTER, relx=0.7, rely=0.3+a)
 		layer2 = Frame(midLayer, width=379, height=40, bg="#FFFFFF")
@@ -67,6 +78,7 @@ class loginPageClass(Page):														# The login class!
 		Label(midLayer, text="By signing up, you agree with our Terms and Conditions.", font=("Tahoma", 9), justify=RIGHT, bg=backgroundColor, fg="#999999").place(anchor=E, relx=0.8956, rely=0.7+a)
 		self.verifyCreateLabel = Label(midLayer, text="", bg=backgroundColor, justify=LEFT)		# Initialization of the create warnings
 		self.verifyCreateLabel.place(anchor=W, relx=0.509, rely=0.75)
+		
 		
 		bottomLayer = Frame(self, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
 		bottomLayer.pack()
@@ -171,7 +183,7 @@ Window.wm_title('Welcome to Caffy!')											# Initial title text in the title
 Main = navClass()
 Window.geometry('1000x600+170+80')												# Set dimensions to 1000x600 pos @ screen center
 Window.resizable(0,0)			 												# Does not resize the window, ever 	
-Window.wm_iconbitmap('CoffeeCup1.ico')											# Adds a little mug icon over the top left corner
+Window.wm_iconbitmap('GUIE\\CoffeeCup.ico')										# Adds a little mug icon over the top left corner
 Window.mainloop()																# Executes code above in a loop
 
 os.remove('CC.pyc')																# Removes the temporary files inside the (" ")

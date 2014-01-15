@@ -141,7 +141,7 @@ class delete(CC): #profile deletion
 			g.close()
 			os.remove("DATABASE")
 			os.rename("DATABASE1", "DATABASE")
-			shutil.rmtree(os.getcwd() + '\\' + self.valid.get_name()) #deletes the filename with name of profile
+			shutil.rmtree(os.getcwd() + '\\' + self.valid.get_name()) #deletes the filename folder and directory recursively with name of profile
 		else:
 			print "NO SUCH PROFILE EXISTS"
 
