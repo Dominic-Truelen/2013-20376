@@ -28,7 +28,7 @@ class messages():
 
     def send_message(self, name): #Sending messages
         reciever = str(raw_input("Send to: "))
-        if os.path.isdir(os.getcwd() + "\\" + name) is False: #Searching for a file with the inputed name in the database
+        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + name) is False: #Searching for a file with the inputed name in the database
             print "User does not exist"
         elif reciever == name:
             print "You cannot send messages to yourself"
@@ -40,7 +40,7 @@ class messages():
 
     def delete_message(self, name):
         sender = str(raw_input("Delete whose message: "))
-        if os.path.isdir(os.getcwd() + "\\" + sender) is False:
+        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + sender) is False:
             print "User does not exist"
             return
         elif self.messages.has_key(sender) is False:
@@ -54,8 +54,8 @@ class messages():
         for item in messages:
             if date in item:
                 messages.pop(counter)
-                f = open(os.getcwd() + "\\" + name + "\\" + name)
-                g = open(os.getcwd() + "\\" + name + "\\" + name + '1', 'w')
+                f = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
+                g = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name + '1', 'w')
                 for line in f:
                     if sender and date not in line:
                         g.write(line)
@@ -63,8 +63,8 @@ class messages():
                         g.write(str({str(sender):messages}) + '\n')
                 f.close()
                 g.close()
-                os.remove(os.getcwd() + "\\" + name + "\\" + name)
-                os.rename(os.getcwd() + "\\" + name + "\\" + name + '1', os.getcwd() + "\\" + name + "\\" + name)
+                os.remove(os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
+                os.rename(os.getcwd() + "\\DATABASE\\" + name + "\\" + name + '1', os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
             counter += 1
         if counter == 0:
             print "Message does not exist"
@@ -94,8 +94,8 @@ class status():
         if self.status.has_key(time) is False:
             return
         self.status.pop(time)
-        f = open(os.getcwd() + "\\" + name + "\\" + name)
-        g = open(os.getcwd() + "\\" + name + "\\" + name + '1', 'w')
+        f = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
+        g = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name + '1', 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -107,8 +107,8 @@ class status():
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "\\" + name + "\\" + name)
-        os.rename(os.getcwd() + "\\" + name + "\\" + name + "1", os.getcwd() + "\\" + name + "\\" + name)
+        os.remove(os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
+        os.rename(os.getcwd() + "\\DATABASE\\" + name + "\\" + name + "1", os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
 
 class friends():
     def __init__(self):
@@ -127,7 +127,7 @@ class friends():
 
     def add_friend(self, name): #Adding new friends
         add_friend = str(raw_input("Add who? "))
-        if os.path.isdir(os.getcwd() + "\\" + name) is False: #Serching for a file with the inputed name in the database
+        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + name) is False: #Serching for a file with the inputed name in the database
             print "User does not exist"
         elif add_friend == name:
             print "You cannot send yourself a friend request"
@@ -159,7 +159,7 @@ class friends():
 
     def delete_friends(self, name):
         delete = raw_input("Delete who? ")
-        if os.path.isdir(os.getcwd() + "\\" + name) is False:
+        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + name) is False:
             print "User does not exist"
         else:
             self.importer.import_friends(name)
@@ -176,7 +176,7 @@ class friends():
 
     def approve_request(self, name):
         friend = str(raw_input("Approve who? "))
-        if os.path.isdir(os.getcwd() + "\\" + name) is False:
+        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + name) is False:
             print "This user does not exist"
         else:
             self.importer.import_friend_requests(name)
@@ -236,9 +236,11 @@ class wall():
         self.exporter.export_wall(name, wall)
 
     def print_wall(self, name):
-        self.importer.import_wall(name)
-        self.wall = eval(self.importer.get_wall())
-        print OrderedDict(sorted(self.wall.items(), key=lambda t: t[0]))
+		self.importer.import_wall(name)
+		self.wall = eval(self.importer.get_wall())
+		sortedWall = OrderedDict(sorted(self.wall.items(), key=lambda t: t[0]))
+		for x,y in sortedWall.iteritems():
+			print x, y
 
 
 #class thread_friend_request():

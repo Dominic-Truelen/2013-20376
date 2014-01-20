@@ -1,11 +1,11 @@
-from CC import create, login, delete, logout
+from CC import creation, login, deletion, logout
 from Main import messages, status, friends, wall
 import os
 while True:
     choice = raw_input("What do you want to do? (C - Create, L - Login, D - Delete, Q - Quit) ")
     choice = choice.lower()
     if choice == 'c':
-        c = create()
+        c = creation()
         c.ask_name()
         c.ask_password()
         c.create()
@@ -79,7 +79,7 @@ while True:
         else:
             print "Username/Password is invalid"
     elif choice == 'd':
-        d = delete()
+        d = deletion()
         d.delete()
     elif choice == 'q':
         break
