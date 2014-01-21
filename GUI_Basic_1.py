@@ -17,7 +17,7 @@ a=-0.05																			# Adjuster for widget's y-value placement
 
 #All the other codes / widgets for the HOMEPAGE
 
-class loginPageClass(Frame):													# The login class!
+class loginPageGUI(Frame):													# The login class!
 	def __init__(self):	
 		Frame.__init__(self)		
 		
@@ -82,30 +82,28 @@ class loginPageClass(Frame):													# The login class!
 		bottomLayer.pack()
 		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.5)
 
-class homePageClass(Frame):														# Code for the News Feed
+class homePageGUI(Frame):														# Code for the News Feed
 	def __init__(self, *args):
 		Frame.__init__(self, *args)		
 		mainWindow = Frame(self, width=1000, height=550, bg="yellow")
-		#mainWindow.pack()
+		mainWindow.pack()
 		Label(mainWindow, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), bg="#FFFFFF", fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
 
-class profilePageClass(Frame):
+class profilePageGUI(Frame):
 	def __init__(self, *args, **kwargs):
 		Frame.__init__(self, *args, **kwargs)
 		mainWindow = Frame(self, width=1000, height=550, bg="brown")
-		#mainWindow.pack()
+		mainWindow.pack()
 		Label(mainWindow, text="WELCOME TO PROFILE PAGE!", font=("Tahoma", 30, "bold"), bg="#FFFFFF", fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
 		
-class activePageClass(Frame):
+class activePageGUI(Frame):
 	def __init__(self):
 		Frame.__init__(self)		
 		topLayer = Frame(self, width=1000, height=50, bg=toplayerColor)
 		topLayer.pack()
-		activeLayer = Frame(self, width=1000, height=550)
-		activeLayer.pack()
-		homepageObject = homePageClass()
-		profilePageObject = profilePageClass()
-		homepageObject.lift()
+		homepageObject = homePageGUI()
+		profilePageObject = profilePageGUI()
+		
 		
 class navClass(Frame):															# Faҫade design pattern navClass because of navigation (button fxns)
 	def __init__(self):
@@ -115,8 +113,8 @@ class navClass(Frame):															# Faҫade design pattern navClass because o
 		self.loginCC = CC()
 		self.createCC = CC()
 		self.cre = creation()
-		self.activePageObject = activePageClass()
-		self.login = loginPageClass()		
+		self.activePageObject = activePageGUI()
+		self.login = loginPageGUI()		
 		
 		container = Frame(width=1000, height=600)								# Frame for all the to-be-children pages
 		container.place(anchor=NW)		
