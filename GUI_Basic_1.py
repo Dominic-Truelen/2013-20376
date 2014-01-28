@@ -1,26 +1,29 @@
-#!/usr/bin/python																# Allows the use of Non-ASCII characters in window
+﻿#!/usr/bin/python																# Allows the use of Non-ASCII characters (password) in app
 # -*- coding: utf-8 -*-
  
 from CC import *																# pack() is for stacking, while place() is for a more
 from Tkinter import *															# accurate placing of widgets. grid() is for tables
+from profilePageGUI import profilePageGUI
 from PIL import ImageTk, Image
 import os, sys, glob, time
 
 defaultEntryStyle = ("Tahoma", 12)												# Initial font settings for styling
 defaultLabelStyle = ("Tahoma", 9)
 defaultCreateStyle = ("Tahoma", 14)
+defaultLogoStyle = ("Verdana", 18)
 signatureColor = "orange"														# Shortcut labels for custom color styling
 toplayerColor = "#555555"
 backgroundColor = "#EEEEEE"
 
 a=-0.05																			# Adjuster for widget's y-value placement
 
-#All the other codes / widgets for the HOMEPAGE
-
-class loginPageGUI(Frame):													# The login class!
-	def __init__(self):	
-		Frame.__init__(self)		
+class loginPageGUI(Frame):														# The login GUI class Interface!
+	def __init__(self, master=None):	
+		Frame.__init__(self, master)
+		self.createWidgets()
 		
+	def createWidgets(self):
+		self.master.title("Welcome to Caffy!")
 		topLayer = Frame(self, height=80, width=1000, bg=toplayerColor)			# Code here for the Log-in classes
 		topLayer.pack()		
 		Label(topLayer, text="Username", fg="#FFF", bg=toplayerColor, font=defaultLabelStyle).place(anchor=CENTER, relx=0.5379, rely=0.28)	# Labels for the entry fields
@@ -75,125 +78,167 @@ class loginPageGUI(Frame):													# The login class!
 		Label(midLayer, text="Caffy lets you connect and share with\nfriends from around the corner.", font=("Tahoma", 15), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.58+a)
 		Label(midLayer, text="By signing up, you agree with our Terms and Conditions.", font=("Tahoma", 9), justify=RIGHT, bg=backgroundColor, fg="#999999").place(anchor=E, relx=0.8956, rely=0.7+a)
 		self.verifyCreateLabel = Label(midLayer, text="", bg=backgroundColor, justify=LEFT)		# Initialization of the create warnings
-		self.verifyCreateLabel.place(anchor=W, relx=0.509, rely=0.75)
-		
+		self.verifyCreateLabel.place(anchor=W, relx=0.509, rely=0.75)		
 		
 		bottomLayer = Frame(self, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
 		bottomLayer.pack()
 		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.5)
 
-class homePageGUI(Frame):														# Code for the News Feed
-	def __init__(self, *args):
-		Frame.__init__(self, *args)		
-		mainWindow = Frame(self, width=1000, height=550, bg="yellow")
-		mainWindow.pack()
-		Label(mainWindow, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), bg="#FFFFFF", fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
+class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are mainly the Notifications bar, along with the Logout / Profile / Home Navigation Buttons
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
+		self.pack()
+		self.createWidgets()
+		
+	def createWidgets(self):
+		notifLayer = Frame(self, width=1000, height=50, bg=toplayerColor)
+		notifLayer.pack(anchor=NW)
+		Label(notifLayer, text="caffy", font=defaultLogoStyle, bg=toplayerColor, fg="orange").place(anchor=CENTER, relx=0.2, rely=0.5)
+		self.coff = Label(notifLayer, text="☕", font=defaultLogoStyle, bg=toplayerColor, fg="#FFFFFF")
+		self.coff.place(anchor=CENTER, relx=0.245, rely=0.48)
+		self.coff.bind("<Enter>", lambda f: self.coff.config(fg="orange"))
+		self.coff.bind("<Leave>", lambda f: self.coff.config(fg="white"))
+		
+class homePageGUI(Frame):														# This is the GUI for the Newsfeed sections
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
+		self.place(in_=master)
+		self.createWidgets()
+	
+	def createWidgets(self):
+		homepageMainWindow = Frame(self, width=1000, height=550, bg="blue")
+		homepageMainWindow.pack()
+		Label(homepageMainWindow, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
 
-class profilePageGUI(Frame):
-	def __init__(self, *args, **kwargs):
-		Frame.__init__(self, *args, **kwargs)
-		mainWindow = Frame(self, width=1000, height=550, bg="brown")
-		mainWindow.pack()
-		Label(mainWindow, text="WELCOME TO PROFILE PAGE!", font=("Tahoma", 30, "bold"), bg="#FFFFFF", fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
+class Singleton:																# Singleton Design Pattern retrieved from
+    __single = None																# Python Help Manual Website: http://www.python.org/workshops/1997-10/proceedings/savikko.html
+    def __init__(self):
+        if Singleton.__single:
+            raise Singleton.__single
+        Singleton.__single = self  
 		
-class activePageGUI(Frame):
-	def __init__(self):
-		Frame.__init__(self)		
-		topLayer = Frame(self, width=1000, height=50, bg=toplayerColor)
-		topLayer.pack()
-		homepageObject = homePageGUI()
-		profilePageObject = profilePageGUI()
-		
-		
-class navClass(Frame):															# Faҫade design pattern navClass because of navigation (button fxns)
-	def __init__(self):
-		Frame.__init__(self)
+class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON class or maybe a FACADE for containing all the active sessions of a user... Included: Profile Page, Newspage, and everything else while logged in.
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
+		Singleton.__init__(self)
+
+		self.topLayerObject = notifSystemGUI(self)
+
+		container2 = Frame(self, width=1000, height=550)
+		container2.pack()
+
+		self.profilePageObject = profilePageGUI(container2)		
+		self.homePageObject = homePageGUI(container2)
+
+		canvasActiveShadow = Canvas(width=1000, height=550, highlightthickness=0)
+		canvasActiveShadow.place(in_=container2)
+		activeShadow = ImageTk.PhotoImage(file="GUIE\\activePageShadow.png")
+		canvasActiveShadow.create_image(500, 275, image=activeShadow)
+		canvasActiveShadow.image = activeShadow
+				
+		self.profilePageObject.lift()
+		self.createWidgets()
+			
+	def createWidgets(self):
+		pass		
+
+class navClass(Frame):															# A GUI that combines the Login and Active Windows. Basically another Faҫade design pattern. Called navClass because of navigation (button fxns)
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
 		
 		self.val = validation()													# Initial functions for the verifications
 		self.loginCC = CC()
 		self.createCC = CC()
 		self.cre = creation()
+
+		container = Frame(self, width=1000, height=600)							# Frame for all the to-be-children pages
+		container.pack()	
+
 		self.activePageObject = activePageGUI()
-		self.login = loginPageGUI()		
+		self.activePageObject.place(in_=container)
+
+		self.loginPageObject = loginPageGUI()
+		self.loginPageObject.place(in_=container)
+		self.loginPageObject.lift()
+
+		#`self.activePageObject.lift()											# Displays first ever page, which is the login page		
+
+		self.pack()
+		self.createWidgets()
 		
-		container = Frame(width=1000, height=600)								# Frame for all the to-be-children pages
-		container.place(anchor=NW)		
+	def createWidgets(self):			
 		
-		self.activePageObject.place(in_=container)		
-		self.login.place(in_=container)
-		
-		self.loginButton = Button(self.login, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=self.verifyLogin)
+		self.loginButton = Button(self.loginPageObject, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=self.verifyLogin)
 		self.loginButton.place(anchor=CENTER, relx=0.904, rely=0.0786)			# Button of the LoginPage (click to verify entries)
 		
-		self.login.usernameInput.bind("<Return>", lambda event: self.loginButton.invoke())	#Allows the use of the Enter key when loggin in
-		self.login.passwordInput.bind("<Return>", lambda event: self.loginButton.invoke())
+		self.loginPageObject.usernameInput.bind("<Return>", lambda event: self.loginButton.invoke())	#Allows the use of the Enter key when loggin in
+		self.loginPageObject.passwordInput.bind("<Return>", lambda event: self.loginButton.invoke())
 		
-		self.createButton = Button(self.login, text="Sign Me Up!", width=12, font=("Tahoma", 13, "bold"), relief=FLAT, fg="#FFFFFF", bg="#52A41D", command=self.verifyCreate)
+		self.createButton = Button(self.loginPageObject, text="Sign Me Up!", width=12, font=("Tahoma", 13, "bold"), relief=FLAT, fg="#FFFFFF", bg="#52A41D", command=self.verifyCreate)
 		self.createButton.place(anchor=CENTER, relx=0.82, rely=0.75)
 		
-		self.login.newUsernameInput.bind("<Return>", lambda event: self.createButton.invoke())	#Allows the use of the Enter key when creating accounts
-		self.login.newPasswordInput.bind("<Return>", lambda event: self.createButton.invoke())
-		self.login.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
-		
-		self.activePageObject.lift()														# Displays first ever page w/c is the login page
-		
+		self.loginPageObject.newUsernameInput.bind("<Return>", lambda event: self.createButton.invoke())	#Allows the use of the Enter key when creating accounts
+		self.loginPageObject.newPasswordInput.bind("<Return>", lambda event: self.createButton.invoke())
+		self.loginPageObject.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
+			
 	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
 		for x in args:															# The *args is a tuple, so every element in it must be iterated
 			x.delete(0, END)													# to delete the value of all the 3 Create Entries
 	
 	def verifyLogin(self):														# Method executed whenever "Log In" button is pressed
 		responses=["USERNAME IS BLANK", "PASSWORD IS BLANK", "ACCOUNT DOES NOT EXIST", "INVALID PASSWORD"]
-		self.loginCC.set_name(self.login.usernameVariable.get())				# Accessors!
-		self.loginCC.set_password(self.login.passwordVariable.get())
+		self.loginCC.set_name(self.loginPageObject.usernameVariable.get())				# Accessors!
+		self.loginCC.set_password(self.loginPageObject.passwordVariable.get())
 		self.answer = self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())
 		if self.answer in responses:										# If return value from imported class CC is inside the list,		
-			self.login.verifyLoginLabel.config(text=self.answer)				# display the possible warnings and perform some formatting actions like clear the entry field:
+			self.loginPageObject.verifyLoginLabel.config(text=self.answer)				# display the possible warnings and perform some formatting actions like clear the entry field:
 			if self.answer == responses[0]:
-				self.eraseContents(self.login.passwordInput)
-				self.login.usernameInput.focus()
+				self.eraseContents(self.loginPageObject.passwordInput)
+				self.loginPageObject.usernameInput.focus()
 			elif self.answer == responses[1]:
-				self.login.passwordInput.focus()
+				self.loginPageObject.passwordInput.focus()
 			elif self.answer == responses[2]:
-				self.eraseContents(self.login.usernameInput, self.login.passwordInput)
-				self.login.usernameInput.focus()
+				self.eraseContents(self.loginPageObject.usernameInput, self.loginPageObject.passwordInput)
+				self.loginPageObject.usernameInput.focus()
 			else:
-				self.eraseContents(self.login.passwordInput)
-				self.login.passwordInput.focus()
+				self.eraseContents(self.loginPageObject.passwordInput)
+				self.loginPageObject.passwordInput.focus()
 		else:
 			self.loginButton.flash()
 			self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
 	
-	def verifyCreate(self):
+	def verifyCreate(self):	
+		def waitLabel():																# For removing the SUCCESSFUL message after 1 second
+			self.loginPageObject.verifyCreateLabel.config(text="")			
 		responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "PLEASE RETYPE THE PASSWORD", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD\nCORRECTLY", "PASSWORD MUST HAVE AT LEAST\n6 CHARACTERS"]
-		self.createCC.set_name(self.login.newUsernameVariable.get())
-		self.createCC.set_password(self.login.newPasswordVariable.get())
-		self.answer = self.cre.guic(self.createCC.get_name(), self.createCC.get_password(), self.login.newPasswordVerifyVariable.get())		# Assign the return value of this very long function into variable answer! (actually, self.answer)
+		self.createCC.set_name(self.loginPageObject.newUsernameVariable.get())
+		self.createCC.set_password(self.loginPageObject.newPasswordVariable.get())
+		self.answer = self.cre.guic(self.createCC.get_name(), self.createCC.get_password(), self.loginPageObject.newPasswordVerifyVariable.get())		# Assign the return value of this very long function into variable answer! (actually, self.answer)
 		if self.answer in responses:																									# If the answer is included in the list above,
-			self.login.verifyCreateLabel.config(text=self.answer, fg="red", font=("Tahoma", 9, "bold"))
+			self.loginPageObject.verifyCreateLabel.config(text=self.answer, fg="red", font=("Tahoma", 9, "bold"))
 			if self.answer == responses[0] or self.answer == responses[3]:											# Display that message from the list, then format some widgets
-				self.eraseContents(self.login.newUsernameInput, self.login.newPasswordInput, self.login.newPasswordVerifyInput)
-				self.login.newUsernameInput.focus()
+				self.eraseContents(self.loginPageObject.newUsernameInput, self.loginPageObject.newPasswordInput, self.loginPageObject.newPasswordVerifyInput)
+				self.loginPageObject.newUsernameInput.focus()
 			elif self.answer == responses[1]:
-				self.eraseContents(self.login.newPasswordVerifyInput)
-				self.login.newPasswordInput.focus()
+				self.eraseContents(self.loginPageObject.newPasswordVerifyInput)
+				self.loginPageObject.newPasswordInput.focus()
 			elif self.answer == responses[2]:
-				self.login.newPasswordVerifyInput.focus()
+				self.loginPageObject.newPasswordVerifyInput.focus()
 			elif self.answer == responses[5]:
-				self.eraseContents(self.login.newPasswordInput, self.login.newPasswordVerifyInput)
-				self.login.newPasswordInput.focus()
+				self.eraseContents(self.loginPageObject.newPasswordInput, self.loginPageObject.newPasswordVerifyInput)
+				self.loginPageObject.newPasswordInput.focus()
 			else:
-				self.eraseContents(self.login.newPasswordVerifyInput)
+				self.eraseContents(self.loginPageObject.newPasswordVerifyInput)
 		else:																																# Otherwise, if create entries are valid, proceed to some formatting, then create the database! YAY!
 			self.createButton.flash()
 			self.cre.create()
-			self.eraseContents(self.login.newUsernameInput, self.login.newPasswordInput, self.login.newPasswordVerifyInput, self.login.usernameInput)
-			self.login.usernameInput.focus()
-			self.login.verifyLoginLabel.config(text="")
-			self.login.verifyCreateLabel.config(text="SUCCESSFUL! YOU CAN NOW\nLOG-IN!", fg="#52A41D", font=("Tahoma", 9, "bold"))
-
+			self.eraseContents(self.loginPageObject.newUsernameInput, self.loginPageObject.newPasswordInput, self.loginPageObject.newPasswordVerifyInput, self.loginPageObject.usernameInput)
+			self.loginPageObject.usernameInput.focus()
+			self.loginPageObject.verifyLoginLabel.config(text="")
+			self.loginPageObject.verifyCreateLabel.config(text="SUCCESSFUL! YOU CAN NOW\nLOG-IN!", fg="#52A41D", font=("Tahoma", 9, "bold"))
+			self.loginPageObject.verifyCreateLabel.after(1000, waitLabel)					# An event delayer for changing the label of SUCCESSFUL CREATIONS
 			
 Window = Tk()        		 													# Creates an empty window
-Window.title('Welcome to Caffy!')												# Initial title text in the title bar
 Main = navClass()
 Window.geometry('1000x600+170+80')												# Set dimensions to 1000x600 pos @ screen center
 Window.resizable(0,0)			 												# Does not resize the window, ever 	
