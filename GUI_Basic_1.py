@@ -5,15 +5,15 @@ from CC import *																# pack() is for stacking, while place() is for a
 from Tkinter import *															# accurate placing of widgets. grid() is for tables
 from profilePageGUI import profilePageGUI
 from PIL import ImageTk, Image
-import os, sys, glob, time
+import os, sys, glob, time, tkMessageBox
 
 defaultEntryStyle = ("Tahoma", 12)												# Initial font settings for styling
 defaultLabelStyle = ("Tahoma", 9)
 defaultCreateStyle = ("Tahoma", 14)
 defaultLogoStyle = ("Verdana", 18)
 signatureColor = "orange"														# Shortcut labels for custom color styling
-toplayerColor = "#555555"
-backgroundColor = "#EEEEEE"
+toplayerColor = "#555555"														# Dark gray signature color
+backgroundColor = "#EEEEEE"														# Grayish-white color
 
 a=-0.05																			# Adjuster for widget's y-value placement
 
@@ -35,12 +35,12 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		self.passwordVariable = StringVar()
 		self.passwordInput = Entry(topLayer, fg=toplayerColor, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
 		self.passwordInput.place(anchor=CENTER, relx=0.77, rely=0.59)
-		Label(topLayer, text="caffy", font=("Verdana", 28), justify=LEFT, bg=toplayerColor, fg="orange").place(anchor=W, relx=0.08, rely=0.5)
+		Label(topLayer, text="caffy", font=("Verdana", 28), justify=LEFT, bg=toplayerColor, fg=signatureColor).place(anchor=W, relx=0.08, rely=0.5)
 		self.coffcup = Label(topLayer, text="☕", font=("Tahoma", 28), justify=LEFT, bg=toplayerColor, fg="#FFFFFF")
 		self.coffcup.place(anchor=W, relx=0.175, rely=0.48)
-		self.verifyLoginLabel = Label(topLayer, text="", fg="orange", bg=toplayerColor, font=defaultLabelStyle) 	# For warning purposes of login entries
+		self.verifyLoginLabel = Label(topLayer, text="", fg=signatureColor, bg=toplayerColor, font=defaultLabelStyle) 	# For warning purposes of login entries
 		self.verifyLoginLabel.place(anchor=E, relx=0.5, rely=0.59)
-		self.coffcup.bind("<Enter>", lambda f: self.coffcup.config(fg="orange"))
+		self.coffcup.bind("<Enter>", lambda f: self.coffcup.config(fg=signatureColor))
 		self.coffcup.bind("<Leave>", lambda f: self.coffcup.config(fg="white"))
 		
 		midLayer = Frame(self, width=1000, height=490)		# Code here for the CREATE class
@@ -70,11 +70,11 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		Label(midLayer, text="Pick a username:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.23+a)
 		Label(midLayer, text="Create a password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.38+a)
 		Label(midLayer, text="Reenter your password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.53+a)
-		Label(midLayer, text="Take a    break!\nSign up!", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.345+a)
-		self.coffcup2 = Label(midLayer, text="☕", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg=toplayerColor)
+		Label(midLayer, text="Take a    break!\nSign up!", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg="#222222").place(anchor=W, relx=0.08, rely=0.345+a)
+		self.coffcup2 = Label(midLayer, text="☕", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg="#222222")
 		self.coffcup2.place(anchor=W, relx=0.23, rely=0.28+a)
-		self.coffcup2.bind("<Enter>", lambda f: self.coffcup2.config(fg="orange"))
-		self.coffcup2.bind("<Leave>", lambda f: self.coffcup2.config(fg=toplayerColor))
+		self.coffcup2.bind("<Enter>", lambda f: self.coffcup2.config(fg=signatureColor))
+		self.coffcup2.bind("<Leave>", lambda f: self.coffcup2.config(fg="#222222"))
 		Label(midLayer, text="Caffy lets you connect and share with\nfriends from around the corner.", font=("Tahoma", 15), justify=LEFT, bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.08, rely=0.58+a)
 		Label(midLayer, text="By signing up, you agree with our Terms and Conditions.", font=("Tahoma", 9), justify=RIGHT, bg=backgroundColor, fg="#999999").place(anchor=E, relx=0.8956, rely=0.7+a)
 		self.verifyCreateLabel = Label(midLayer, text="", bg=backgroundColor, justify=LEFT)		# Initialization of the create warnings
@@ -83,6 +83,17 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		bottomLayer = Frame(self, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
 		bottomLayer.pack()
 		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.5)
+
+	def reset(self, x):
+		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to quit?"):
+			self.verifyLoginLabel.config(text="")
+			self.verifyCreateLabel.config(text="")
+			self.usernameInput.delete(0, END)
+			self.passwordInput.delete(0, END)
+			self.usernameInput.focus()
+			x.lift()
+		else:
+			return
 
 class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are mainly the Notifications bar, along with the Logout / Profile / Home Navigation Buttons
 	def __init__(self, master=None):
@@ -93,10 +104,10 @@ class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are m
 	def createWidgets(self):
 		notifLayer = Frame(self, width=1000, height=50, bg=toplayerColor)
 		notifLayer.pack(anchor=NW)
-		Label(notifLayer, text="caffy", font=defaultLogoStyle, bg=toplayerColor, fg="orange").place(anchor=CENTER, relx=0.2, rely=0.5)
+		Label(notifLayer, text="caffy", font=defaultLogoStyle, bg=toplayerColor, fg=signatureColor).place(anchor=CENTER, relx=0.2, rely=0.5)
 		self.coff = Label(notifLayer, text="☕", font=defaultLogoStyle, bg=toplayerColor, fg="#FFFFFF")
 		self.coff.place(anchor=CENTER, relx=0.245, rely=0.48)
-		self.coff.bind("<Enter>", lambda f: self.coff.config(fg="orange"))
+		self.coff.bind("<Enter>", lambda f: self.coff.config(fg=signatureColor))
 		self.coff.bind("<Leave>", lambda f: self.coff.config(fg="white"))
 		
 class homePageGUI(Frame):														# This is the GUI for the Newsfeed sections
@@ -127,15 +138,9 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		container2 = Frame(self, width=1000, height=550)
 		container2.pack()
 
-		self.profilePageObject = profilePageGUI(container2)		
+		self.profilePageObject = profilePageGUI(container2, backgroundColor)		
 		self.homePageObject = homePageGUI(container2)
-
-		canvasActiveShadow = Canvas(width=1000, height=550, highlightthickness=0)
-		canvasActiveShadow.place(in_=container2)
-		activeShadow = ImageTk.PhotoImage(file="GUIE\\activePageShadow.png")
-		canvasActiveShadow.create_image(500, 275, image=activeShadow)
-		canvasActiveShadow.image = activeShadow
-				
+		
 		self.profilePageObject.lift()
 		self.createWidgets()
 			
@@ -159,9 +164,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		self.loginPageObject = loginPageGUI()
 		self.loginPageObject.place(in_=container)
-		self.loginPageObject.lift()
-
-		#`self.activePageObject.lift()											# Displays first ever page, which is the login page		
+		self.loginPageObject.lift()												# Displays first ever page, which is the login page	
 
 		self.pack()
 		self.createWidgets()
@@ -180,6 +183,9 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.loginPageObject.newUsernameInput.bind("<Return>", lambda event: self.createButton.invoke())	#Allows the use of the Enter key when creating accounts
 		self.loginPageObject.newPasswordInput.bind("<Return>", lambda event: self.createButton.invoke())
 		self.loginPageObject.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
+
+		self.logoutButton = Button(self.activePageObject, text="Log Out", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=lambda: self.loginPageObject.reset(self.loginPageObject))
+		self.logoutButton.place(anchor=CENTER, relx=0.85, rely=0.042)
 			
 	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
 		for x in args:															# The *args is a tuple, so every element in it must be iterated
@@ -206,7 +212,8 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		else:
 			self.loginButton.flash()
 			self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
-	
+			self.master.title("You are logged in!")
+
 	def verifyCreate(self):	
 		def waitLabel():																# For removing the SUCCESSFUL message after 1 second
 			self.loginPageObject.verifyCreateLabel.config(text="")			
