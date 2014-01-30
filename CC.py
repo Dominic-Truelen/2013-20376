@@ -2,6 +2,7 @@ import os, shutil #for deleting and renaming files
 import glob
 
 class CC(object): #profile management #superclass
+    
     def __init__(self):
         self.name = ''
         self.password = ''
@@ -19,7 +20,21 @@ class CC(object): #profile management #superclass
         return self.password
 
 class creation(CC): #profile creation
-	def ask_name(self): #GUI imput of username
+    
+    def __init__(self):
+        self.val = validation()
+        self.usernameVerifyObject = usernameVerify()                                    #Chain of Responsibility
+        self.passwordVerifyObject = passwordVerify()
+        self.val.handler(self.usernameVerifyObject)
+        self.usernameVerifyObject.handler(self.passwordVerifyObject)
+
+    def set_password_retyped(self, x):
+        self.password_retyped = x
+
+    def get_password_retyped(self):
+        return self.password_retyped
+
+    def ask_name(self): #GUI imput of username
 		if glob.glob("DATABASE") == []:
 			os.makedirs(os.getcwd() + "\\DATABASE")
 		elif glob.glob("DATABASE") != []:
@@ -32,13 +47,12 @@ class creation(CC): #profile creation
 			if os.path.isdir(os.getcwd() + "\\DATABASE\\" + self.get_name()) is True:
 				counter = 0
 			if counter == 1:
-				break
-		#f.close()
+				break		
 	
-	def ask_password(self): #GUI imput of password
+    def ask_password(self): #GUI imput of password
 		self.set_password(raw_input("Enter password: "))
-
-	def create(self): #creating the database and adding the username and password
+        
+    def create(self): #creating the database, adding necessary folders, and adding the username and password
 		if glob.glob("DATABASE") == []:
 			os.makedirs(os.getcwd() + "\\DATABASE")
 		elif glob.glob("DATABASE") != []:
@@ -52,45 +66,33 @@ class creation(CC): #profile creation
 		f = open(os.getcwd() + "\\DATABASE\\" + self.get_name() + "\\" + self.get_name(), 'w')
 		f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\nOffline\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
 		f.close()
-
-	def guic(self, usernameInput, password1, password2):
-		self.set_name(usernameInput)
-		self.set_password(password1)
-		if self.get_name() == "":
-			return "USERNAME IS BLANK"
-		elif os.path.isdir(os.getcwd() + "\\DATABASE\\" + self.get_name()) is True:
-			return "USERNAME IS ALREADY TAKEN"
-		elif self.get_password() == "":
-			return "PASSWORD REQUIRED"
-		elif password2 == "":
-			return "PLEASE RETYPE THE PASSWORD"
-		else:
-			if len(self.get_password()) < 6:							# Check if password character count is less than 6
-				return "PASSWORD MUST HAVE AT LEAST\n6 CHARACTERS"
-			elif self.get_password() == password2:
-				return 1
-			return "RETYPE YOUR PASSWORD\nCORRECTLY"
-
+    
+    def validate(self, username, password1, password2):
+		return self.val.guic(username, password1, password2)
+    
 class validation(CC): #validation for logging in and deleting profiles
-    def guiv(self, usernameInput, passwordInput):							# GUI Version
-        self.set_name(usernameInput)
-        self.set_password(passwordInput)
+    
+    def handler(self, successor):
+        self.successor = successor
+
+    def guiv(self, username, password):							# GUI Version when Logging in
+        self.set_name(username)
+        self.set_password(password)
         if self.get_name() == "":
             return "USERNAME IS BLANK"
         elif self.get_password() == "":
                 return "PASSWORD IS BLANK"
         else:
-            if os.path.isdir(os.getcwd() + "\\DATABASE\\" + self.get_name()) is False:
-                return "ACCOUNT DOES NOT EXIST"
-            else:
-                f = open(os.getcwd() + "\\DATABASE\\" + self.get_name() + "\\" + self.get_name())
-                f.readline()
-                f.readline()
-                if (self.get_password() + '\n') == f.readline():
-                    return 1
-                else:
-                    return "INVALID PASSWORD"
-
+            return self.successor.handleLogin(self.get_name(), self.get_password())           
+    
+    def guic(self, username, password1, password2):             # GUI Version when creating a new account
+        self.set_name(username)
+        self.set_password(password1)
+        if self.get_name() == "":
+            return "USERNAME IS BLANK"
+        else:
+            return self.successor.handleCreate(self.get_name(), self.get_password(), password2)
+          
     def validation(self):													# Console Version
         self.set_name(str(raw_input("Username: ")))
         if os.path.isdir(os.getcwd() + "\\DATABASE\\" + self.get_name()) is False:
@@ -101,14 +103,56 @@ class validation(CC): #validation for logging in and deleting profiles
         self.set_password(str(raw_input("Password: ")))
         if (self.get_password() + '\n') == f.readline():
             return 1
-        return 0
+        return 0         
+
+class usernameVerify(validation):
+    
+    def handleLogin(self, x, y):
+        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + x) is False:    #Check if Logging in a username DNE
+                return "ACCOUNT DOES NOT EXIST"
+        else:
+            f = open(os.getcwd() + "\\DATABASE\\" + x + "\\" + x)
+            f.readline()
+            f.readline()
+            if (y + '\n') == f.readline():
+                return 1
+            else:
+                return self.successor.handleLogin(y)                    #Handle the Password
+
+    def handleCreate(self, username, password1, password2):
+        for x in set(username):                             #Check for special characters in creating usernames
+            if x in set([" ","^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
+                return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
+        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + username) is True:      #Check if username is already in use
+            return "USERNAME IS ALREADY TAKEN"        
+        else:
+            return self.successor.handleCreate(password1, password2)    #Handle the Password
+
+class passwordVerify(validation):
+        
+    def handleLogin(self, y):
+        return "INVALID PASSWORD"
+
+    def handleCreate(self, pwd1, pwd2):
+        if pwd1 == "":
+            return "PASSWORD REQUIRED"
+        elif pwd2 == "":
+            return "PLEASE RETYPE THE PASSWORD"
+        else:
+            if len(pwd1) < 6:                            # Check if password character count is less than 6
+                return "PASSWORD MUST HAVE AT LEAST\n6 CHARACTERS"
+            elif pwd1 == pwd2:
+                return 1
+            else:
+                return "RETYPE YOUR PASSWORD\nCORRECTLY"
 
 class deletion(CC): #profile deletion
-	def __init__(self):
+	
+    def __init__(self):
 		super(deletion, self).__init__()
 		self.valid = validation()
 	
-	def delete2(self):				   # ATTENTION! XD *** THIS IS THE ORIGINAL DELETE FUNCTION BY DOMINIC. (I CHANGED THE NAME TO DELETE 2 FOR BACKUP) def has errors & doesn't yet output as expected
+    def delete2(self):				   # ATTENTION! XD *** THIS IS THE ORIGINAL DELETE FUNCTION BY DOMINIC. (I CHANGED THE NAME TO DELETE 2 FOR BACKUP) def has errors & doesn't yet output as expected
 		temp = self.valid.validation() #will return 1 if valid and 0 if invalid
 		if temp == 1:            
 			f = open("DATABASE\\DATABASE")
@@ -133,7 +177,7 @@ class deletion(CC): #profile deletion
 		else:
 			print "NO SUCH PROFILE EXISTS"
 			
-	def delete(self):				   #  *** THIS IS MY VERSION OF THE DELETE FUNCTION. This code needs adding in terms of friend deletion (this code kinda works, but needs improvement)
+    def delete(self):				   #  *** THIS IS MY VERSION OF THE DELETE FUNCTION. This code needs adding in terms of friend deletion (this code kinda works, but needs improvement)
 		temp = self.valid.validation() #will return 1 if valid and 0 if invalid
 		if temp == 1:            
 			f = open("DATABASE\\DATABASE")
@@ -152,6 +196,7 @@ class deletion(CC): #profile deletion
 			print "NO SUCH PROFILE EXISTS"
 
 class login(CC): #logging in
+    
     def __init__(self):
         super(login, self).__init__()
         self.valid = validation()
@@ -176,6 +221,7 @@ class login(CC): #logging in
         return 0
 
 class import_database(object): #importing data from the profile's database
+   
     def __init__(self):
         self.name = ''
         self.password = ''
@@ -296,6 +342,7 @@ class import_database(object): #importing data from the profile's database
         self.wall = f.readline()
 
 class export_database(): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
+    
     def export_details(self, name, password, status): #exporting username and password
         f = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
         g = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name + "1", 'w')
@@ -462,6 +509,7 @@ class export_database(): #exporting data to the database by creating a temporary
         os.rename(os.getcwd() + "\\DATABASE\\" + name + "\\" + name+ '1', os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
 
 class logout(object): #will reset the name and password of CC after returning to the main GUI
+    
     def __init__(self):
         self.quit = CC()
         self.exporter = export_database()

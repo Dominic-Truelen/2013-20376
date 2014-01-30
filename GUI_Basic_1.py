@@ -91,6 +91,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 			self.usernameInput.delete(0, END)
 			self.passwordInput.delete(0, END)
 			self.usernameInput.focus()
+			self.master.title("Welcome to Caffy!")
 			x.lift()
 		else:
 			return
@@ -152,9 +153,13 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		Frame.__init__(self, master)
 		
 		self.val = validation()													# Initial functions for the verifications
-		self.loginCC = CC()
-		self.createCC = CC()
+		self.loginCC = CC()		
 		self.cre = creation()
+
+		self.usernameVerifyObject = usernameVerify()							#Chain of Responsibility
+		self.passwordVerifyObject = passwordVerify()
+		self.val.handler(self.usernameVerifyObject)
+		self.usernameVerifyObject.handler(self.passwordVerifyObject)
 
 		container = Frame(self, width=1000, height=600)							# Frame for all the to-be-children pages
 		container.pack()	
@@ -193,17 +198,18 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 	
 	def verifyLogin(self):														# Method executed whenever "Log In" button is pressed
 		responses=["USERNAME IS BLANK", "PASSWORD IS BLANK", "ACCOUNT DOES NOT EXIST", "INVALID PASSWORD"]
-		self.loginCC.set_name(self.loginPageObject.usernameVariable.get())				# Accessors!
+		self.loginCC.set_name(self.loginPageObject.usernameVariable.get())		# Accessors!
 		self.loginCC.set_password(self.loginPageObject.passwordVariable.get())
-		self.answer = self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())
-		if self.answer in responses:										# If return value from imported class CC is inside the list,		
-			self.loginPageObject.verifyLoginLabel.config(text=self.answer)				# display the possible warnings and perform some formatting actions like clear the entry field:
-			if self.answer == responses[0]:
+		
+		answer = self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())
+		if answer in responses:											# If return value from imported class CC is inside the list,		
+			self.loginPageObject.verifyLoginLabel.config(text=answer)				# display the possible warnings and perform some formatting actions like clear the entry field:
+			if answer == responses[0]:
 				self.eraseContents(self.loginPageObject.passwordInput)
 				self.loginPageObject.usernameInput.focus()
-			elif self.answer == responses[1]:
+			elif answer == responses[1]:
 				self.loginPageObject.passwordInput.focus()
-			elif self.answer == responses[2]:
+			elif answer == responses[2]:
 				self.eraseContents(self.loginPageObject.usernameInput, self.loginPageObject.passwordInput)
 				self.loginPageObject.usernameInput.focus()
 			else:
@@ -215,23 +221,27 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.master.title("You are logged in!")
 
 	def verifyCreate(self):	
+		
 		def waitLabel():																# For removing the SUCCESSFUL message after 1 second
-			self.loginPageObject.verifyCreateLabel.config(text="")			
-		responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "PLEASE RETYPE THE PASSWORD", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD\nCORRECTLY", "PASSWORD MUST HAVE AT LEAST\n6 CHARACTERS"]
-		self.createCC.set_name(self.loginPageObject.newUsernameVariable.get())
-		self.createCC.set_password(self.loginPageObject.newPasswordVariable.get())
-		self.answer = self.cre.guic(self.createCC.get_name(), self.createCC.get_password(), self.loginPageObject.newPasswordVerifyVariable.get())		# Assign the return value of this very long function into variable answer! (actually, self.answer)
-		if self.answer in responses:																									# If the answer is included in the list above,
-			self.loginPageObject.verifyCreateLabel.config(text=self.answer, fg="red", font=("Tahoma", 9, "bold"))
-			if self.answer == responses[0] or self.answer == responses[3]:											# Display that message from the list, then format some widgets
+			self.loginPageObject.verifyCreateLabel.config(text="")
+
+		responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "PLEASE RETYPE THE PASSWORD", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD\nCORRECTLY", "PASSWORD MUST HAVE AT LEAST\n6 CHARACTERS", "MUST NOT CONTAIN\nSPECIAL CHARACTERS"]
+		self.cre.set_name(self.loginPageObject.newUsernameVariable.get())
+		self.cre.set_password(self.loginPageObject.newPasswordVariable.get())
+		self.cre.set_password_retyped(self.loginPageObject.newPasswordVerifyVariable.get())
+
+		answer = self.cre.validate(self.cre.get_name(), self.cre.get_password(), self.cre.get_password_retyped())		# Assign the return value of this very long function into variable answer! (actually, answer)
+		if answer in responses:																									# If the answer is included in the list above,
+			self.loginPageObject.verifyCreateLabel.config(text=answer, fg="red", font=("Tahoma", 9, "bold"))
+			if answer == responses[0] or answer == responses[3]:											# Display that message from the list, then format some widgets
 				self.eraseContents(self.loginPageObject.newUsernameInput, self.loginPageObject.newPasswordInput, self.loginPageObject.newPasswordVerifyInput)
 				self.loginPageObject.newUsernameInput.focus()
-			elif self.answer == responses[1]:
+			elif answer == responses[1]:
 				self.eraseContents(self.loginPageObject.newPasswordVerifyInput)
 				self.loginPageObject.newPasswordInput.focus()
-			elif self.answer == responses[2]:
+			elif answer == responses[2]:
 				self.loginPageObject.newPasswordVerifyInput.focus()
-			elif self.answer == responses[5]:
+			elif answer == responses[5]:
 				self.eraseContents(self.loginPageObject.newPasswordInput, self.loginPageObject.newPasswordVerifyInput)
 				self.loginPageObject.newPasswordInput.focus()
 			else:
