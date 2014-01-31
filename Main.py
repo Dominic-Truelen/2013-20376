@@ -14,21 +14,56 @@ class messages():
         self.exporter = export_database()
 
     def get_messages(self, name): #Importing the messages
+        self.messages = {}
         self.importer.import_messages(name)
-        self.messages = self.importer.get_messages()
+        messages = eval(self.importer.get_messages())
+        for key in messages.iterkeys():
+            a = []
+            for counter in range(len(messages[key])):
+                x = message()
+                x.set_reciever(name)
+                x.set_sender(key)
+                temp = messages[key][counter].split(':')
+                x.set_date(temp[0])
+                x.set_text(temp[1])
+                a.append(x)
+            self.messages[key] = a
 
     def get_messages_sent(self, name):
+        self.messages_sent = {}
         self.importer.import_messages_sent(name)
-        self.messages_sent = self.importer.get_messages_sent()
+        messages = eval(self.importer.get_messages_sent())
+        for key in messages.iterkeys():
+            a = []
+            for counter in range(len(messages[key])):
+                x = message()
+                x.set_reciever(name)
+                x.set_sender(key)
+                temp = messages[key][counter].split(':')
+                x.set_date(temp[0])
+                x.set_text(temp[1])
+                a.append(x)
+            self.messages_sent[key] = a
 
     def print_messages(self): #Displaying the messages
-        print self.messages #Printing the messages recieved
-        print self.messages_sent #Printing the messages sent
-        #sort the messages by name and by date before printing (incomplete)
+        print "Messages Recieved"
+        if self.messages != {}:
+            for x in self.messages.iterkeys():
+                for counter in range(len(self.messages[x])):
+                    print self.messages[x][counter].get_sender()
+                    print '\t' + self.messages[x][counter].get_text()
+                    print '\t\t' + self.messages[x][counter].get_date()
+        print "Messages Sent"
+        if self.messages_sent != {}:
+            for x in self.messages_sent.iterkeys():
+                for counter in range(len(self.messages_sent[x])):
+                    print self.messages_sent[x][counter].get_sender()
+                    print '\t' + self.messages_sent[x][counter].get_text()
+                    print '\t\t' + self.messages_sent[x][counter].get_date()
 
     def send_message(self, name): #Sending messages
         reciever = str(raw_input("Send to: "))
-        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + name) is False: #Searching for a file with the inputed name in the database
+        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + reciever) is False: #Searching for a file with the inputed name in the database
             print "User does not exist"
         elif reciever == name:
             print "You cannot send messages to yourself"
@@ -40,34 +75,84 @@ class messages():
 
     def delete_message(self, name):
         sender = str(raw_input("Delete whose message: "))
-        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + sender) is False:
+        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + sender) is False:
             print "User does not exist"
             return
         elif self.messages.has_key(sender) is False:
             print "User did not send a message"
             return
         date = str(raw_input("Date of the message:"))
-        self.importer.import_messages(name)
-        self.messages = eval(self.importer.get_messages())
+        self.get_messages(name)
         messages = self.messages[sender]
         counter = 0
         for item in messages:
-            if date in item:
+            if date == item.get_date():
                 messages.pop(counter)
-                f = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
-                g = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name + '1', 'w')
+                f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
+                g = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + '1', 'w')
                 for line in f:
                     if sender and date not in line:
                         g.write(line)
                     else:
-                        g.write(str({str(sender):messages}) + '\n')
+                        a = []
+                        for x in range(len(messages)):
+                            a.append(messages[x].get_date() + ':' + messages[x].get_text())
+                        g.write(str({str(sender):a}) + '\n')
                 f.close()
                 g.close()
-                os.remove(os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
-                os.rename(os.getcwd() + "\\DATABASE\\" + name + "\\" + name + '1', os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
-            counter += 1
+                os.remove(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
+                os.rename(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + '1', os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
+                self.get_messages_sent(sender)
+                messages = self.messages_sent[name]
+                messages.pop(counter)
+                f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + sender + "\\" + sender)
+                g = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + sender + "\\" + sender + '1', 'w')
+                for line in f:
+                    if name and date not in line:
+                        g.write(line)
+                    else:
+                        a = []
+                        for x in range(len(messages)):
+                            a.append(messages[x].get_date() + ':' + messages[x].get_text())
+                        g.write(str({str(sender):a}) + '\n')
+                f.close()
+                g.close()
+                os.remove(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + sender + "\\" + sender)
+                os.rename(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + sender + "\\" + sender + '1', os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + sender + "\\" + sender)
+                counter += 1
         if counter == 0:
             print "Message does not exist"
+
+class message():
+    def __init__(self):
+        self.sender = ''
+        self.reciever = ''
+        self.date = ''
+        self.text = ''
+
+    def get_sender(self):
+        return self.sender
+
+    def get_reciever(self):
+        return self.reciever
+
+    def get_date(self):
+        return self.date
+
+    def get_text(self):
+        return self.text
+
+    def set_sender(self, name):
+        self.sender = name
+
+    def set_reciever(self, name):
+        self.reciever = name
+
+    def set_date(self, date):
+        self.date = date
+
+    def set_text(self, message):
+        self.text = message
 
 class status():
     def __init__(self):
@@ -94,8 +179,8 @@ class status():
         if self.status.has_key(time) is False:
             return
         self.status.pop(time)
-        f = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
-        g = open(os.getcwd() + "\\DATABASE\\" + name + "\\" + name + '1', 'w')
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
+        g = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + '1', 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -107,8 +192,8 @@ class status():
             g.write(line)
         f.close()
         g.close()
-        os.remove(os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
-        os.rename(os.getcwd() + "\\DATABASE\\" + name + "\\" + name + "1", os.getcwd() + "\\DATABASE\\" + name + "\\" + name)
+        os.remove(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
+        os.rename(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + "1", os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
 
 class friends():
     def __init__(self):
@@ -127,7 +212,7 @@ class friends():
 
     def add_friend(self, name): #Adding new friends
         add_friend = str(raw_input("Add who? "))
-        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + name) is False: #Serching for a file with the inputed name in the database
+        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name) is False: #Serching for a file with the inputed name in the database
             print "User does not exist"
         elif add_friend == name:
             print "You cannot send yourself a friend request"
@@ -159,7 +244,7 @@ class friends():
 
     def delete_friends(self, name):
         delete = raw_input("Delete who? ")
-        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + name) is False:
+        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name) is False:
             print "User does not exist"
         else:
             self.importer.import_friends(name)
@@ -176,7 +261,7 @@ class friends():
 
     def approve_request(self, name):
         friend = str(raw_input("Approve who? "))
-        if os.path.isdir(os.getcwd() + "\\DATABASE\\" + name) is False:
+        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name) is False:
             print "This user does not exist"
         else:
             self.importer.import_friend_requests(name)
@@ -236,11 +321,11 @@ class wall():
         self.exporter.export_wall(name, wall)
 
     def print_wall(self, name):
-		self.importer.import_wall(name)
-		self.wall = eval(self.importer.get_wall())
-		sortedWall = OrderedDict(sorted(self.wall.items(), key=lambda t: t[0]))
-		for x,y in sortedWall.iteritems():
-			print x, y
+        self.importer.import_wall(name)
+        self.wall = eval(self.importer.get_wall())
+        sortedWall = OrderedDict(sorted(self.wall.items(), key=lambda t: t[0]))
+        for x,y in sortedWall.iteritems():
+            print x, y
 
 
 #class thread_friend_request():
