@@ -300,8 +300,21 @@ class import_database(object): #importing data from the profile's database
             temp = f.readline()
             if "Messages Recieved 2013-20376" in temp:
                 break
-        self.messages = f.readline()
+        messages = f.readline()
         f.close()
+        messages = eval(messages)
+        self.messages = {}
+        for key in messages.iterkeys():
+            a = []
+            for counter in range(len(messages[key])):
+                x = message()
+                x.set_reciever(name)
+                x.set_sender(key)
+                temp = messages[key][counter].split(':')
+                x.set_date(temp[0])
+                x.set_text(temp[1])
+                a.append(x)
+            self.messages[key] = a
 
     def import_messages_sent(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
@@ -309,8 +322,21 @@ class import_database(object): #importing data from the profile's database
             temp = f.readline()
             if "Messages Sent 2013-20376" in temp:
                 break
-        self.messages_sent = f.readline()
+        messages = f.readline()
         f.close()
+        messages = eval(messages)
+        self.messages_sent = {}
+        for key in messages.iterkeys():
+            a = []
+            for counter in range(len(messages[key])):
+                x = message()
+                x.set_reciever(name)
+                x.set_sender(key)
+                temp = messages[key][counter].split(':')
+                x.set_date(temp[0])
+                x.set_text(temp[1])
+                a.append(x)
+            self.messages_sent[key] = a
 
     def import_friend_requests(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
@@ -318,8 +344,7 @@ class import_database(object): #importing data from the profile's database
             temp = f.readline()
             if "Friend Requests Recieved 2013-20376" in temp:
                 break
-        temp = f.readline()
-        self.friend_requests = temp
+        self.friend_requests = f.readline()
         f.close()
 
     def import_friend_requests_sent(self, name):
@@ -519,3 +544,34 @@ class logout(object): #will reset the name and password of CC after returning to
         self.exporter.export_details(name, password, "Offline")
         self.quit.set_name('')
         self.quit.set_password('')
+
+class message():
+    def __init__(self):
+        self.sender = ''
+        self.reciever = ''
+        self.date = ''
+        self.text = ''
+
+    def get_sender(self):
+        return self.sender
+
+    def get_reciever(self):
+        return self.reciever
+
+    def get_date(self):
+        return self.date
+
+    def get_text(self):
+        return self.text
+
+    def set_sender(self, name):
+        self.sender = name
+
+    def set_reciever(self, name):
+        self.reciever = name
+
+    def set_date(self, date):
+        self.date = date
+
+    def set_text(self, message):
+        self.text = message

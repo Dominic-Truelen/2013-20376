@@ -14,36 +14,14 @@ class messages():
         self.exporter = export_database()
 
     def get_messages(self, name): #Importing the messages
-        self.messages = {}
         self.importer.import_messages(name)
-        messages = eval(self.importer.get_messages())
-        for key in messages.iterkeys():
-            a = []
-            for counter in range(len(messages[key])):
-                x = message()
-                x.set_reciever(name)
-                x.set_sender(key)
-                temp = messages[key][counter].split(':')
-                x.set_date(temp[0])
-                x.set_text(temp[1])
-                a.append(x)
-            self.messages[key] = a
+        self.messages = self.importer.get_messages()
+        
 
     def get_messages_sent(self, name):
-        self.messages_sent = {}
         self.importer.import_messages_sent(name)
-        messages = eval(self.importer.get_messages_sent())
-        for key in messages.iterkeys():
-            a = []
-            for counter in range(len(messages[key])):
-                x = message()
-                x.set_reciever(name)
-                x.set_sender(key)
-                temp = messages[key][counter].split(':')
-                x.set_date(temp[0])
-                x.set_text(temp[1])
-                a.append(x)
-            self.messages_sent[key] = a
+        self.messages_sent = self.importer.get_messages_sent()
+        
 
     def print_messages(self): #Displaying the messages
         print "Messages Recieved"
@@ -122,37 +100,6 @@ class messages():
                 counter += 1
         if counter == 0:
             print "Message does not exist"
-
-class message():
-    def __init__(self):
-        self.sender = ''
-        self.reciever = ''
-        self.date = ''
-        self.text = ''
-
-    def get_sender(self):
-        return self.sender
-
-    def get_reciever(self):
-        return self.reciever
-
-    def get_date(self):
-        return self.date
-
-    def get_text(self):
-        return self.text
-
-    def set_sender(self, name):
-        self.sender = name
-
-    def set_reciever(self, name):
-        self.reciever = name
-
-    def set_date(self, date):
-        self.date = date
-
-    def set_text(self, message):
-        self.text = message
 
 class status():
     def __init__(self):
