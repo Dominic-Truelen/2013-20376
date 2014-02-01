@@ -12,10 +12,11 @@ defaultLabelStyle = ("Tahoma", 9)
 defaultCreateStyle = ("Tahoma", 14)
 defaultLogoStyle = ("Verdana", 18)
 signatureColor = "orange"														# Shortcut labels for custom color styling
-toplayerColor = "#525252"														# Dark gray signature color
+toplayerColor = "#555555"														# Dark gray signature color
 backgroundColor = "#EEEEEE"														# Grayish-white color
 
 a=-0.05																			# Adjuster for widget's y-value placement
+b=0.075
 
 class loginPageGUI(Frame):														# The login GUI class Interface!
 	def __init__(self, master=None):	
@@ -142,11 +143,21 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.profilePageObject = profilePageGUI(container2, backgroundColor)		
 		self.homePageObject = homePageGUI(container2)
 		
-		self.profilePageObject.lift()
 		self.createWidgets()
+		self.profilepageLift()		
 			
 	def createWidgets(self):
-		pass		
+		self.homepageButton = Button(self.topLayerObject, text="⌂ Home", width=6, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.homepageLift)
+		self.homepageButton.place(anchor=CENTER, relx=0.76+b, rely=0.5)
+
+		self.profilepageButton = Button(self.topLayerObject, text="Profile", width=6, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.profilepageLift)
+		self.profilepageButton.place(anchor=CENTER, relx=0.695+b, rely=0.5)
+
+	def homepageLift(self):
+		self.homePageObject.lift()
+
+	def profilepageLift(self):
+		self.profilePageObject.lift()		
 
 class navClass(Frame):															# A GUI that combines the Login and Active Windows. Basically another Faҫade design pattern. Called navClass because of navigation (button fxns)
 	def __init__(self, master=None):
@@ -169,7 +180,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		self.loginPageObject = loginPageGUI()
 		self.loginPageObject.place(in_=container)
-		self.loginPageObject.lift()												# Displays first ever page, which is the login page	
+		self.activePageObject.lift()												# Displays first ever page, which is the login page	
 
 		self.pack()
 		self.createWidgets()
@@ -189,8 +200,8 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.loginPageObject.newPasswordInput.bind("<Return>", lambda event: self.createButton.invoke())
 		self.loginPageObject.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
 
-		self.logoutButton = Button(self.activePageObject, text="Log Out", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=lambda: self.loginPageObject.reset(self.loginPageObject))
-		self.logoutButton.place(anchor=CENTER, relx=0.85, rely=0.042)
+		self.logoutButton = Button(self.activePageObject, text="Log Out", width=6, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject))
+		self.logoutButton.place(anchor=CENTER, relx=0.83+b, rely=0.042)
 			
 	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
 		for x in args:															# The *args is a tuple, so every element in it must be iterated
