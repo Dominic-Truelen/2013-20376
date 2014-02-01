@@ -19,9 +19,16 @@ class CC(object): #profile management #superclass
     def get_password(self): #accessor
         return self.password
 
+    def login(self):
+        pass
+
+    def logout(self):
+        pass
+
 class creation(CC): #profile creation
     
     def __init__(self):
+        CC.__init__(self)
         self.val = validation()
         self.usernameVerifyObject = usernameVerify()                                    #Chain of Responsibility
         self.passwordVerifyObject = passwordVerify()
@@ -123,7 +130,7 @@ class usernameVerify(validation):
 
     def handleCreate(self, username, password1, password2):
         for x in set(username):                             #Check for special characters in creating usernames
-            if x in set([" ","^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
+            if x in set([".", " ", "^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
                 return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
         if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + username) is True:      #Check if username is already in use
             return "USERNAME IS ALREADY TAKEN"        
@@ -151,7 +158,7 @@ class passwordVerify(validation):
 class deletion(CC): #profile deletion
     
     def __init__(self):
-        super(deletion, self).__init__()
+        CC.__init__(self)
         self.valid = validation()
     
     def delete2(self):				   # ATTENTION! XD *** THIS IS THE ORIGINAL DELETE FUNCTION BY DOMINIC. (I CHANGED THE NAME TO DELETE 2 FOR BACKUP) def has errors & doesn't yet output as expected
@@ -200,7 +207,7 @@ class deletion(CC): #profile deletion
 class login(CC): #logging in
     
     def __init__(self):
-        super(login, self).__init__()
+        CC.__init__(self)
         self.valid = validation()
         self.database = import_database()
         self.export = export_database()
@@ -367,7 +374,7 @@ class import_database(object): #importing data from the profile's database
         self.wall = f.readline()
         f.close()
 
-class export_database(): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
+class export_database(object): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
     
     def export_details(self, name, password, status): #exporting username and password
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)

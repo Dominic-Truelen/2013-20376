@@ -12,7 +12,7 @@ defaultLabelStyle = ("Tahoma", 9)
 defaultCreateStyle = ("Tahoma", 14)
 defaultLogoStyle = ("Verdana", 18)
 signatureColor = "orange"														# Shortcut labels for custom color styling
-toplayerColor = "#555555"														# Dark gray signature color
+toplayerColor = "#525252"														# Dark gray signature color
 backgroundColor = "#EEEEEE"														# Grayish-white color
 
 a=-0.05																			# Adjuster for widget's y-value placement
@@ -82,7 +82,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		
 		bottomLayer = Frame(self, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
 		bottomLayer.pack()
-		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.5)
+		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.45)
 
 	def reset(self, x):
 		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to quit?"):
@@ -217,6 +217,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 				self.loginPageObject.passwordInput.focus()
 		else:
 			self.loginButton.flash()
+																						# Login and import!
 			self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
 			self.master.title("You are logged in!")
 
@@ -233,7 +234,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		answer = self.cre.validate(self.cre.get_name(), self.cre.get_password(), self.cre.get_password_retyped())		# Assign the return value of this very long function into variable answer! (actually, answer)
 		if answer in responses:																									# If the answer is included in the list above,
 			self.loginPageObject.verifyCreateLabel.config(text=answer, fg="red", font=("Tahoma", 9, "bold"))
-			if answer == responses[0] or answer == responses[3]:											# Display that message from the list, then format some widgets
+			if answer == responses[0] or answer == responses[3] or answer == responses[6]:											# Display that message from the list, then format some widgets
 				self.eraseContents(self.loginPageObject.newUsernameInput, self.loginPageObject.newPasswordInput, self.loginPageObject.newPasswordVerifyInput)
 				self.loginPageObject.newUsernameInput.focus()
 			elif answer == responses[1]:
@@ -253,7 +254,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.loginPageObject.usernameInput.focus()
 			self.loginPageObject.verifyLoginLabel.config(text="")
 			self.loginPageObject.verifyCreateLabel.config(text="SUCCESSFUL! YOU CAN NOW\nLOG-IN!", fg="#52A41D", font=("Tahoma", 9, "bold"))
-			self.loginPageObject.verifyCreateLabel.after(1000, waitLabel)					# An event delayer for changing the label of SUCCESSFUL CREATIONS
+			self.loginPageObject.verifyCreateLabel.after(1500, waitLabel)					# An event delayer for changing the label of SUCCESSFUL CREATIONS
 			
 Window = Tk()        		 													# Creates an empty window
 Main = navClass()
