@@ -1,11 +1,12 @@
-import os, shutil #for deleting and renaming files
-import glob
+import os, glob, shutil #for deleting and renaming files
 
 class CC(object): #profile management #superclass
     
     def __init__(self):
         self.name = ''
         self.password = ''
+        self.registry = registryDatabase()
+        self.exporter = export_database()
 
     def set_name(self, name): #mutator
         self.name = name
@@ -20,10 +21,10 @@ class CC(object): #profile management #superclass
         return self.password
 
     def login(self):
-        pass
+        self.exporter.export_details(self.get_name(), self.get_password(), "Online")
 
     def logout(self):
-        pass
+        self.exporter.export_details(self.get_name(), self.get_password(), "Offline")
 
 class creation(CC): #profile creation
     
@@ -34,6 +35,15 @@ class creation(CC): #profile creation
         self.passwordVerifyObject = passwordVerify()
         self.val.handler(self.usernameVerifyObject)
         self.usernameVerifyObject.handler(self.passwordVerifyObject)
+        self.registry = registryDatabase()
+
+    def set_name(self, x):                                                              # Overwritten method
+        self.name = x                                                                   # To include mutators for registry
+        self.registry.set_name(x)
+
+    def set_password(self, x):
+        self.password = x
+        self.registry.set_password(x)
 
     def set_password_retyped(self, x):
         self.password_retyped = x
@@ -66,9 +76,7 @@ class creation(CC): #profile creation
             if glob.glob("DATABASE\\DATABASE") != []:
                 f = open("DATABASE\\DATABASE")
                 f.close()
-        f = open("DATABASE\\DATABASE", 'a')
-        f.write(self.get_name() + ': ' + self.get_password() + '\n')
-        f.close()
+        self.registry.register()        
         os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + str(self.get_name()) + "\\pictures")
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + self.get_name() + "\\" + self.get_name(), 'w')
         f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\nOffline\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
@@ -220,27 +228,22 @@ class login(CC): #logging in
             self.database.set_name(self.name) #see import_database
             self.database.set_password(self.password)
             self.export.export_details(self.name, self.password, "Online")
+            '''
             self.database.import_friends(self.name)
             self.database.import_status(self.name)
             self.database.import_messages(self.name)
             self.database.import_friend_requests(self.name)
             self.database.import_friend_requests_sent(self.name)
             self.database.import_messages_sent(self.name)
+            '''
             return 1
         return 0
 
-class import_database(object): #importing data from the profile's database
-   
+class registryDatabase(object):
     def __init__(self):
         self.name = ''
         self.password = ''
         self.friends = []
-        self.status = {}
-        self.wall = {}
-        self.messages = {}
-        self.messages_sent = {}
-        self.friend_requests = []
-        self.friend_requests_sent = []
 
     def set_name(self, name): #mutator
         self.name = name
@@ -256,6 +259,22 @@ class import_database(object): #importing data from the profile's database
 
     def get_friends(self):
         return self.friends
+
+    def register(self):
+        f = open("DATABASE\\DATABASE", 'a')
+        f.write(self.get_name() + ': ' + self.get_password() + '\n')
+        f.close()
+
+class import_database(registryDatabase): #importing data from the profile's database
+   
+    def __init__(self):
+        registryDatabase.__init__(self)
+        self.status = {}
+        self.wall = {}
+        self.messages = {}
+        self.messages_sent = {}
+        self.friend_requests = []
+        self.friend_requests_sent = []    
 
     def get_status(self):
         return self.status

@@ -1,6 +1,7 @@
 from CC import creation, login, deletion, logout
 from Main import messages, status, friends, wall
 import os
+
 while True:
     choice = raw_input("What do you want to do? (C - Create, L - Login, D - Delete, Q - Quit) ")
     choice = choice.lower()

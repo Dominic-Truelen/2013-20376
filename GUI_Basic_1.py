@@ -21,6 +21,7 @@ b=0.075
 class loginPageGUI(Frame):														# The login GUI class Interface!
 	def __init__(self, master=None):	
 		Frame.__init__(self, master)
+		self.login_logout = CC()
 		self.createWidgets()
 		
 	def createWidgets(self):
@@ -33,9 +34,11 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		self.usernameInput = Entry(topLayer, fg=toplayerColor, width=17, textvariable=self.usernameVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the username
 		self.usernameInput.place(anchor=CENTER,relx=0.59, rely=0.59)
 		self.usernameInput.focus()												# Puts the cursor automatically at the user_name field
+		
 		self.passwordVariable = StringVar()
 		self.passwordInput = Entry(topLayer, fg=toplayerColor, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
 		self.passwordInput.place(anchor=CENTER, relx=0.77, rely=0.59)
+		
 		Label(topLayer, text="caffy", font=("Verdana", 28), justify=LEFT, bg=toplayerColor, fg=signatureColor).place(anchor=W, relx=0.08, rely=0.5)
 		self.coffcup = Label(topLayer, text="☕", font=("Tahoma", 28), justify=LEFT, bg=toplayerColor, fg="#FFFFFF")
 		self.coffcup.place(anchor=W, relx=0.175, rely=0.48)
@@ -85,15 +88,15 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		bottomLayer.pack()
 		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.45)
 
-	def reset(self, x):
-		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to quit?"):
-			self.verifyLoginLabel.config(text="")
-			self.verifyCreateLabel.config(text="")
-			self.usernameInput.delete(0, END)
+	def reset(self, x, y):
+		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to quit?"):			
+			self.usernameInput.delete(0, END)									# Delete any text from login
 			self.passwordInput.delete(0, END)
 			self.usernameInput.focus()
-			self.master.title("Welcome to Caffy!")
-			x.lift()
+			self.master.title("Welcome to Caffy!")			
+			self.login_logout.logout()											# Puts user "offline"
+			x.lift()															# Lifts the original login page (passed as argument)
+			y.profilepageLift()													# Reset original starting page to profile page
 		else:
 			return
 
@@ -164,7 +167,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		Frame.__init__(self, master)
 		
 		self.val = validation()													# Initial functions for the verifications
-		self.loginCC = CC()		
+		self.loginCC = CC()
 		self.cre = creation()
 
 		self.usernameVerifyObject = usernameVerify()							#Chain of Responsibility
@@ -180,7 +183,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		self.loginPageObject = loginPageGUI()
 		self.loginPageObject.place(in_=container)
-		self.activePageObject.lift()												# Displays first ever page, which is the login page	
+		self.loginPageObject.lift()												# Displays first ever page, which is the login page	
 
 		self.pack()
 		self.createWidgets()
@@ -200,21 +203,28 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.loginPageObject.newPasswordInput.bind("<Return>", lambda event: self.createButton.invoke())
 		self.loginPageObject.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
 
-		self.logoutButton = Button(self.activePageObject, text="Log Out", width=6, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject))
+		self.logoutButton = Button(self.activePageObject, text="Log Out", width=6, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject, self.activePageObject))
 		self.logoutButton.place(anchor=CENTER, relx=0.83+b, rely=0.042)
 			
 	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
 		for x in args:															# The *args is a tuple, so every element in it must be iterated
 			x.delete(0, END)													# to delete the value of all the 3 Create Entries
 	
-	def verifyLogin(self):														# Method executed whenever "Log In" button is pressed
-		responses=["USERNAME IS BLANK", "PASSWORD IS BLANK", "ACCOUNT DOES NOT EXIST", "INVALID PASSWORD"]
-		self.loginCC.set_name(self.loginPageObject.usernameVariable.get())		# Accessors!
-		self.loginCC.set_password(self.loginPageObject.passwordVariable.get())
+	def verifyLogin(self):
+
+		def waitLabel():																# For removing the WARNING messages after 1.5 second
+			self.loginPageObject.verifyLoginLabel.config(text="")														# Method executed whenever "Log In" button is pressed
 		
+		responses=["USERNAME IS BLANK", "PASSWORD IS BLANK", "ACCOUNT DOES NOT EXIST", "INVALID PASSWORD"]
+
+		self.loginCC.set_name(self.loginPageObject.usernameVariable.get())
+		self.loginCC.set_password(self.loginPageObject.passwordVariable.get())
+
 		answer = self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())
+		
 		if answer in responses:											# If return value from imported class CC is inside the list,		
 			self.loginPageObject.verifyLoginLabel.config(text=answer)				# display the possible warnings and perform some formatting actions like clear the entry field:
+			self.loginPageObject.verifyLoginLabel.after(2000, waitLabel)
 			if answer == responses[0]:
 				self.eraseContents(self.loginPageObject.passwordInput)
 				self.loginPageObject.usernameInput.focus()
@@ -228,16 +238,21 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 				self.loginPageObject.passwordInput.focus()
 		else:
 			self.loginButton.flash()
-																						# Login and import!
+
+			self.loginPageObject.login_logout.set_name(self.loginCC.get_name())
+			self.loginPageObject.login_logout.set_password(self.loginCC.get_password())
+			self.loginPageObject.login_logout.login()									# Login and import!
+
 			self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
 			self.master.title("You are logged in!")
 
 	def verifyCreate(self):	
 		
-		def waitLabel():																# For removing the SUCCESSFUL message after 1 second
+		def waitLabel():																# For removing the WARNING messages after 1.5 second
 			self.loginPageObject.verifyCreateLabel.config(text="")
 
 		responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "PLEASE RETYPE THE PASSWORD", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD\nCORRECTLY", "PASSWORD MUST HAVE AT LEAST\n6 CHARACTERS", "MUST NOT CONTAIN\nSPECIAL CHARACTERS"]
+		
 		self.cre.set_name(self.loginPageObject.newUsernameVariable.get())
 		self.cre.set_password(self.loginPageObject.newPasswordVariable.get())
 		self.cre.set_password_retyped(self.loginPageObject.newPasswordVerifyVariable.get())
@@ -245,6 +260,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		answer = self.cre.validate(self.cre.get_name(), self.cre.get_password(), self.cre.get_password_retyped())		# Assign the return value of this very long function into variable answer! (actually, answer)
 		if answer in responses:																									# If the answer is included in the list above,
 			self.loginPageObject.verifyCreateLabel.config(text=answer, fg="red", font=("Tahoma", 9, "bold"))
+			self.loginPageObject.verifyCreateLabel.after(2000, waitLabel)
 			if answer == responses[0] or answer == responses[3] or answer == responses[6]:											# Display that message from the list, then format some widgets
 				self.eraseContents(self.loginPageObject.newUsernameInput, self.loginPageObject.newPasswordInput, self.loginPageObject.newPasswordVerifyInput)
 				self.loginPageObject.newUsernameInput.focus()
@@ -265,7 +281,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.loginPageObject.usernameInput.focus()
 			self.loginPageObject.verifyLoginLabel.config(text="")
 			self.loginPageObject.verifyCreateLabel.config(text="SUCCESSFUL! YOU CAN NOW\nLOG-IN!", fg="#52A41D", font=("Tahoma", 9, "bold"))
-			self.loginPageObject.verifyCreateLabel.after(1500, waitLabel)					# An event delayer for changing the label of SUCCESSFUL CREATIONS
+			self.loginPageObject.verifyCreateLabel.after(2000, waitLabel)					# An event delayer for changing the label of SUCCESSFUL CREATIONS
 			
 Window = Tk()        		 													# Creates an empty window
 Main = navClass()

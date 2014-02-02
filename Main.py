@@ -1,10 +1,7 @@
 from CC import import_database, export_database
 from time import strftime
 from collections import OrderedDict
-import glob
-import os
-import threading
-import Queue
+import glob, os, threading, Queue
 
 class messages():
     def __init__(self):
@@ -159,7 +156,7 @@ class friends():
 
     def add_friend(self, name): #Adding new friends
         add_friend = str(raw_input("Add who? "))
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name) is False: #Serching for a file with the inputed name in the database
+        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + add_friend) is False: #Serching for a file with the inputed name in the database
             print "User does not exist"
         elif add_friend == name:
             print "You cannot send yourself a friend request"
@@ -191,7 +188,7 @@ class friends():
 
     def delete_friends(self, name):
         delete = raw_input("Delete who? ")
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name) is False:
+        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + delete) is False:
             print "User does not exist"
         else:
             self.importer.import_friends(name)
@@ -208,7 +205,7 @@ class friends():
 
     def approve_request(self, name):
         friend = str(raw_input("Approve who? "))
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name) is False:
+        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + friend) is False:
             print "This user does not exist"
         else:
             self.importer.import_friend_requests(name)
