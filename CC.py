@@ -6,6 +6,7 @@ class CC(object): #profile management #superclass
         self.name = ''
         self.password = ''
         self.registry = registryDatabase()
+        self.importer = import_database()
         self.exporter = export_database()
 
     def set_name(self, name): #mutator
@@ -22,6 +23,8 @@ class CC(object): #profile management #superclass
 
     def login(self):
         self.exporter.export_details(self.get_name(), self.get_password(), "Online")
+        self.importer.import_all(self.get_name())
+        return self.importer
 
     def logout(self):
         self.exporter.export_details(self.get_name(), self.get_password(), "Offline")
@@ -79,7 +82,7 @@ class creation(CC): #profile creation
         self.registry.register()        
         os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + str(self.get_name()) + "\\pictures")
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + self.get_name() + "\\" + self.get_name(), 'w')
-        f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\nOffline\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
+        f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\nOffline\n\n' + 'DP 2013-20376\nGUIE\\\\femaleDP.png\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
         f.close()
     
     def validate(self, username, password1, password2):
@@ -138,7 +141,7 @@ class usernameVerify(validation):
 
     def handleCreate(self, username, password1, password2):
         for x in set(username):                             #Check for special characters in creating usernames
-            if x in set([".", " ", "^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
+            if x in set([".", "^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
                 return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
         if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + username) is True:      #Check if username is already in use
             return "USERNAME IS ALREADY TAKEN"        
@@ -270,16 +273,20 @@ class import_database(registryDatabase): #importing data from the profile's data
     def __init__(self):
         registryDatabase.__init__(self)
         self.status = {}
+        self.DP = ""
         self.wall = {}
         self.messages = {}
         self.messages_sent = {}
         self.friend_requests = []
         self.friend_requests_sent = []    
 
+    def get_DP(self):
+        return self.DP
+
     def get_status(self):
         return self.status
 
-    def get_messages(self): #accessor
+    def get_messages(self): 
         return self.messages
 
     def get_messages_sent(self):
@@ -294,11 +301,33 @@ class import_database(registryDatabase): #importing data from the profile's data
     def get_wall(self):
         return self.wall
 
+    def import_all(self, name):
+        self.import_details(name)
+        self.import_DP(name)
+        self.import_friends(name)
+        self.import_status(name)
+        self.import_messages(name)
+        self.import_messages_sent(name)
+        self.import_friend_requests(name)
+        self.import_friend_requests_sent(name)
+        self.import_wall(name)
+
     def import_details(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
         f.readline()
-        self.name = eval(f.readline())
-        self.password = eval(f.readline())
+        self.name = f.readline()
+        self.password = f.readline()
+        f.close()
+
+    def import_DP(self, name):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
+        while True:
+            temp = f.readline()
+            if "DP 2013-20376" in temp:
+                break
+        temp = f.readline()
+        temp = temp[0:-1]
+        self.DP=temp
         f.close()
 
     def import_friends(self, name): #importing friends list
@@ -398,12 +427,11 @@ class export_database(object): #exporting data to the database by creating a tem
     def export_details(self, name, password, status): #exporting username and password
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
         g = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + "1", 'w')
-        g.write('Details 2013-2076' + '\n' + name + '\n' + password + '\n' + status + '\n')
+        for line in range(3):           # Range 3 because its the number of lines to reach the status line of DB (Details 2013-20376, name, and password lines)
+            g.write(f.readline())       # Copy the first three lines of original DB to new DB (g)
+        g.write(status+"\n")            # After that, write the new status!
         f.readline()
-        f.readline()
-        f.readline()
-        f.readline()
-        for line in f:
+        for line in f:                  # then write the remaining lines of f to g
             g.write(line)
         f.close()
         g.close()

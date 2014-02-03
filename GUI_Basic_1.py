@@ -116,13 +116,16 @@ class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are m
 		self.coff.bind("<Leave>", lambda f: self.coff.config(fg="white"))
 		
 class homePageGUI(Frame):														# This is the GUI for the Newsfeed sections
-	def __init__(self, master=None):
+	def __init__(self, master=None, database=None):
 		Frame.__init__(self, master)
 		self.place(in_=master)
-		self.createWidgets()
+		self.createWidgets(database)
+
+	def receiveDatabase(self, database):
+		pass
 	
-	def createWidgets(self):
-		homepageMainWindow = Frame(self, width=1000, height=550, bg="blue")
+	def createWidgets(self, database):
+		homepageMainWindow = Frame(self, width=1000, height=550)
 		homepageMainWindow.pack()
 		Label(homepageMainWindow, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
 
@@ -143,18 +146,22 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		container2 = Frame(self, width=1000, height=550)
 		container2.pack()
 
-		self.profilePageObject = profilePageGUI(container2, backgroundColor)		
+		self.profilePageObject = profilePageGUI(container2)		
 		self.homePageObject = homePageGUI(container2)
 		
 		self.createWidgets()
-		self.profilepageLift()		
+		self.profilepageLift()
+	
+	def setDatabase(self, database):		
+		self.profilePageObject.receiveDatabase(database)
+		self.homePageObject.receiveDatabase(database)
 			
 	def createWidgets(self):
-		self.homepageButton = Button(self.topLayerObject, text="⌂ Home", width=6, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.homepageLift)
+		self.homepageButton = Button(self.topLayerObject, text="⌂ Home", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.homepageLift)
 		self.homepageButton.place(anchor=CENTER, relx=0.76+b, rely=0.5)
 
-		self.profilepageButton = Button(self.topLayerObject, text="Profile", width=6, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.profilepageLift)
-		self.profilepageButton.place(anchor=CENTER, relx=0.695+b, rely=0.5)
+		self.profilepageButton = Button(self.topLayerObject, text="☺ Profile", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.profilepageLift)
+		self.profilepageButton.place(anchor=CENTER, relx=0.6875+b, rely=0.5)
 
 	def homepageLift(self):
 		self.homePageObject.lift()
@@ -203,7 +210,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.loginPageObject.newPasswordInput.bind("<Return>", lambda event: self.createButton.invoke())
 		self.loginPageObject.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
 
-		self.logoutButton = Button(self.activePageObject, text="Log Out", width=6, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject, self.activePageObject))
+		self.logoutButton = Button(self.activePageObject, text="Log Out", width=6, height=1, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject, self.activePageObject))
 		self.logoutButton.place(anchor=CENTER, relx=0.83+b, rely=0.042)
 			
 	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
@@ -241,8 +248,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 			self.loginPageObject.login_logout.set_name(self.loginCC.get_name())
 			self.loginPageObject.login_logout.set_password(self.loginCC.get_password())
-			self.loginPageObject.login_logout.login()									# Login and import!
-
+			self.activePageObject.setDatabase(self.loginPageObject.login_logout.login())
 			self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
 			self.master.title("You are logged in!")
 
@@ -290,5 +296,5 @@ Window.resizable(0,0)			 												# Does not resize the window, ever
 Window.wm_iconbitmap('GUIE\\CoffeeCup.ico')										# Adds a little mug icon over the top left corner
 Window.mainloop()																# Executes code above in a loop
 
-os.remove('CC.pyc')																# Removes the temporary files inside the (" ")
+#os.remove('CC.pyc')															# Removes the temporary files inside the (" ")
 #os.remove('Main.pyc')															# (For Git uploading purposes only)

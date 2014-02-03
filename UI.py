@@ -86,5 +86,5 @@ while True:
         break
     else:
         print "Invalid input"
-os.remove('CC.pyc')
-os.remove('Main.pyc')
+#os.remove('CC.pyc')
+#os.remove('Main.pyc')
