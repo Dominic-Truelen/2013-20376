@@ -128,16 +128,30 @@ class validation(CC): #validation for logging in and deleting profiles
 class usernameVerify(validation):
     
     def handleLogin(self, x, y):
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + x) is False:    #Check if Logging in a username DNE
-                return "ACCOUNT DOES NOT EXIST"
+        if glob.glob("DATABASE") == []:
+            os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE")
+        
+        if glob.glob("DATABASE\\DATABASE") == []:                                       # For a first time user who logged in without creating an account first (error is handled by creating the database folder)
+            f = open("DATABASE\\DATABASE", "w")
+            f.close()                                   
+        
+        f = open("DATABASE\\DATABASE")
+        if (x + ": " + y + "\n") not in f.readlines():
+            f.close()
+            return "ACCOUNT DOES NOT EXIST"                     #Check inside registry if Logging in a username DNE
         else:
-            f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + x + "\\" + x)
-            f.readline()
-            f.readline()
-            if (y + '\n') == f.readline():
-                return 1
-            else:
-                return self.successor.handleLogin(y)                    #Handle the Password
+            f.close()
+
+        if glob.glob(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + x + "\\" + x) == []:          # From a pre-existing registry without user's individual databases
+            return "SETUP"
+
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + x + "\\" + x)    # For users whose accounts were created from the Login page GUI
+        f.readline()
+        f.readline()
+        if (y + '\n') == f.readline():
+            return 1
+        else:
+            return self.successor.handleLogin(y)                    #Handle the Password
 
     def handleCreate(self, username, password1, password2):
         for x in set(username):                             #Check for special characters in creating usernames
@@ -263,10 +277,32 @@ class registryDatabase(object):
     def get_friends(self):
         return self.friends
 
-    def register(self):
+    def register(self):                         # For existing database without each account's formal setup from the creation class
         f = open("DATABASE\\DATABASE", 'a')
         f.write(self.get_name() + ': ' + self.get_password() + '\n')
+        if self.get_friends() != []:
+            for x in self.get_friends():
+                f.write("\t"+x+"\n")
+        f.write("\n")
         f.close()
+
+    def registerFriends(self):
+        entry = self.get_name() + ": " + self.get_password()
+        f = open("DATABASE\\DATABASE", 'a')
+        
+        while True:                             # Traverse through DB until entry is found
+            if f.readline() == entry:
+                break
+        while True:                             # Traverse through entry's friends until blank is found
+            if f.readline() == "\n":
+                break
+        
+        for x in self.get_friends():            # At the blank line, write the added friends
+            f.write("\t"+x+"\n")
+
+        f.write("\n")                           # Then at the end, write the blank line for future friend adding
+        f.close()
+
 
 class import_database(registryDatabase): #importing data from the profile's database
    

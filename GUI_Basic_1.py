@@ -129,6 +129,17 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		homepageMainWindow.pack()
 		Label(homepageMainWindow, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
 
+class setupPageGUI(Frame):
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
+		self.createWidgets()
+
+	def createWidgets(self):
+		temp = Frame(self, width=1000, height=600, bg=backgroundColor)
+		temp.pack()
+
+		Label(temp, text="Setup your account", font=("Segoe UI Light", 30)).place(anchor=CENTER, relx=0.5, rely=0.1) 
+
 class Singleton:																# Singleton Design Pattern retrieved from
     __single = None																# Python Help Manual Website: http://www.python.org/workshops/1997-10/proceedings/savikko.html
     def __init__(self):
@@ -148,7 +159,7 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 
 		self.profilePageObject = profilePageGUI(container2)		
 		self.homePageObject = homePageGUI(container2)
-		
+				
 		self.createWidgets()
 		self.profilepageLift()
 	
@@ -167,7 +178,7 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.homePageObject.lift()
 
 	def profilepageLift(self):
-		self.profilePageObject.lift()		
+		self.profilePageObject.lift()	
 
 class navClass(Frame):															# A GUI that combines the Login and Active Windows. Basically another Faҫade design pattern. Called navClass because of navigation (button fxns)
 	def __init__(self, master=None):
@@ -187,6 +198,9 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		self.activePageObject = activePageGUI()
 		self.activePageObject.place(in_=container)
+
+		self.setupPageObject = setupPageGUI()
+		self.setupPageObject.place(in_=container)
 
 		self.loginPageObject = loginPageGUI()
 		self.loginPageObject.place(in_=container)
@@ -212,6 +226,9 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		self.logoutButton = Button(self.activePageObject, text="Log Out", width=6, height=1, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject, self.activePageObject))
 		self.logoutButton.place(anchor=CENTER, relx=0.83+b, rely=0.042)
+
+		self.setupBackButton = Button(self.setupPageObject, text="Back", width=6, height=1, font=("Tahoma", 20, "bold"), relief=FLAT, fg="black", bg=backgroundColor, command=lambda: self.loginPageObject.lift())
+		self.setupBackButton.place(anchor=CENTER, relx=0.15, rely=0.11)
 			
 	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
 		for x in args:															# The *args is a tuple, so every element in it must be iterated
@@ -240,10 +257,14 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			elif answer == responses[2]:
 				self.eraseContents(self.loginPageObject.usernameInput, self.loginPageObject.passwordInput)
 				self.loginPageObject.usernameInput.focus()
-			else:
+			elif answer == responses[3]:
 				self.eraseContents(self.loginPageObject.passwordInput)
 				self.loginPageObject.passwordInput.focus()
-		else:
+		
+		elif answer == "SETUP":
+			self.setupPageObject.lift()
+		
+		else:	#answer == 1
 			self.loginButton.flash()
 
 			self.loginPageObject.login_logout.set_name(self.loginCC.get_name())
