@@ -133,14 +133,13 @@ class usernameVerify(validation):
         
         if glob.glob("DATABASE\\DATABASE") == []:                                       # For a first time user who logged in without creating an account first (error is handled by creating the database folder)
             f = open("DATABASE\\DATABASE", "w")
-            f.close()                                   
-        
+            f.close()
+
         f = open("DATABASE\\DATABASE")
-        if (x + ": " + y + "\n") not in f.readlines():
-            f.close()
-            return "ACCOUNT DOES NOT EXIST"                     #Check inside registry if Logging in a username DNE
-        else:
-            f.close()
+        a = f.readlines()
+        if (x + ": " + y + "\n") not in a:
+            return self.successor.handleLoginPassword(x, y, a)  #Handle the Password in Registry
+        f.close()             
 
         if glob.glob(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + x + "\\" + x) == []:          # From a pre-existing registry without user's individual databases
             return "SETUP"
@@ -149,23 +148,35 @@ class usernameVerify(validation):
         f.readline()
         f.readline()
         if (y + '\n') == f.readline():
-            return 1
-        else:
-            return self.successor.handleLogin(y)                    #Handle the Password
+            return 1                           
 
     def handleCreate(self, username, password1, password2):
         for x in set(username):                             #Check for special characters in creating usernames
-            if x in set([".", "^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
+            if x in set([" ", ".", "^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
                 return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + username) is True:      #Check if username is already in use
-            return "USERNAME IS ALREADY TAKEN"        
-        else:
-            return self.successor.handleCreate(password1, password2)    #Handle the Password
+        f = open("DATABASE\\DATABASE")
+        a = f.readlines()
+        for line in a:
+            b = line.split(": ")
+            if username != b[0]:
+                continue
+            elif (username == b[0]) or (os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + username) is True):
+                f.close()
+                return "USERNAME IS ALREADY TAKEN"
+        f.close()                
+        return self.successor.handleCreate(password1, password2)    #Handle the Password
 
 class passwordVerify(validation):
-        
-    def handleLogin(self, y):
-        return "INVALID PASSWORD"
+
+    def handleLoginPassword(self, x, y, f):
+        for line in f:
+            a = line.split(": ")
+            if x != a[0]:
+                continue
+            elif x == a[0]:
+                if y != a[1]:
+                    return "INVALID PASSWORD"
+        return "ACCOUNT DOES NOT EXIST"       
 
     def handleCreate(self, pwd1, pwd2):
         if pwd1 == "":
