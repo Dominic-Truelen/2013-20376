@@ -15,6 +15,9 @@ class CC(object): #profile management #superclass
     def set_password(self, password): #mutator
         self.password = password
 
+    def set_OnOrOff(self, status):
+        self.exporter.export_details(self.get_name(), self.get_password, status)
+
     def get_name(self): #accessor
         return self.name
 
@@ -22,9 +25,13 @@ class CC(object): #profile management #superclass
         return self.password
 
     def login(self):
-        self.exporter.export_details(self.get_name(), self.get_password(), "Online")
-        self.importer.import_all(self.get_name())
-        return self.importer
+        self.importer.import_onoroff(self.get_name())
+        if self.importer.get_onoroff() == "Offline Setup\n":
+            return "SETUPCREATED"
+        else:
+            self.set_OnOrOff("Online")
+            self.importer.import_all(self.get_name())
+            return self.importer
 
     def logout(self):
         self.exporter.export_details(self.get_name(), self.get_password(), "Offline")
@@ -82,7 +89,7 @@ class creation(CC): #profile creation
         self.registry.register()        
         os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + str(self.get_name()) + "\\pictures")
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + self.get_name() + "\\" + self.get_name(), 'w')
-        f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\nOffline\n\n' + 'DP 2013-20376\nGUIE\\\\femaleDP.png\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
+        f.write("Details 2013-20376\n" + "<INSERT NAME HERE>" + '\n' + self.get_password() + '\nOffline Setup\n\n' + 'DP 2013-20376\nGUIE\\\\femaleDP.png\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
         f.close()
     
     def validate(self, username, password1, password2):
@@ -151,6 +158,7 @@ class usernameVerify(validation):
             return 1                           
 
     def handleCreate(self, username, password1, password2):
+        username = username.lower()                         #Uppercase letters during creation would'nt be allowed. 
         for x in set(username):                             #Check for special characters in creating usernames
             if x in set([" ", ".", "^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
                 return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
@@ -293,15 +301,16 @@ class registryDatabase(object):
         f.write(self.get_name() + ': ' + self.get_password() + '\n')
         if self.get_friends() != []:
             for x in self.get_friends():
-                f.write("\t"+x+"\n")
-        f.write("\n")
+                f.write("\t"+x+"\n")        
         f.close()
 
     def registerFriends(self):
         entry = self.get_name() + ": " + self.get_password()
         f = open("DATABASE\\DATABASE", 'a')
+        g = open("DATABASE\\DATABASE1", 'w')
         
-        while True:                             # Traverse through DB until entry is found
+        while True:
+            g.write(f.readline())               # Traverse through DB until entry is found
             if f.readline() == entry:
                 break
         while True:                             # Traverse through entry's friends until blank is found
@@ -320,6 +329,7 @@ class import_database(registryDatabase): #importing data from the profile's data
     def __init__(self):
         registryDatabase.__init__(self)
         self.status = {}
+        self.onoroff = ""
         self.DP = ""
         self.wall = {}
         self.messages = {}
@@ -329,6 +339,9 @@ class import_database(registryDatabase): #importing data from the profile's data
 
     def get_DP(self):
         return self.DP
+
+    def get_onoroff(self):
+        return self.onoroff
 
     def get_status(self):
         return self.status
@@ -358,6 +371,14 @@ class import_database(registryDatabase): #importing data from the profile's data
         self.import_friend_requests(name)
         self.import_friend_requests_sent(name)
         self.import_wall(name)
+
+    def import_onoroff(self, name):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
+        f.readline()           #Iterate until right before the 4th line
+        f.readline()
+        f.readline()
+        self.onoroff = f.readline()
+        f.close()
 
     def import_details(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
@@ -471,20 +492,20 @@ class import_database(registryDatabase): #importing data from the profile's data
 
 class export_database(object): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
     
-    def export_details(self, name, password, status): #exporting username and password
+    def export_details(self, name, password, status): #exporting username and password        
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
-        g = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + "1", 'w')
+        g = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + '1', 'w')
         for line in range(3):           # Range 3 because its the number of lines to reach the status line of DB (Details 2013-20376, name, and password lines)
             g.write(f.readline())       # Copy the first three lines of original DB to new DB (g)
         g.write(status+"\n")            # After that, write the new status!
-        f.readline()
+        f.readline()                    # Skip the one line to be deleted
         for line in f:                  # then write the remaining lines of f to g
             g.write(line)
         f.close()
         g.close()
         os.remove(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
         os.rename(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + '1', os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
-
+        
     def export_friends(self, name, friends): #exporting friends list
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
         g = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + "1", 'w')

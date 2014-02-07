@@ -262,16 +262,22 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 				self.loginPageObject.passwordInput.focus()
 		
 		elif answer == "SETUP":
-			self.setupPageObject.lift()
-		
+			self.setupPageObject.lift()														# CODE HERE SO THAT OUT OF NOWHERE REGISTERED LINES (FROM TESTFILE) MAY HAVE THEIR OWN INDIVIDUAL DATABASES AT LAST. ALSO,
+			#Code here to input registry info into setup page								# NOTE TO CODE: DATABASE WOULD NO LONGER HAVE "OFFLINE SETUP" AS ONOROFF STATUS. INSTEAD, GO DIRECTLY TO OFFLINE.
+
 		else:	#answer == 1
 			self.loginButton.flash()
-
 			self.loginPageObject.login_logout.set_name(self.loginCC.get_name())
 			self.loginPageObject.login_logout.set_password(self.loginCC.get_password())
-			self.activePageObject.setDatabase(self.loginPageObject.login_logout.login())
-			self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
-			self.master.title("You are logged in!")
+
+			a = self.loginPageObject.login_logout.login()
+			if a == "SETUPCREATED":															# IF SETUPCREATED (Meaning account is newly created), show the setup window
+				self.setupPageObject.lift()
+				self.loginPageObject.login_logout.set_OnOrOff("Offline")					#Temporary storage for putting offline to the newly set-up account
+			else:
+				self.activePageObject.setDatabase(a)
+				self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
+				self.master.title("You are logged in!")
 
 	def verifyCreate(self):	
 		
