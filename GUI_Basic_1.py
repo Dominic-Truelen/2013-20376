@@ -52,7 +52,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		
 		canvasSky = Canvas(midLayer, width=1000, height=490, highlightthickness=0, bg=backgroundColor)
 		canvasSky.pack()
-		sky = ImageTk.PhotoImage(file="GUIE\\LoginSky.png")
+		sky = ImageTk.PhotoImage(file="GUIE/LoginSky.png")
 		canvasSky.create_image(500, 245, image=sky)
 		canvasSky.image = sky								#Reference to image so that garbage wont be collected
 		
@@ -204,7 +204,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		self.loginPageObject = loginPageGUI()
 		self.loginPageObject.place(in_=container)
-		self.loginPageObject.lift()												# Displays first ever page, which is the login page	
+		self.setupPageObject.lift()												# Displays first ever page, which is the login page	
 
 		self.pack()
 		self.createWidgets()
@@ -320,7 +320,7 @@ Window = Tk()        		 													# Creates an empty window
 Main = navClass()
 Window.geometry('1000x600+170+80')												# Set dimensions to 1000x600 pos @ screen center
 Window.resizable(0,0)			 												# Does not resize the window, ever 	
-Window.wm_iconbitmap('GUIE\\CoffeeCup.ico')										# Adds a little mug icon over the top left corner
+Window.wm_iconbitmap('GUIE/CoffeeCup.ico')										# Adds a little mug icon over the top left corner
 Window.mainloop()																# Executes code above in a loop
 
 #os.remove('CC.pyc')															# Removes the temporary files inside the (" ")

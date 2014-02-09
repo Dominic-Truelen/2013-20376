@@ -8,7 +8,7 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
 		self.place(in_=master)
-		self.dp = ImageTk.PhotoImage(file="GUIE\\maleDP.png") # I think proxy should be implemented now...
+		self.dp = ImageTk.PhotoImage(file="GUIE/maleDP.png") # I think proxy should be implemented now...
 		self.createWidgets()		
 
 	def receiveDatabase(self, database):
