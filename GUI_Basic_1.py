@@ -12,14 +12,16 @@ defaultLabelStyle = ("Tahoma", 9)
 defaultCreateStyle = ("Tahoma", 14)
 defaultLogoStyle = ("Verdana", 18)
 signatureColor = "orange"														# Shortcut labels for custom color styling
-toplayerColor = "#525252"														# Dark gray signature color
+toplayerColor = "#555555"														# Dark gray signature color
 backgroundColor = "#EEEEEE"														# Grayish-white color
 
 a=-0.05																			# Adjuster for widget's y-value placement
+b=0.075
 
 class loginPageGUI(Frame):														# The login GUI class Interface!
 	def __init__(self, master=None):	
 		Frame.__init__(self, master)
+		self.login_logout = CC()
 		self.createWidgets()
 		
 	def createWidgets(self):
@@ -32,9 +34,11 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		self.usernameInput = Entry(topLayer, fg=toplayerColor, width=17, textvariable=self.usernameVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the username
 		self.usernameInput.place(anchor=CENTER,relx=0.59, rely=0.59)
 		self.usernameInput.focus()												# Puts the cursor automatically at the user_name field
+		
 		self.passwordVariable = StringVar()
 		self.passwordInput = Entry(topLayer, fg=toplayerColor, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
 		self.passwordInput.place(anchor=CENTER, relx=0.77, rely=0.59)
+		
 		Label(topLayer, text="caffy", font=("Verdana", 28), justify=LEFT, bg=toplayerColor, fg=signatureColor).place(anchor=W, relx=0.08, rely=0.5)
 		self.coffcup = Label(topLayer, text="☕", font=("Tahoma", 28), justify=LEFT, bg=toplayerColor, fg="#FFFFFF")
 		self.coffcup.place(anchor=W, relx=0.175, rely=0.48)
@@ -48,7 +52,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		
 		canvasSky = Canvas(midLayer, width=1000, height=490, highlightthickness=0, bg=backgroundColor)
 		canvasSky.pack()
-		sky = ImageTk.PhotoImage(file="GUIE\\LoginSky.png")
+		sky = ImageTk.PhotoImage(file="GUIE/LoginSky.png")
 		canvasSky.create_image(500, 245, image=sky)
 		canvasSky.image = sky								#Reference to image so that garbage wont be collected
 		
@@ -84,15 +88,15 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		bottomLayer.pack()
 		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.45)
 
-	def reset(self, x):
-		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to quit?"):
-			self.verifyLoginLabel.config(text="")
-			self.verifyCreateLabel.config(text="")
-			self.usernameInput.delete(0, END)
+	def reset(self, x, y):
+		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to quit?"):			
+			self.usernameInput.delete(0, END)									# Delete any text from login
 			self.passwordInput.delete(0, END)
 			self.usernameInput.focus()
-			self.master.title("Welcome to Caffy!")
-			x.lift()
+			self.master.title("Welcome to Caffy!")			
+			self.login_logout.logout()											# Puts user "offline"
+			x.lift()															# Lifts the original login page (passed as argument)
+			y.profilepageLift()													# Reset original starting page to profile page
 		else:
 			return
 
@@ -112,15 +116,29 @@ class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are m
 		self.coff.bind("<Leave>", lambda f: self.coff.config(fg="white"))
 		
 class homePageGUI(Frame):														# This is the GUI for the Newsfeed sections
-	def __init__(self, master=None):
+	def __init__(self, master=None, database=None):
 		Frame.__init__(self, master)
 		self.place(in_=master)
-		self.createWidgets()
+		self.createWidgets(database)
+
+	def receiveDatabase(self, database):
+		pass
 	
-	def createWidgets(self):
-		homepageMainWindow = Frame(self, width=1000, height=550, bg="blue")
+	def createWidgets(self, database):
+		homepageMainWindow = Frame(self, width=1000, height=550)
 		homepageMainWindow.pack()
 		Label(homepageMainWindow, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
+
+class setupPageGUI(Frame):
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
+		self.createWidgets()
+
+	def createWidgets(self):
+		temp = Frame(self, width=1000, height=600, bg=backgroundColor)
+		temp.pack()
+
+		Label(temp, text="Setup your account", font=("Segoe UI Light", 30)).place(anchor=CENTER, relx=0.5, rely=0.1) 
 
 class Singleton:																# Singleton Design Pattern retrieved from
     __single = None																# Python Help Manual Website: http://www.python.org/workshops/1997-10/proceedings/savikko.html
@@ -139,21 +157,35 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		container2 = Frame(self, width=1000, height=550)
 		container2.pack()
 
-		self.profilePageObject = profilePageGUI(container2, backgroundColor)		
+		self.profilePageObject = profilePageGUI(container2)		
 		self.homePageObject = homePageGUI(container2)
-		
-		self.profilePageObject.lift()
+				
 		self.createWidgets()
+		self.profilepageLift()
+	
+	def setDatabase(self, database):		
+		self.profilePageObject.receiveDatabase(database)
+		self.homePageObject.receiveDatabase(database)
 			
 	def createWidgets(self):
-		pass		
+		self.homepageButton = Button(self.topLayerObject, text="⌂ Home", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.homepageLift)
+		self.homepageButton.place(anchor=CENTER, relx=0.76+b, rely=0.5)
+
+		self.profilepageButton = Button(self.topLayerObject, text="☺ Profile", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.profilepageLift)
+		self.profilepageButton.place(anchor=CENTER, relx=0.6875+b, rely=0.5)
+
+	def homepageLift(self):
+		self.homePageObject.lift()
+
+	def profilepageLift(self):
+		self.profilePageObject.lift()	
 
 class navClass(Frame):															# A GUI that combines the Login and Active Windows. Basically another Faҫade design pattern. Called navClass because of navigation (button fxns)
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
 		
 		self.val = validation()													# Initial functions for the verifications
-		self.loginCC = CC()		
+		self.loginCC = CC()
 		self.cre = creation()
 
 		self.usernameVerifyObject = usernameVerify()							#Chain of Responsibility
@@ -167,9 +199,12 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.activePageObject = activePageGUI()
 		self.activePageObject.place(in_=container)
 
+		self.setupPageObject = setupPageGUI()
+		self.setupPageObject.place(in_=container)
+
 		self.loginPageObject = loginPageGUI()
 		self.loginPageObject.place(in_=container)
-		self.loginPageObject.lift()												# Displays first ever page, which is the login page	
+		self.setupPageObject.lift()												# Displays first ever page, which is the login page	
 
 		self.pack()
 		self.createWidgets()
@@ -189,21 +224,31 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.loginPageObject.newPasswordInput.bind("<Return>", lambda event: self.createButton.invoke())
 		self.loginPageObject.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
 
-		self.logoutButton = Button(self.activePageObject, text="Log Out", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=lambda: self.loginPageObject.reset(self.loginPageObject))
-		self.logoutButton.place(anchor=CENTER, relx=0.85, rely=0.042)
+		self.logoutButton = Button(self.activePageObject, text="Log Out", width=6, height=1, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject, self.activePageObject))
+		self.logoutButton.place(anchor=CENTER, relx=0.83+b, rely=0.042)
+
+		self.setupBackButton = Button(self.setupPageObject, text="Back", width=6, height=1, font=("Tahoma", 20, "bold"), relief=FLAT, fg="black", bg=backgroundColor, command=lambda: self.loginPageObject.lift())
+		self.setupBackButton.place(anchor=CENTER, relx=0.15, rely=0.11)
 			
 	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
 		for x in args:															# The *args is a tuple, so every element in it must be iterated
 			x.delete(0, END)													# to delete the value of all the 3 Create Entries
 	
-	def verifyLogin(self):														# Method executed whenever "Log In" button is pressed
-		responses=["USERNAME IS BLANK", "PASSWORD IS BLANK", "ACCOUNT DOES NOT EXIST", "INVALID PASSWORD"]
-		self.loginCC.set_name(self.loginPageObject.usernameVariable.get())		# Accessors!
-		self.loginCC.set_password(self.loginPageObject.passwordVariable.get())
+	def verifyLogin(self):
+
+		def waitLabel():																# For removing the WARNING messages after 1.5 second
+			self.loginPageObject.verifyLoginLabel.config(text="")														# Method executed whenever "Log In" button is pressed
 		
+		responses=["USERNAME IS BLANK", "PASSWORD IS BLANK", "ACCOUNT DOES NOT EXIST", "INVALID PASSWORD"]
+
+		self.loginCC.set_name(self.loginPageObject.usernameVariable.get())
+		self.loginCC.set_password(self.loginPageObject.passwordVariable.get())
+
 		answer = self.val.guiv(self.loginCC.get_name(), self.loginCC.get_password())
+		
 		if answer in responses:											# If return value from imported class CC is inside the list,		
 			self.loginPageObject.verifyLoginLabel.config(text=answer)				# display the possible warnings and perform some formatting actions like clear the entry field:
+			self.loginPageObject.verifyLoginLabel.after(2000, waitLabel)
 			if answer == responses[0]:
 				self.eraseContents(self.loginPageObject.passwordInput)
 				self.loginPageObject.usernameInput.focus()
@@ -212,21 +257,35 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			elif answer == responses[2]:
 				self.eraseContents(self.loginPageObject.usernameInput, self.loginPageObject.passwordInput)
 				self.loginPageObject.usernameInput.focus()
-			else:
+			elif answer == responses[3]:
 				self.eraseContents(self.loginPageObject.passwordInput)
 				self.loginPageObject.passwordInput.focus()
-		else:
+		
+		elif answer == "SETUP":
+			self.setupPageObject.lift()														# CODE HERE SO THAT OUT OF NOWHERE REGISTERED LINES (FROM TESTFILE) MAY HAVE THEIR OWN INDIVIDUAL DATABASES AT LAST. ALSO,
+			#Code here to input registry info into setup page								# NOTE TO CODE: DATABASE WOULD NO LONGER HAVE "OFFLINE SETUP" AS ONOROFF STATUS. INSTEAD, GO DIRECTLY TO OFFLINE.
+
+		else:	#answer == 1
 			self.loginButton.flash()
-																						# Login and import!
-			self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
-			self.master.title("You are logged in!")
+			self.loginPageObject.login_logout.set_name(self.loginCC.get_name())
+			self.loginPageObject.login_logout.set_password(self.loginCC.get_password())
+
+			a = self.loginPageObject.login_logout.login()
+			if a == "SETUPCREATED":															# IF SETUPCREATED (Meaning account is newly created), show the setup window
+				self.setupPageObject.lift()
+				self.loginPageObject.login_logout.set_OnOrOff("Offline")					#Temporary storage for putting offline to the newly set-up account
+			else:
+				self.activePageObject.setDatabase(a)
+				self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
+				self.master.title("You are logged in!")
 
 	def verifyCreate(self):	
 		
-		def waitLabel():																# For removing the SUCCESSFUL message after 1 second
+		def waitLabel():																# For removing the WARNING messages after 1.5 second
 			self.loginPageObject.verifyCreateLabel.config(text="")
 
 		responses = ["USERNAME IS BLANK", "PASSWORD REQUIRED", "PLEASE RETYPE THE PASSWORD", "USERNAME IS ALREADY TAKEN", "RETYPE YOUR PASSWORD\nCORRECTLY", "PASSWORD MUST HAVE AT LEAST\n6 CHARACTERS", "MUST NOT CONTAIN\nSPECIAL CHARACTERS"]
+		
 		self.cre.set_name(self.loginPageObject.newUsernameVariable.get())
 		self.cre.set_password(self.loginPageObject.newPasswordVariable.get())
 		self.cre.set_password_retyped(self.loginPageObject.newPasswordVerifyVariable.get())
@@ -234,6 +293,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		answer = self.cre.validate(self.cre.get_name(), self.cre.get_password(), self.cre.get_password_retyped())		# Assign the return value of this very long function into variable answer! (actually, answer)
 		if answer in responses:																									# If the answer is included in the list above,
 			self.loginPageObject.verifyCreateLabel.config(text=answer, fg="red", font=("Tahoma", 9, "bold"))
+			self.loginPageObject.verifyCreateLabel.after(2000, waitLabel)
 			if answer == responses[0] or answer == responses[3] or answer == responses[6]:											# Display that message from the list, then format some widgets
 				self.eraseContents(self.loginPageObject.newUsernameInput, self.loginPageObject.newPasswordInput, self.loginPageObject.newPasswordVerifyInput)
 				self.loginPageObject.newUsernameInput.focus()
@@ -254,14 +314,14 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.loginPageObject.usernameInput.focus()
 			self.loginPageObject.verifyLoginLabel.config(text="")
 			self.loginPageObject.verifyCreateLabel.config(text="SUCCESSFUL! YOU CAN NOW\nLOG-IN!", fg="#52A41D", font=("Tahoma", 9, "bold"))
-			self.loginPageObject.verifyCreateLabel.after(1500, waitLabel)					# An event delayer for changing the label of SUCCESSFUL CREATIONS
+			self.loginPageObject.verifyCreateLabel.after(2000, waitLabel)					# An event delayer for changing the label of SUCCESSFUL CREATIONS
 			
 Window = Tk()        		 													# Creates an empty window
 Main = navClass()
 Window.geometry('1000x600+170+80')												# Set dimensions to 1000x600 pos @ screen center
 Window.resizable(0,0)			 												# Does not resize the window, ever 	
-Window.wm_iconbitmap('GUIE\\CoffeeCup.ico')										# Adds a little mug icon over the top left corner
+Window.wm_iconbitmap('GUIE/CoffeeCup.ico')										# Adds a little mug icon over the top left corner
 Window.mainloop()																# Executes code above in a loop
 
-os.remove('CC.pyc')																# Removes the temporary files inside the (" ")
+#os.remove('CC.pyc')															# Removes the temporary files inside the (" ")
 #os.remove('Main.pyc')															# (For Git uploading purposes only)

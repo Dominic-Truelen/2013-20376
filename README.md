@@ -14,6 +14,10 @@ Profile Info
 
 Multiple Active Profiles
 
+Setup Page Layout
+
+GUI Optimization
+
 
 Level 3
 
