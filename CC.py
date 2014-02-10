@@ -2,7 +2,7 @@ import os, shutil #for deleting and renaming files
 import glob
 
 class CC(object): #profile management #superclass
-    
+
     def __init__(self):
         self.name = ''
         self.password = ''
@@ -19,16 +19,9 @@ class CC(object): #profile management #superclass
     def get_password(self): #accessor
         return self.password
 
-    def login(self):
-        pass
-
-    def logout(self):
-        pass
-
 class creation(CC): #profile creation
-    
+
     def __init__(self):
-        CC.__init__(self)
         self.val = validation()
         self.usernameVerifyObject = usernameVerify()                                    #Chain of Responsibility
         self.passwordVerifyObject = passwordVerify()
@@ -54,11 +47,11 @@ class creation(CC): #profile creation
             if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + self.get_name()) is True:
                 counter = 0
             if counter == 1:
-                break		
-    
+                break
+
     def ask_password(self): #GUI imput of password
         self.set_password(raw_input("Enter password: "))
-        
+
     def create(self): #creating the database, adding necessary folders, and adding the username and password
         if glob.glob("DATABASE") == []:
             os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE")
@@ -71,14 +64,14 @@ class creation(CC): #profile creation
         f.close()
         os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + str(self.get_name()) + "\\pictures")
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + self.get_name() + "\\" + self.get_name(), 'w')
-        f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\nOffline\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
+        f.write("Details 2013-20376\n" + self.get_name() + '\n' + self.get_password() + '\n\n\n\n[[],[],[]]\nOffline\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
         f.close()
-    
+
     def validate(self, username, password1, password2):
         return self.val.guic(username, password1, password2)
-    
+
 class validation(CC): #validation for logging in and deleting profiles
-    
+
     def handler(self, successor):
         self.successor = successor
 
@@ -90,8 +83,8 @@ class validation(CC): #validation for logging in and deleting profiles
         elif self.get_password() == "":
                 return "PASSWORD IS BLANK"
         else:
-            return self.successor.handleLogin(self.get_name(), self.get_password())           
-    
+            return self.successor.handleLogin(self.get_name(), self.get_password())
+
     def guic(self, username, password1, password2):             # GUI Version when creating a new account
         self.set_name(username)
         self.set_password(password1)
@@ -99,7 +92,7 @@ class validation(CC): #validation for logging in and deleting profiles
             return "USERNAME IS BLANK"
         else:
             return self.successor.handleCreate(self.get_name(), self.get_password(), password2)
-          
+
     def validation(self):													# Console Version
         self.set_name(str(raw_input("Username: ")))
         if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + self.get_name()) is False:
@@ -112,10 +105,10 @@ class validation(CC): #validation for logging in and deleting profiles
             f.close()
             return 1
         f.close()
-        return 0         
+        return 0
 
 class usernameVerify(validation):
-    
+
     def handleLogin(self, x, y):
         if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + x) is False:    #Check if Logging in a username DNE
                 return "ACCOUNT DOES NOT EXIST"
@@ -130,15 +123,15 @@ class usernameVerify(validation):
 
     def handleCreate(self, username, password1, password2):
         for x in set(username):                             #Check for special characters in creating usernames
-            if x in set([".", " ", "^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
+            if x in set([" ","^", "&", "!", "$", ",", "/", "?", "\\", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
                 return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
         if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + username) is True:      #Check if username is already in use
-            return "USERNAME IS ALREADY TAKEN"        
+            return "USERNAME IS ALREADY TAKEN"
         else:
             return self.successor.handleCreate(password1, password2)    #Handle the Password
 
 class passwordVerify(validation):
-        
+
     def handleLogin(self, y):
         return "INVALID PASSWORD"
 
@@ -156,14 +149,14 @@ class passwordVerify(validation):
                 return "RETYPE YOUR PASSWORD\nCORRECTLY"
 
 class deletion(CC): #profile deletion
-    
+
     def __init__(self):
-        CC.__init__(self)
+        super(deletion, self).__init__()
         self.valid = validation()
-    
+
     def delete2(self):				   # ATTENTION! XD *** THIS IS THE ORIGINAL DELETE FUNCTION BY DOMINIC. (I CHANGED THE NAME TO DELETE 2 FOR BACKUP) def has errors & doesn't yet output as expected
         temp = self.valid.validation() #will return 1 if valid and 0 if invalid
-        if temp == 1:            
+        if temp == 1:
             f = open("DATABASE\\DATABASE")
             g = open("DATABASE\\DATABASE1", 'w')	#Temp file name for deleting names in the registry
             for line in f:
@@ -181,14 +174,14 @@ class deletion(CC): #profile deletion
             f.close()
             g.close()
             os.remove("DATABASE\\DATABASE")
-            os.rename("DATABASED\\DATABASE1", "DATABASE\\DATABASE")
+            os.rename("DATABASE\\DATABASE1", "DATABASE\\DATABASE")
             shutil.rmtree(os.path.abspath(os.path.dirname(__file__)) + '\\DATABASE\\' + self.valid.get_name()) #deletes the filename with name of profile
         else:
             print "NO SUCH PROFILE EXISTS"
-            
+
     def delete(self):				   #  *** THIS IS MY VERSION OF THE DELETE FUNCTION. This code needs adding in terms of friend deletion (this code kinda works, but needs improvement)
         temp = self.valid.validation() #will return 1 if valid and 0 if invalid
-        if temp == 1:            
+        if temp == 1:
             f = open("DATABASE\\DATABASE")
             g = open("DATABASE\\DATABASE1", 'w')	#Temp file name for deleting names in the registry
             lines = f.readlines()
@@ -196,7 +189,7 @@ class deletion(CC): #profile deletion
             a = self.valid.get_name() + ": " + self.valid.get_password() + "\n"
             for x in lines:
                 if x != a:
-                    g.write(x)			
+                    g.write(x)
             g.close()
             os.remove("DATABASE\\DATABASE")
             os.rename("DATABASE\\DATABASE1", "DATABASE\\DATABASE")
@@ -205,9 +198,9 @@ class deletion(CC): #profile deletion
             print "NO SUCH PROFILE EXISTS"
 
 class login(CC): #logging in
-    
+
     def __init__(self):
-        CC.__init__(self)
+        super(login, self).__init__()
         self.valid = validation()
         self.database = import_database()
         self.export = export_database()
@@ -219,7 +212,7 @@ class login(CC): #logging in
             self.password = self.valid.get_password()
             self.database.set_name(self.name) #see import_database
             self.database.set_password(self.password)
-            self.export.export_details(self.name, self.password, "Online")
+            self.export.export_details(self.name)
             self.database.import_friends(self.name)
             self.database.import_status(self.name)
             self.database.import_messages(self.name)
@@ -230,10 +223,11 @@ class login(CC): #logging in
         return 0
 
 class import_database(object): #importing data from the profile's database
-   
+
     def __init__(self):
         self.name = ''
         self.password = ''
+        self.details = []
         self.friends = []
         self.status = {}
         self.wall = {}
@@ -253,6 +247,9 @@ class import_database(object): #importing data from the profile's database
 
     def get_password(self):
         return self.password
+
+    def get_details(self):
+        return self.details
 
     def get_friends(self):
         return self.friends
@@ -276,10 +273,15 @@ class import_database(object): #importing data from the profile's database
         return self.wall
 
     def import_details(self, name):
+        self.details = []
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
         f.readline()
-        self.name = eval(f.readline())
-        self.password = eval(f.readline())
+        f.readline()
+        f.readline()
+        for line in f:
+            if line == 'Offline' + '\n' or line == 'Online' + '\n':
+                break
+            self.details.append(line.rstrip())
         f.close()
 
     def import_friends(self, name): #importing friends list
@@ -288,8 +290,7 @@ class import_database(object): #importing data from the profile's database
             temp = f.readline()
             if "Friends 2013-20376" in temp:
                 break
-        temp = f.readline()
-        self.friends = eval(temp)
+        self.friends = eval(f.readline().rstrip())
         f.close()
 
     def import_status(self, name): #importing status
@@ -298,7 +299,7 @@ class import_database(object): #importing data from the profile's database
             temp = f.readline()
             if "Status 2013-20376" in temp:
                 break
-        self.status = f.readline()
+        self.status = f.readline().rstrip()
         f.close()
 
     def import_messages(self, name): #importing messages
@@ -351,7 +352,7 @@ class import_database(object): #importing data from the profile's database
             temp = f.readline()
             if "Friend Requests Recieved 2013-20376" in temp:
                 break
-        self.friend_requests = f.readline()
+        self.friend_requests = f.readline().rstrip()
         f.close()
 
     def import_friend_requests_sent(self, name):
@@ -360,10 +361,7 @@ class import_database(object): #importing data from the profile's database
             temp = f.readline()
             if "Friend Requests Sent 2013-20376" in temp:
                 break
-        temp = f.readline()
-        temp = temp.split('\n')
-        temp = temp[0]
-        self.friend_requests_sent = temp
+        self.friend_requests_sent = f.readline().rstrip()
         f.close()
 
     def import_wall(self, name):
@@ -371,19 +369,37 @@ class import_database(object): #importing data from the profile's database
         while True:
             if "Wall 2013-20376" in f.readline():
                 break
-        self.wall = f.readline()
+        self.wall = f.readline().rstrip()
         f.close()
 
-class export_database(object): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
-    
-    def export_details(self, name, password, status): #exporting username and password
+class export_database(): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
+
+    def export_details(self, name, gender = None, age = None, job = None, education = None): #exporting username and password
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
         g = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + "1", 'w')
-        g.write('Details 2013-2076' + '\n' + name + '\n' + password + '\n' + status + '\n')
-        f.readline()
-        f.readline()
-        f.readline()
-        f.readline()
+        if gender != None:
+            g.write(f.readline())
+            g.write(name + '\n')
+            f.readline()
+            g.write(f.readline())
+            g.write(gender + '\n')
+            g.write(str(age) + '\n')
+            g.write(str(job) + '\n')
+            g.write(str(education) + '\n')
+            f.readline()
+            f.readline()
+            f.readline()
+            f.readline()
+        else:
+            while True:
+                temp = f.readline()
+                if temp == "Offline" + '\n':
+                    g.write("Online" + '\n')
+                    break
+                elif temp == "Online" + '\n':
+                    g.write("Offline" + '\n')
+                    break
+                g.write(temp)
         for line in f:
             g.write(line)
         f.close()
@@ -408,7 +424,7 @@ class export_database(object): #exporting data to the database by creating a tem
         os.remove(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
         os.rename(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name + '1', os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
         f = open("DATABASE\\DATABASE")
-        g = open("DATABASE\\DATABASE" + '1', 'w')
+        g = open("DATABASE\\DATABASE1", 'w')
         while True:
             temp = f.readline()
             g.write(temp)
@@ -423,7 +439,7 @@ class export_database(object): #exporting data to the database by creating a tem
         f.close()
         g.close()
         os.remove("DATABASE\\DATABASE")
-        os.rename("DATABASE\\DATABASE" + '1', "DATABASE\\DATABASE")
+        os.rename("DATABASE\\DATABASE1", "DATABASE\\DATABASE")
 
     def export_status(self, name, status, time): #exporting status
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
@@ -542,13 +558,13 @@ class export_database(object): #exporting data to the database by creating a tem
         os.rename(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name+ '1', os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
 
 class logout(object): #will reset the name and password of CC after returning to the main GUI
-    
+
     def __init__(self):
         self.quit = CC()
         self.exporter = export_database()
 
     def exit(self, name, password):
-        self.exporter.export_details(name, password, "Offline")
+        self.exporter.export_details(name)
         self.quit.set_name('')
         self.quit.set_password('')
 

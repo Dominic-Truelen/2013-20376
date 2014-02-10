@@ -1,5 +1,5 @@
 from CC import creation, login, deletion, logout
-from Main import messages, status, friends, wall
+from Main import messages, status, friends, wall, post, edit_profile
 import os
 while True:
     choice = raw_input("What do you want to do? (C - Create, L - Login, D - Delete, Q - Quit) ")
@@ -13,11 +13,42 @@ while True:
         l = login()
         if l.login() == 1:
             name = str(l.get_name())
+            pr = edit_profile(name)
+            m = messages(name)
+            p = post(name)
+            s = status(name)
+            f = friends(name)
+            w = wall(name)
+            log = logout()
             while True:
-                choice = raw_input("What do you want to do? (M - Messages, S - Status, F - Friends, W - Wall, L - Logout) ")
+                choice = raw_input("What do you want to do? (P - Profile, M - Messages, S - Status, F - Friends, W - Wall, L - Logout) ")
                 choice = choice.lower()
-                if choice == 'm':
-                    m = messages()
+                if choice == 'p':
+                    while True:
+                        pr.get_details()
+                        print "Gender"
+                        pr.print_gender()
+                        print "Age"
+                        pr.print_age()
+                        print "Job"
+                        pr.print_job()
+                        print "Education"
+                        pr.print_education()
+                        choice = raw_input("What do you want to do? (G - Change Gender, A - Change Age, J - Change Job, E - Change Education, R - Return)")
+                        choice = choice.lower()
+                        if choice == 'g':
+                            pr.change_gender()
+                        elif choice == 'a':
+                            pr.change_age()
+                        elif choice == 'j':
+                            pr.change_job()
+                        elif choice == 'e':
+                            pr.change_education()
+                        elif choice == 'r':
+                            break
+                        else:
+                            print"Invalid input"
+                elif choice == 'm':
                     while True:
                         m.get_messages(name)
                         m.get_messages_sent(name)
@@ -25,53 +56,49 @@ while True:
                         choice = raw_input("What do you want to do? (S - Send Message, D - Delete Message, R - Return) ")
                         choice = choice.lower()
                         if choice == 's':
-                            m.send_message(name)
+                            m.send_message()
                         elif choice == 'd':
-                            m.delete_message(name)
+                            m.delete_message()
                         elif choice =='r':
                             break
                         else:
                             print "Invalid input"
                 elif choice == 's':
-                    s = status()
                     while True:
-                        s.get_status(name)
+                        s.get_status()
                         s.print_status()
                         choice = raw_input("What do you want to do? (C - Create Status, D - Delete Status, R - Return) ")
                         choice = choice.lower()
                         if choice == 'c':
-                            s.create_status(name)
+                            s.create_status()
                         elif choice == 'd':
-                            s.delete_status(name)
+                            s.delete_status()
                         elif choice == 'r':
                             break
                         else:
                             print "Invalid input"
                 elif choice == 'f':
-                    f = friends()
                     while True:
                         print "Friends:"
-                        f.see_friends(name)
+                        f.see_friends()
                         print "Friend Requests (Recieved, Sent):"
-                        f.see_friend_requests(name)
+                        f.see_friend_requests()
                         choice = raw_input("What do you want to do? (A - Add Friend, D - Delete Friend, F - Approve Friend Request, R - Return) ")
                         choice = choice.lower()
                         if choice == 'a':
-                            f.add_friend(name)
+                            f.add_friend()
                         elif choice == 'd':
-                            f.delete_friends(name)
+                            f.delete_friends()
                         elif choice == 'f':
-                            f.approve_request(name)
+                            f.approve_request()
                         elif choice == 'r':
                             break
                         else:
                             print "Invalid input"
                 elif choice == 'w':
-                    w = wall()
-                    w.status(name)
-                    w.print_wall(name)
+                    w.status()
+                    w.print_wall()
                 elif choice == 'l':
-                    log = logout()
                     log.exit(l.get_name(), l.get_password())
                     break
                 else:
