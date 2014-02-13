@@ -4,19 +4,26 @@
 from CC import *																# pack() is for stacking, while place() is for a more
 from Tkinter import *															# accurate placing of widgets. grid() is for tables
 from profilePageGUI import profilePageGUI
-from PIL import ImageTk, Image
-import os, sys, glob, time, tkMessageBox
+from PIL import ImageTk
+import os, sys, glob, time, subprocess, tkMessageBox
 
 defaultEntryStyle = ("Tahoma", 12)												# Initial font settings for styling
 defaultLabelStyle = ("Tahoma", 9)
 defaultCreateStyle = ("Tahoma", 14)
 defaultLogoStyle = ("Verdana", 18)
+defaultSetupStyle = ("Segoe UI Light", 16)
 signatureColor = "orange"														# Shortcut labels for custom color styling
 toplayerColor = "#555555"														# Dark gray signature color
 backgroundColor = "#EEEEEE"														# Grayish-white color
+greenColor = "#52A41D"
 
 a=-0.05																			# Adjuster for widget's y-value placement
 b=0.075
+
+
+def anotherUser():																# Instantiate multiple users
+	subprocess.Popen("python GUI_Basic_1.py")
+
 
 class loginPageGUI(Frame):														# The login GUI class Interface!
 	def __init__(self, master=None):	
@@ -50,11 +57,11 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		midLayer = Frame(self, width=1000, height=490)		# Code here for the CREATE class
 		midLayer.pack()
 		
-		canvasSky = Canvas(midLayer, width=1000, height=490, highlightthickness=0, bg=backgroundColor)
-		canvasSky.pack()
-		sky = ImageTk.PhotoImage(file="GUIE/LoginSky.png")
-		canvasSky.create_image(500, 245, image=sky)
-		canvasSky.image = sky								#Reference to image so that garbage wont be collected
+		loginSky = Canvas(midLayer, width=1000, height=490, highlightthickness=0, bg=backgroundColor)
+		loginSky.pack()
+		sky = PhotoImage(file="GUIE/LoginSky.gif")
+		loginSky.create_image(500, 245, image=sky)
+		loginSky.image = sky								#Reference to image so that garbage wont be collected
 		
 		layer1 = Frame(midLayer, width=379, height=40, bg="#FFFFFF")
 		layer1.place(anchor=CENTER, relx=0.7, rely=0.3+a)
@@ -64,13 +71,13 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		layer3.place(anchor=CENTER, relx=0.7, rely=0.6+a)
 		self.newUsernameVariable = StringVar()
 		self.newUsernameInput = Entry(layer1, fg=toplayerColor, width=35, textvariable=self.newUsernameVariable, font = defaultCreateStyle, relief=FLAT)
-		self.newUsernameInput.place(anchor=CENTER, relx=0.5, rely=0.5+a)		
+		self.newUsernameInput.place(anchor=CENTER, relx=0.5, rely=0.5)		
 		self.newPasswordVariable = StringVar()
 		self.newPasswordInput = Entry(layer2, fg=toplayerColor, width=35, show="•", textvariable=self.newPasswordVariable, font = defaultCreateStyle, relief=FLAT)
-		self.newPasswordInput.place(anchor=CENTER, relx=0.5, rely=0.5+a)
+		self.newPasswordInput.place(anchor=CENTER, relx=0.5, rely=0.5)
 		self.newPasswordVerifyVariable = StringVar()
 		self.newPasswordVerifyInput = Entry(layer3, fg=toplayerColor, width=35, show="•", textvariable=self.newPasswordVerifyVariable, font = defaultCreateStyle, relief=FLAT)
-		self.newPasswordVerifyInput.place(anchor=CENTER, relx=0.5, rely=0.5+a)
+		self.newPasswordVerifyInput.place(anchor=CENTER, relx=0.5, rely=0.5)
 		Label(midLayer, text="Pick a username:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.23+a)
 		Label(midLayer, text="Create a password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.38+a)
 		Label(midLayer, text="Reenter your password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.53+a)
@@ -89,7 +96,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.45)
 
 	def reset(self, x, y):
-		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to quit?"):			
+		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to log-out?"):			
 			self.usernameInput.delete(0, END)									# Delete any text from login
 			self.passwordInput.delete(0, END)
 			self.usernameInput.focus()
@@ -129,16 +136,141 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		homepageMainWindow.pack()
 		Label(homepageMainWindow, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
 
-class setupPageGUI(Frame):
+class setupPageGUI(Frame, CC):
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
+		CC.__init__(self)
 		self.createWidgets()
+
+	def get_birthday(self):
+		return list([self.monthvar.get(), self.dayvar.get(), self.yearvar.get()])
+
+	def get_job(self):
+		return list([self.position.get(), self.company.get(), self.workyears.get()])
+
+	def get_educ(self):
+		return list([self.school.get(), self.graduateyear.get()])
+
+	def export_setup_data(self):
+		self.exporter.export_details(self.get_name(), self.get_password(), dispname=self.displayNameVariable.get(), gender=self.genderradio.get(), birthday=self.get_birthday(),  jobs=self.get_job(), education=self.get_educ())
+		self.set_OnOrOff("Offline")
 
 	def createWidgets(self):
 		temp = Frame(self, width=1000, height=600, bg=backgroundColor)
 		temp.pack()
 
-		Label(temp, text="Setup your account", font=("Segoe UI Light", 30)).place(anchor=CENTER, relx=0.5, rely=0.1) 
+		topLayer = Frame(temp, width=1000, height=80, bg=toplayerColor)		# Code here for the extra details
+		topLayer.place(anchor=N, relx=0.5, rely=0)
+		Label(topLayer, text="Setup your account", font=("Segoe UI Light", 28), bg=toplayerColor, fg="#FFFFFF").place(anchor=CENTER, relx=0.5, rely=0.45)
+
+		setupSky = Canvas(temp, width=1000, height=490, highlightthickness=0, bg=backgroundColor)
+		setupSky.place(anchor=CENTER, relx=0.5, rely=0.541)
+		sky = PhotoImage(file="GUIE/SetupSky.gif")
+		setupSky.create_image(500, 245, image=sky)
+		setupSky.image = sky 
+		
+		Label(temp, text="Display Name: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.3)
+		Label(temp, text="Birthday: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.4)
+		Label(temp, text="Sex: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.5)		
+		Label(temp, text="Education: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.7)
+		Label(temp, text="Jobs: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.6)
+
+		self.displayNameVariable = StringVar()
+		layer1 = Frame(temp, width=550, height=40, bg="#FFFFFF")
+		layer1.place(anchor=W, relx=0.33, rely=0.3)
+		displayNameInput = Entry(layer1, fg=toplayerColor, width=52, textvariable=self.displayNameVariable, font = defaultCreateStyle, relief=FLAT)
+		displayNameInput.place(anchor=CENTER, relx=0.5, rely=0.5)
+
+		
+		months = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+		days31 = ["Day"]+range(1,32)		
+		years = ["Year"]+range(int(time.strftime("%Y")), 1949, -1)
+
+		self.monthvar = StringVar()
+		self.dayvar = StringVar()
+		self.yearvar = StringVar()
+		self.monthvar.set("Month")
+		self.dayvar.set("Day")
+		self.yearvar.set("Year")
+
+		layer2 = Frame(temp, width=550, height=40, bg=backgroundColor)
+		layer2.place(anchor=W, relx=0.33, rely=0.4)
+
+		OptionMenu(layer2, self.yearvar, *years).grid(row=0, column=1)
+		OptionMenu(layer2, self.monthvar, *months).grid(row=0, column=2, padx=6)
+		OptionMenu(layer2, self.dayvar, *days31).grid(row=0, column=3)	
+
+		
+		self.genderradio = StringVar()		
+		male = Radiobutton(temp, text="Male", variable=self.genderradio, value="Male", font=defaultCreateStyle, bg=backgroundColor)
+		male.place(anchor=W, relx=0.33, rely=0.5)
+		male.select()
+		female = Radiobutton(temp, text="Female", variable=self.genderradio, value="Female", font=defaultCreateStyle, bg=backgroundColor)
+		female.place(anchor=W, relx=0.43, rely=0.5)
+		female.deselect()
+
+
+		self.jobsCheckboxVariable = IntVar()
+		includeJobsCheckbox = Checkbutton(temp, text="Include", bg=backgroundColor, variable=self.jobsCheckboxVariable, command=lambda: self.CheckboxState(self.jobsCheckboxVariable, entrya, entryb, entryc, label1, label2, label3))
+		includeJobsCheckbox.place(anchor=W, relx=0.33, rely=0.6)
+
+		self.position = StringVar()
+		self.company = StringVar()
+		self.workyears = StringVar() 	#NB: Could be IntVar()				
+		label1 = Label(temp, text="Work:", bg=backgroundColor, state=DISABLED)
+		label1.place(anchor=W, relx=0.417, rely=0.555)
+		label2 = Label(temp, text="at the company:", bg=backgroundColor, state=DISABLED)
+		label2.place(anchor=W, relx=0.58, rely=0.555)
+		label3 = Label(temp, text="for __ years:", bg=backgroundColor, state=DISABLED)
+		label3.place(anchor=W, relx=0.782, rely=0.555)
+		entrya = Entry(temp, width=14, relief=FLAT, textvariable = self.position, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entrya.place(anchor=W, relx=0.42, rely=0.6)
+		entryb = Entry(temp, width=18, relief=FLAT, textvariable = self.company, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entryb.place(anchor=W, relx=0.5825, rely=0.6)
+		entryc = Entry(temp, width=9, relief=FLAT, textvariable = self.workyears, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entryc.place(anchor=W, relx=0.785, rely=0.6)
+
+		self.school = StringVar()
+		self.graduateyear = StringVar()
+		self.educCheckboxVariable = IntVar()
+		includeEducCheckbox = Checkbutton(temp, text="Include", bg=backgroundColor, variable=self.educCheckboxVariable, command=lambda: self.CheckboxState(self.educCheckboxVariable, entry1, entry2, labela, labelb))
+		includeEducCheckbox.place(anchor=W, relx=0.33, rely=0.7)
+		labela = Label(temp, text="School:", bg=backgroundColor, state=DISABLED)
+		labela.place(anchor=W, relx=0.417, rely=0.655)
+		labelb = Label(temp, text="Year graduated:", bg=backgroundColor, state=DISABLED)
+		labelb.place(anchor=W, relx=0.775, rely=0.655)		
+		entry1 = Entry(temp, width=34, relief=FLAT, textvariable = self.school, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entry1.place(anchor=W, relx=0.42, rely=0.7)
+		entry2 = Entry(temp, width=9, relief=FLAT, textvariable = self.graduateyear, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entry2.place(anchor=W, relx=0.78, rely=0.7)
+
+		self.verifySetupLabel = Label(temp, text="", bg=backgroundColor, fg="red", font=("Tahoma", 9, "bold"), justify=LEFT)
+		self.verifySetupLabel.place(anchor=W, relx=0.6, rely=0.85)		
+
+		bottomLayer = Frame(temp, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
+		bottomLayer.place(anchor=S, relx=0.5, rely=1)
+
+	def CheckboxState(self, var, *widgets):
+		if var.get() == 0:
+			for x in widgets:
+				x.config(state=DISABLED)
+		else:
+			for x in widgets:
+				x.config(state=NORMAL)	
+
+	def reset(self, x):
+		if tkMessageBox.askyesno("Quitting Setup", "Are you sure you want to quit setup?"):			
+			self.master.title("Welcome to Caffy!")
+			x.login_logout.set_name("")
+			x.login_logout.set_password("")
+			self.set_name("")
+			self.set_password("")
+			x.usernameInput.delete(0, END)
+			x.passwordInput.delete(0, END)
+			x.usernameInput.focus()			
+			x.lift()															# Lifts the original login page (passed as argument)
+		else:
+			return
 
 class Singleton:																# Singleton Design Pattern retrieved from
     __single = None																# Python Help Manual Website: http://www.python.org/workshops/1997-10/proceedings/savikko.html
@@ -187,6 +319,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.val = validation()													# Initial functions for the verifications
 		self.loginCC = CC()
 		self.cre = creation()
+		self.master = master
 
 		self.usernameVerifyObject = usernameVerify()							#Chain of Responsibility
 		self.passwordVerifyObject = passwordVerify()
@@ -216,8 +349,13 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		
 		self.loginPageObject.usernameInput.bind("<Return>", lambda event: self.loginButton.invoke())	#Allows the use of the Enter key when loggin in
 		self.loginPageObject.passwordInput.bind("<Return>", lambda event: self.loginButton.invoke())
+
+		newCaffyButton = ImageTk.PhotoImage(file="GUIE/switchButton.png")
+		self.anotherUserButton = Button(self.loginPageObject, image=newCaffyButton, relief=FLAT, bg=toplayerColor, command=anotherUser)
+		self.anotherUserButton.place(anchor=CENTER, relx=0.04, rely=0.07)
+		self.anotherUserButton.image = newCaffyButton
 		
-		self.createButton = Button(self.loginPageObject, text="Sign Me Up!", width=12, font=("Tahoma", 13, "bold"), relief=FLAT, fg="#FFFFFF", bg="#52A41D", command=self.verifyCreate)
+		self.createButton = Button(self.loginPageObject, text="Sign Me Up!", width=12, font=("Tahoma", 13, "bold"), relief=FLAT, fg="#FFFFFF", bg=greenColor, command=self.verifyCreate)
 		self.createButton.place(anchor=CENTER, relx=0.82, rely=0.75)
 		
 		self.loginPageObject.newUsernameInput.bind("<Return>", lambda event: self.createButton.invoke())	#Allows the use of the Enter key when creating accounts
@@ -227,9 +365,25 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.logoutButton = Button(self.activePageObject, text="Log Out", width=6, height=1, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject, self.activePageObject))
 		self.logoutButton.place(anchor=CENTER, relx=0.83+b, rely=0.042)
 
-		self.setupBackButton = Button(self.setupPageObject, text="Back", width=6, height=1, font=("Tahoma", 20, "bold"), relief=FLAT, fg="black", bg=backgroundColor, command=lambda: self.loginPageObject.lift())
-		self.setupBackButton.place(anchor=CENTER, relx=0.15, rely=0.11)
+		self.master.protocol("WM_DELETE_WINDOW", self.exit)
+
+		self.setupBackButton = Button(self.setupPageObject, text="Back", width=6, height=1, font=("Tahoma", 16, "bold"), relief=FLAT, fg="white", bg=toplayerColor, command=lambda: self.setupPageObject.reset(self.loginPageObject))
+		self.setupBackButton.place(anchor=CENTER, relx=0.1, rely=0.069)
+
+		self.setupSubmitButton = Button(self.setupPageObject, text="I'm Ready", font=("Tahoma", 16, "bold"), fg="#FFFFFF", bg=greenColor, relief=FLAT, command=self.verifySetup)
+		self.setupSubmitButton.place(anchor=CENTER, relx=0.81, rely=0.85)
 			
+	def exit(self):
+		if self.loginPageObject.login_logout.get_name() != "":					# If log in is occupied
+			if self.setupPageObject.get_name() != "":							# and if setup page is occupied
+				self.setupPageObject.reset(self.loginPageObject)				# whenever x button is pressed, display the exit setup message
+				return
+			self.loginPageObject.reset(self.loginPageObject, self.activePageObject)		#Otherwise when setup is skipped, display the logout message (there's a big difference)
+		else:
+			if tkMessageBox.askyesno("Exiting", "You are leaving caffy. Continue?"):	#Otherwise if user is logged-out, when x button is pressed, show the exit application message
+				self.master.destroy()											# Function to destroy the whole application
+		return 
+
 	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
 		for x in args:															# The *args is a tuple, so every element in it must be iterated
 			x.delete(0, END)													# to delete the value of all the 3 Create Entries
@@ -259,11 +413,11 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 				self.loginPageObject.usernameInput.focus()
 			elif answer == responses[3]:
 				self.eraseContents(self.loginPageObject.passwordInput)
-				self.loginPageObject.passwordInput.focus()
+				self.loginPageObject.passwordInput.focus()			
 		
 		elif answer == "SETUP":
 			self.setupPageObject.lift()														# CODE HERE SO THAT OUT OF NOWHERE REGISTERED LINES (FROM TESTFILE) MAY HAVE THEIR OWN INDIVIDUAL DATABASES AT LAST. ALSO,
-			#Code here to input registry info into setup page								# NOTE TO CODE: DATABASE WOULD NO LONGER HAVE "OFFLINE SETUP" AS ONOROFF STATUS. INSTEAD, GO DIRECTLY TO OFFLINE.
+			#Code here to input registry info into setup page (USE CREATION.CREATE() BUT MIND THE REGISTRY.REGISTER())		# NOTE TO CODE: DATABASE WOULD NO LONGER HAVE "OFFLINE SETUP" AS ONOROFF STATUS. INSTEAD, GO DIRECTLY TO OFFLINE.
 
 		else:	#answer == 1
 			self.loginButton.flash()
@@ -273,7 +427,13 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			a = self.loginPageObject.login_logout.login()
 			if a == "SETUPCREATED":															# IF SETUPCREATED (Meaning account is newly created), show the setup window
 				self.setupPageObject.lift()
-				self.loginPageObject.login_logout.set_OnOrOff("Offline")					#Temporary storage for putting offline to the newly set-up account
+				self.setupPageObject.set_name(self.loginCC.get_name())
+				self.setupPageObject.set_password(self.loginCC.get_password())				
+			elif a == "OLREADY":
+				self.loginPageObject.login_logout.set_name("")
+				self.loginPageObject.login_logout.set_password("")
+				self.loginPageObject.verifyLoginLabel.config(text="ALREADY LOGGED IN")				# display the possible warnings and perform some formatting actions like clear the entry field:
+				self.loginPageObject.verifyLoginLabel.after(2000, waitLabel)
 			else:
 				self.activePageObject.setDatabase(a)
 				self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
@@ -314,10 +474,34 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.loginPageObject.usernameInput.focus()
 			self.loginPageObject.verifyLoginLabel.config(text="")
 			self.loginPageObject.verifyCreateLabel.config(text="SUCCESSFUL! YOU CAN NOW\nLOG-IN!", fg="#52A41D", font=("Tahoma", 9, "bold"))
-			self.loginPageObject.verifyCreateLabel.after(2000, waitLabel)					# An event delayer for changing the label of SUCCESSFUL CREATIONS
-			
+			self.loginPageObject.verifyCreateLabel.after(2000, waitLabel)		# An event delayer for changing the label of SUCCESSFUL CREATIONS
+
+	def verifySetup(self):
+
+		def waitLabel():																# For removing the WARNING messages after 1.5 second
+			self.setupPageObject.verifySetupLabel.config(text="")		
+
+		t = self.setupPageObject
+		responses = ["DISPLAY NAME IS\nBLANK", "MUST NOT CONTAIN\nSPECIAL CHARACTERS", "DATE INCOMPLETE", "INVALID DATE", "JOB INFORMATION\nINCOMPLETE", "EDUCATION INFORMATION\nINCOMPLETE"]
+		answer = self.val.guis(t.displayNameVariable.get(), t.monthvar.get(), t.dayvar.get(), t.yearvar.get(), t.genderradio.get(), t.jobsCheckboxVariable.get(), t.position.get(), t.company.get(), t.workyears.get(), t.educCheckboxVariable.get(), t.school.get(), t.graduateyear.get())
+
+		if answer in responses:																												# If the answer is included in the list above,
+			self.setupPageObject.verifySetupLabel.config(text=answer)
+			self.setupPageObject.verifySetupLabel.after(2000, waitLabel)						
+		
+		else:						
+			self.setupPageObject.export_setup_data()							#Export the data from setup into newly created database
+			b = self.setupPageObject.login()									#Log-in and assign the returned importer database to b
+			self.activePageObject.setDatabase(b)								#Database information will be passed to activepage
+			self.setupPageObject.set_name("")									#Clears the setup garbage
+			self.setupPageObject.set_password("")
+			self.activePageObject.lift()										# otherwise, if entries are correct, execute & display the home page
+			self.master.title("You are logged in!")
+
+
+
 Window = Tk()        		 													# Creates an empty window
-Main = navClass()
+Main = navClass(Window)
 Window.geometry('1000x600+170+80')												# Set dimensions to 1000x600 pos @ screen center
 Window.resizable(0,0)			 												# Does not resize the window, ever 	
 Window.wm_iconbitmap('GUIE/CoffeeCup.ico')										# Adds a little mug icon over the top left corner

@@ -16,7 +16,7 @@ class CC(object): #profile management #superclass
         self.password = password
 
     def set_OnOrOff(self, status):
-        self.exporter.export_details(self.get_name(), self.get_password, status)
+        self.exporter.export_onoroff(self.get_name(), status)
 
     def get_name(self): #accessor
         return self.name
@@ -28,13 +28,19 @@ class CC(object): #profile management #superclass
         self.importer.import_onoroff(self.get_name())
         if self.importer.get_onoroff() == "Offline Setup":
             return "SETUPCREATED"
+        elif self.importer.get_onoroff() == "Online":
+            return "OLREADY"
         else:
             self.set_OnOrOff("Online")
+            self.importer.set_name(self.get_name())
+            self.importer.set_password(self.get_password())
             self.importer.import_all(self.get_name())
             return self.importer
 
     def logout(self):
-        self.exporter.export_details(self.get_name(), self.get_password(), "Offline")
+        self.set_OnOrOff("Offline")
+        self.set_name("")
+        self.set_password("")
 
 class creation(CC): #profile creation
 
@@ -78,18 +84,15 @@ class creation(CC): #profile creation
     def ask_password(self): #GUI imput of password
         self.set_password(raw_input("Enter password: "))
 
-    def create(self): #creating the database, adding necessary folders, and adding the username and password
-        if glob.glob("DATABASE") == []:
-            os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE")
-        elif glob.glob("DATABASE") != []:
-            if glob.glob("DATABASE/DATABASE") != []:
-                f = open("DATABASE/DATABASE")
-                f.close()
+    def create(self): #creating the database, adding necessary folders, and adding the username and password        
         self.registry.register()
         os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + str(self.get_name()) + "/pictures")
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.get_name() + "/" + self.get_name(), 'w')
-        f.write("Details 2013-20376\n" + "<INSERT NAME HERE>" + '\n' + self.get_password() + '\n\n\n\n[[],[],[]]\nOffline Setup\n\n' + 'DP 2013-20376\nGUIE//femaleDP.png\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
+        f.write("Details 2013-20376\n" + "<INSERT NAME HERE>" + '\n' + self.get_password() + '\n\n\n\n\nOffline Setup\n\n' + 'DP 2013-20376\nGUIE/default.gif\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
         f.close()
+
+    def createFromPreExisting(self):
+        self
 
     def validate(self, username, password1, password2):
         return self.val.guic(username, password1, password2)
@@ -116,6 +119,49 @@ class validation(CC): #validation for logging in and deleting profiles
             return "USERNAME IS BLANK"
         else:
             return self.successor.handleCreate(self.get_name(), self.get_password(), password2)
+
+    def guis(self, displayname, month, day, year, gender, checkboxjobs, position, company, years, checkboxeduc, school, graduateyear):
+
+        if displayname == "":
+            return "DISPLAY NAME IS\nBLANK"
+        for x in set(displayname):                              #Check for special characters in creating usernames
+            if x in set([".", "^", "&", "!", "$", ",", "\\", "?", "/", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"])  or x in range(0,10):
+                return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
+
+        if month == "Month" or day == "Day" or year == "Year":  #If passed variables have no actual dates, return incomplete
+            return "DATE INCOMPLETE"
+
+        day = int(day)
+        year = int(year)
+
+        if month in ("September", "April", "June", "November"): #Else if they are complete:
+            if day == 31:                                       #If at a 30 day month, day 31 was selected, return invalidity
+                return "INVALID DATE"
+        elif month == "February":                               #Else if february
+            if year % 400 == 0:                                 #If inputted year is divisible by 400, then leap year
+                if day in range(30,32): #Days 30 and 31 are excluded
+                    return "INVALID DATE"            
+            elif year % 100 == 0:                               #If inputted year is divisible by 100, then not leap year
+                if day in range(29,32): #Days 29, 30, and 31 are excluded
+                    return "INVALID DATE"
+            elif year % 4 == 0:                                 #If inputted year is divisible by 4, then leap year
+                if day in range(30,32): #Days 30 and 31 are excluded
+                    return "INVALID DATE"
+            else:
+                if day in range(29,32): #Days 29, 30, and 31 are excluded
+                    return "INVALID DATE"
+        #                                                       #Else if 31 day month, continue
+        if checkboxjobs == 1:                                   #If enabled, verify the jobs entry fields
+            if position == "" or company == "" or years == "":
+                return "JOB INFORMATION\nINCOMPLETE"
+        elif checkboxjobs == 0:
+            pass
+        if checkboxeduc == 1:
+            if school == "" or graduateyear == "":
+                return "EDUCATION INFORMATION\nINCOMPLETE"
+        elif checkboxjobs == 0:
+            pass
+        return 1
 
     def validation(self):													# Console Version
         self.set_name(str(raw_input("Username: ")))
@@ -157,9 +203,16 @@ class usernameVerify(validation):
             return 1
 
     def handleCreate(self, username, password1, password2):
+        if glob.glob("DATABASE") == []:
+            os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE")
+
+        if glob.glob("DATABASE/DATABASE") == []:                                       # For a first time user who logged in without creating an account first (error is handled by creating the database folder)
+            f = open("DATABASE/DATABASE", "w")
+            f.close()
+
         username = username.lower()                         #Uppercase letters during creation would'nt be allowed.
         for x in set(username):                             #Check for special characters in creating usernames
-            if x in set([" ", ".", "^", "&", "!", "$", ",", "\\", "?", "/", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
+            if x in set([".", "^", "&", "!", "$", ",", "\\", "?", "/", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"]):
                 return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
         f = open("DATABASE/DATABASE")
         a = f.readlines()
@@ -278,7 +331,6 @@ class registryDatabase(object):
     def __init__(self):
         self.name = ''
         self.password = ''
-        self.details = []
         self.friends = []
 
     def set_name(self, name): #mutator
@@ -293,9 +345,6 @@ class registryDatabase(object):
     def get_password(self):
         return self.password
 
-    def get_details(self):
-        return self.details
-
     def get_friends(self):
         return self.friends
 
@@ -307,7 +356,7 @@ class registryDatabase(object):
                 f.write("\t"+x+"\n")
         f.close()
 
-    def registerFriends(self):
+    def registerFriends(self):                  # Still experimental
         entry = self.get_name() + ": " + self.get_password()
         f = open("DATABASE/DATABASE", 'a')
         g = open("DATABASE/DATABASE1", 'w')
@@ -321,16 +370,18 @@ class registryDatabase(object):
                 break
 
         for x in self.get_friends():            # At the blank line, write the added friends
-            f.write("\t"+x+"\n")
+            g.write("\t"+x+"\n")
 
         f.write("\n")                           # Then at the end, write the blank line for future friend adding
         f.close()
+        g.close()
 
 
 class import_database(registryDatabase): #importing data from the profile's database
 
     def __init__(self):
         registryDatabase.__init__(self)
+        self.displayname = ""
         self.details = []
         self.status = {}
         self.onoroff = ""
@@ -341,11 +392,17 @@ class import_database(registryDatabase): #importing data from the profile's data
         self.friend_requests = []
         self.friend_requests_sent = []
 
+    def get_display_name(self):
+        return self.displayname
+
     def get_DP(self):
         return self.DP
 
     def get_onoroff(self):
         return self.onoroff
+
+    def get_details(self):
+        return self.details
 
     def get_status(self):
         return self.status
@@ -366,6 +423,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         return self.wall
 
     def import_all(self, name):
+        self.import_display_name(name)
         self.import_details(name)
         self.import_DP(name)
         self.import_friends(name)
@@ -376,22 +434,29 @@ class import_database(registryDatabase): #importing data from the profile's data
         self.import_friend_requests_sent(name)
         self.import_wall(name)
 
+    def import_display_name(self, name):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        f.readline()
+        self.displayname = f.readline()
+        self.displayname = self.displayname[0:-1]
+        f.close()
+
     def import_onoroff(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         for line in f:
-            if line == 'Offline' + '\n' or line == 'Online' + '\n':
+            if line == 'Offline\n' or line == 'Online\n' or line == 'Offline Setup\n':
                 break
         self.onoroff = line.rstrip()
         f.close()
 
     def import_details(self, name):
-        self.details = []
+        #self.details = []
         f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
         f.readline()
         f.readline()
         f.readline()
         for line in f:
-            if line == 'Offline' + '\n' or line == 'Online' + '\n':
+            if line == 'Offline\n' or line == 'Online\n' or line == 'Offline Setup\n':
                 break
             self.details.append(line.rstrip())
         f.close()
@@ -497,34 +562,40 @@ class import_database(registryDatabase): #importing data from the profile's data
 
 class export_database(): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
 
-    def export_details(self, name, gender = None, age = None, job = None, education = None): #exporting username and password
+    def export_onoroff(self, name, onoroff):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + "1", 'w')
+        for x in f:
+            if x == "Offline Setup\n" or x == "Offline\n" or x == "Online\n":
+                g.write(onoroff+"\n")
+            else:
+                g.write(x)
+        f.close()
+        g.close()
+        os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)        
+
+    def export_details(self, name, password, dispname = None, gender = None, birthday = None, jobs = None, education = None): #exporting username and password
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + "1", 'w')
         if gender != None:
-            g.write(f.readline())
-            g.write(name + '\n')
-            f.readline()
-            g.write(f.readline())
+            g.write(f.readline())       #Details 2013-20376
+            g.write(dispname + '\n')    #DISPLAYNAME
+            f.readline()                # Skip reading the name from f
+            g.write(f.readline())       #Write the Password (from f's readline) to g
             g.write(gender + '\n')
-            g.write(str(age) + '\n')
-            g.write(str(job) + '\n')
+            g.write(str(birthday) + '\n')
+            g.write(str(jobs) + '\n')
             g.write(str(education) + '\n')
+            f.readline()                #Skip the gender
             f.readline()
             f.readline()
             f.readline()
-            f.readline()
-        else:
-            while True:
-                temp = f.readline()
-                if "Offline" in temp:
-                    g.write("Online" + '\n')
-                    break
-                elif "Online" in temp:
-                    g.write("Offline" + '\n')
-                    break
-                g.write(temp)
-        for line in f:
-            g.write(line)
+            for x in f:
+                g.write(x)
+        else:            
+            for line in f:
+                g.write(line)
         f.close()
         g.close()
         os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
