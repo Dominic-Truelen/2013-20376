@@ -4,8 +4,27 @@
 from CC import *																# pack() is for stacking, while place() is for a more
 from Tkinter import *															# accurate placing of widgets. grid() is for tables
 from profilePageGUI import profilePageGUI
-from PIL import ImageTk
-import os, sys, glob, time, subprocess, tkMessageBox
+import os, sys, glob, time, subprocess, tkMessageBox, ctypes
+
+
+def isPlatform(x):
+	if sys.platform.startswith(x):
+		return 1
+	return 0
+
+
+try:
+	from PIL import ImageTk
+except:
+	if isPlatform("linux"):
+		Window = Tk()        		 													# Creates an empty window
+		Window.withdraw()
+		tkMessageBox.showerror("Error", "Please install PIL.")		
+	elif isPlatform("win32"):
+		ctypes.windll.user32.MessageBoxA(None, "Please install PIL.", "Error", 0)
+		
+	eval(exit())
+
 
 defaultEntryStyle = ("Tahoma", 12)												# Initial font settings for styling
 defaultLabelStyle = ("Tahoma", 9)
@@ -17,12 +36,16 @@ toplayerColor = "#555555"														# Dark gray signature color
 backgroundColor = "#EEEEEE"														# Grayish-white color
 greenColor = "#52A41D"
 
-a=-0.05																			# Adjuster for widget's y-value placement
-b=0.075
+
+a =- 0.05																		# Adjuster for widget's y-value placement
+b = 0.075
 
 
 def anotherUser():																# Instantiate multiple users
-	subprocess.Popen("python GUI_Basic_1.py")
+	try:
+		subprocess.Popen("GUI_Basic_1.exe")
+	except:
+		subprocess.Popen("python GUI_Basic_1.py")
 
 
 class loginPageGUI(Frame):														# The login GUI class Interface!
@@ -38,12 +61,12 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		Label(topLayer, text="Username", fg="#FFF", bg=toplayerColor, font=defaultLabelStyle).place(anchor=CENTER, relx=0.5379, rely=0.28)	# Labels for the entry fields
 		Label(topLayer, text="Password", fg="#FFF", bg=toplayerColor, font=defaultLabelStyle).place(anchor=CENTER, relx=0.7163, rely=0.28)	# Labels for the entry fields	
 		self.usernameVariable = StringVar()
-		self.usernameInput = Entry(topLayer, fg=toplayerColor, width=17, textvariable=self.usernameVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the username
+		self.usernameInput = Entry(topLayer, highlightthickness=0, fg=toplayerColor, width=17, textvariable=self.usernameVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the username
 		self.usernameInput.place(anchor=CENTER,relx=0.59, rely=0.59)
 		self.usernameInput.focus()												# Puts the cursor automatically at the user_name field
 		
 		self.passwordVariable = StringVar()
-		self.passwordInput = Entry(topLayer, fg=toplayerColor, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
+		self.passwordInput = Entry(topLayer, highlightthickness=0, fg=toplayerColor, width=17, show="•", textvariable=self.passwordVariable, font=defaultEntryStyle, relief=FLAT)	# Entry field for the password
 		self.passwordInput.place(anchor=CENTER, relx=0.77, rely=0.59)
 		
 		Label(topLayer, text="caffy", font=("Verdana", 28), justify=LEFT, bg=toplayerColor, fg=signatureColor).place(anchor=W, relx=0.08, rely=0.5)
@@ -59,7 +82,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		
 		loginSky = Canvas(midLayer, width=1000, height=490, highlightthickness=0, bg=backgroundColor)
 		loginSky.pack()
-		sky = PhotoImage(file="GUIE/LoginSky.gif")
+		sky = ImageTk.PhotoImage(file="GUIE/LoginSky.png")
 		loginSky.create_image(500, 245, image=sky)
 		loginSky.image = sky								#Reference to image so that garbage wont be collected
 		
@@ -70,13 +93,13 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		layer3 = Frame(midLayer, width=379, height=40, bg="#FFFFFF")
 		layer3.place(anchor=CENTER, relx=0.7, rely=0.6+a)
 		self.newUsernameVariable = StringVar()
-		self.newUsernameInput = Entry(layer1, fg=toplayerColor, width=35, textvariable=self.newUsernameVariable, font = defaultCreateStyle, relief=FLAT)
+		self.newUsernameInput = Entry(layer1, highlightthickness=0, fg=toplayerColor, width=35, textvariable=self.newUsernameVariable, font = defaultCreateStyle, relief=FLAT)
 		self.newUsernameInput.place(anchor=CENTER, relx=0.5, rely=0.5)		
 		self.newPasswordVariable = StringVar()
-		self.newPasswordInput = Entry(layer2, fg=toplayerColor, width=35, show="•", textvariable=self.newPasswordVariable, font = defaultCreateStyle, relief=FLAT)
+		self.newPasswordInput = Entry(layer2, highlightthickness=0, fg=toplayerColor, width=35, show="•", textvariable=self.newPasswordVariable, font = defaultCreateStyle, relief=FLAT)
 		self.newPasswordInput.place(anchor=CENTER, relx=0.5, rely=0.5)
 		self.newPasswordVerifyVariable = StringVar()
-		self.newPasswordVerifyInput = Entry(layer3, fg=toplayerColor, width=35, show="•", textvariable=self.newPasswordVerifyVariable, font = defaultCreateStyle, relief=FLAT)
+		self.newPasswordVerifyInput = Entry(layer3, highlightthickness=0, fg=toplayerColor, width=35, show="•", textvariable=self.newPasswordVerifyVariable, font = defaultCreateStyle, relief=FLAT)
 		self.newPasswordVerifyInput.place(anchor=CENTER, relx=0.5, rely=0.5)
 		Label(midLayer, text="Pick a username:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.23+a)
 		Label(midLayer, text="Create a password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.38+a)
@@ -107,6 +130,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		else:
 			return
 
+
 class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are mainly the Notifications bar, along with the Logout / Profile / Home Navigation Buttons
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
@@ -121,6 +145,7 @@ class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are m
 		self.coff.place(anchor=CENTER, relx=0.245, rely=0.48)
 		self.coff.bind("<Enter>", lambda f: self.coff.config(fg=signatureColor))
 		self.coff.bind("<Leave>", lambda f: self.coff.config(fg="white"))
+
 		
 class homePageGUI(Frame):														# This is the GUI for the Newsfeed sections
 	def __init__(self, master=None, database=None):
@@ -134,7 +159,16 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 	def createWidgets(self, database):
 		homepageMainWindow = Frame(self, width=1000, height=550)
 		homepageMainWindow.pack()
+
+		homeShadow = Canvas(homepageMainWindow, width=1000, height=550, highlightthickness=0, bg=backgroundColor)
+		homeShadow.pack()
+		shadow = ImageTk.PhotoImage(file="GUIE/activePageShadow.png")
+		homeShadow.create_image(500, 275, image=shadow)
+		homeShadow.image = shadow
+
 		Label(homepageMainWindow, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
+
+
 
 class setupPageGUI(Frame, CC):
 	def __init__(self, master=None):
@@ -183,8 +217,8 @@ class setupPageGUI(Frame, CC):
 
 		
 		months = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
-		days31 = ["Day"]+range(1,32)		
-		years = ["Year"]+range(int(time.strftime("%Y")), 1949, -1)
+		days31 = ["Day"] + range(1,32)		
+		years = ["Year"] + range(int(time.strftime("%Y")), 1949, -1)
 
 		self.monthvar = StringVar()
 		self.dayvar = StringVar()
@@ -272,6 +306,7 @@ class setupPageGUI(Frame, CC):
 		else:
 			return
 
+
 class Singleton:																# Singleton Design Pattern retrieved from
     __single = None																# Python Help Manual Website: http://www.python.org/workshops/1997-10/proceedings/savikko.html
     def __init__(self):
@@ -279,6 +314,7 @@ class Singleton:																# Singleton Design Pattern retrieved from
             raise Singleton.__single
         Singleton.__single = self  
 		
+
 class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON class or maybe a FACADE for containing all the active sessions of a user... Included: Profile Page, Newspage, and everything else while logged in.
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
@@ -312,6 +348,7 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 	def profilepageLift(self):
 		self.profilePageObject.lift()	
 
+
 class navClass(Frame):															# A GUI that combines the Login and Active Windows. Basically another Faҫade design pattern. Called navClass because of navigation (button fxns)
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
@@ -337,21 +374,21 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		self.loginPageObject = loginPageGUI()
 		self.loginPageObject.place(in_=container)
-		self.setupPageObject.lift()												# Displays first ever page, which is the login page	
+		self.loginPageObject.lift()												# Displays first ever page, which is the login page	
 
 		self.pack()
 		self.createWidgets()
 		
 	def createWidgets(self):			
 		
-		self.loginButton = Button(self.loginPageObject, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=self.verifyLogin)
+		self.loginButton = Button(self.loginPageObject, highlightthickness=0, text="Log In", width=7, height=1, font=("Tahoma", 9, "bold"), relief=FLAT, fg="#FFFFFF", bg=signatureColor, command=self.verifyLogin)
 		self.loginButton.place(anchor=CENTER, relx=0.904, rely=0.0786)			# Button of the LoginPage (click to verify entries)
 		
 		self.loginPageObject.usernameInput.bind("<Return>", lambda event: self.loginButton.invoke())	#Allows the use of the Enter key when loggin in
 		self.loginPageObject.passwordInput.bind("<Return>", lambda event: self.loginButton.invoke())
 
 		newCaffyButton = ImageTk.PhotoImage(file="GUIE/switchButton.png")
-		self.anotherUserButton = Button(self.loginPageObject, image=newCaffyButton, relief=FLAT, bg=toplayerColor, command=anotherUser)
+		self.anotherUserButton = Button(self.loginPageObject, highlightthickness=0, image=newCaffyButton, relief=FLAT, bg=toplayerColor, command=anotherUser)
 		self.anotherUserButton.place(anchor=CENTER, relx=0.04, rely=0.07)
 		self.anotherUserButton.image = newCaffyButton
 		
@@ -434,10 +471,10 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 				self.loginPageObject.login_logout.set_password("")
 				self.loginPageObject.verifyLoginLabel.config(text="ALREADY LOGGED IN")				# display the possible warnings and perform some formatting actions like clear the entry field:
 				self.loginPageObject.verifyLoginLabel.after(2000, waitLabel)
-			else:
+			else: 	#If database is set, go normal log in
 				self.activePageObject.setDatabase(a)
 				self.activePageObject.lift()												# otherwise, if entries are correct, execute & display the home page
-				self.master.title("You are logged in!")
+				self.master.title("%s is logged in!" % (self.loginPageObject.login_logout.get_name()))
 
 	def verifyCreate(self):	
 		
@@ -496,16 +533,13 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.setupPageObject.set_name("")									#Clears the setup garbage
 			self.setupPageObject.set_password("")
 			self.activePageObject.lift()										# otherwise, if entries are correct, execute & display the home page
-			self.master.title("You are logged in!")
-
+			self.master.title("Congratulations and Welcome!")
 
 
 Window = Tk()        		 													# Creates an empty window
 Main = navClass(Window)
 Window.geometry('1000x600+170+80')												# Set dimensions to 1000x600 pos @ screen center
 Window.resizable(0,0)			 												# Does not resize the window, ever 	
-Window.wm_iconbitmap('GUIE/CoffeeCup.ico')										# Adds a little mug icon over the top left corner
+if isPlatform("win32"):
+	Window.wm_iconbitmap('GUIE/CoffeeCup.ico')									# Adds a little mug icon over the top left corner
 Window.mainloop()																# Executes code above in a loop
-
-#os.remove('CC.pyc')															# Removes the temporary files inside the (" ")
-#os.remove('Main.pyc')															# (For Git uploading purposes only)

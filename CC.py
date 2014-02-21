@@ -154,13 +154,10 @@ class validation(CC): #validation for logging in and deleting profiles
         if checkboxjobs == 1:                                   #If enabled, verify the jobs entry fields
             if position == "" or company == "" or years == "":
                 return "JOB INFORMATION\nINCOMPLETE"
-        elif checkboxjobs == 0:
-            pass
+        
         if checkboxeduc == 1:
             if school == "" or graduateyear == "":
                 return "EDUCATION INFORMATION\nINCOMPLETE"
-        elif checkboxjobs == 0:
-            pass
         return 1
 
     def validation(self):													# Console Version
@@ -450,8 +447,8 @@ class import_database(registryDatabase): #importing data from the profile's data
         f.close()
 
     def import_details(self, name):
-        #self.details = []
-        f = open(os.path.abspath(os.path.dirname(__file__)) + "\\DATABASE\\" + name + "\\" + name)
+        self.details = []
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         f.readline()
         f.readline()
         f.readline()
