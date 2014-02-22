@@ -82,7 +82,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		
 		loginSky = Canvas(midLayer, width=1000, height=490, highlightthickness=0, bg=backgroundColor)
 		loginSky.pack()
-		sky = ImageTk.PhotoImage(file="GUIE/LoginSky.png")
+		sky = PhotoImage(file="GUIE/LoginSky.gif")
 		loginSky.create_image(500, 245, image=sky)
 		loginSky.image = sky								#Reference to image so that garbage wont be collected
 		
@@ -162,7 +162,7 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 
 		homeShadow = Canvas(homepageMainWindow, width=1000, height=550, highlightthickness=0, bg=backgroundColor)
 		homeShadow.pack()
-		shadow = ImageTk.PhotoImage(file="GUIE/activePageShadow.png")
+		shadow = PhotoImage(file="GUIE/activePageShadow.gif")
 		homeShadow.create_image(500, 275, image=shadow)
 		homeShadow.image = shadow
 
@@ -336,11 +336,28 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.homePageObject.receiveDatabase(database)
 			
 	def createWidgets(self):
-		self.homepageButton = Button(self.topLayerObject, text="⌂ Home", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.homepageLift)
-		self.homepageButton.place(anchor=CENTER, relx=0.76+b, rely=0.5)
+
+		brewingNotifImage = PhotoImage(file="GUIE/brewingNotif.gif")
+		self.brewingNotifButton = Button(self.topLayerObject, bg=toplayerColor, relief=FLAT, image=brewingNotifImage)
+		self.brewingNotifButton.place(anchor=CENTER, relx=0.6+b, rely=0.5)
+		self.brewingNotifButton.image = brewingNotifImage
+
+		msgNotifImage = PhotoImage(file="GUIE/msgNotif.gif")
+		self.msgNotifButton = Button(self.topLayerObject, bg=toplayerColor, relief=FLAT, image=msgNotifImage)
+		self.msgNotifButton.place(anchor=CENTER, relx=0.56+b, rely=0.5)
+		self.msgNotifButton.image = msgNotifImage
+
+		friendNotifImage = PhotoImage(file="GUIE/friendNotif.gif")
+		self.friendNotifButton = Button(self.topLayerObject, bg=toplayerColor, relief=FLAT, image=friendNotifImage)
+		self.friendNotifButton.place(anchor=CENTER, relx=0.52+b, rely=0.5)
+		self.friendNotifButton.image = friendNotifImage
 
 		self.profilepageButton = Button(self.topLayerObject, text="☺ Profile", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.profilepageLift)
 		self.profilepageButton.place(anchor=CENTER, relx=0.6875+b, rely=0.5)
+
+		self.homepageButton = Button(self.topLayerObject, text="⌂ Home", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.homepageLift)
+		self.homepageButton.place(anchor=CENTER, relx=0.76+b, rely=0.5)
+		
 
 	def homepageLift(self):
 		self.homePageObject.lift()
@@ -387,7 +404,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.loginPageObject.usernameInput.bind("<Return>", lambda event: self.loginButton.invoke())	#Allows the use of the Enter key when loggin in
 		self.loginPageObject.passwordInput.bind("<Return>", lambda event: self.loginButton.invoke())
 
-		newCaffyButton = ImageTk.PhotoImage(file="GUIE/switchButton.png")
+		newCaffyButton = PhotoImage(file="GUIE/switchButton.gif")
 		self.anotherUserButton = Button(self.loginPageObject, highlightthickness=0, image=newCaffyButton, relief=FLAT, bg=toplayerColor, command=anotherUser)
 		self.anotherUserButton.place(anchor=CENTER, relx=0.04, rely=0.07)
 		self.anotherUserButton.image = newCaffyButton

@@ -420,16 +420,19 @@ class import_database(registryDatabase): #importing data from the profile's data
         return self.wall
 
     def import_all(self, name):
-        self.import_display_name(name)
-        self.import_details(name)
-        self.import_DP(name)
-        self.import_friends(name)
-        self.import_status(name)
-        self.import_messages(name)
-        self.import_messages_sent(name)
-        self.import_friend_requests(name)
-        self.import_friend_requests_sent(name)
-        self.import_wall(name)
+        try:
+            self.import_display_name(name)
+            self.import_details(name)
+            self.import_DP(name)
+            self.import_friends(name)
+            self.import_status(name)
+            self.import_messages(name)
+            self.import_messages_sent(name)
+            self.import_friend_requests(name)
+            self.import_friend_requests_sent(name)
+            self.import_wall(name)
+        except:
+            pass
 
     def import_display_name(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
