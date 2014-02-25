@@ -1,5 +1,5 @@
 from CC import creation, login, deletion, logout
-from Main import messages, status, friends, wall, post, edit_profile
+from Main import messages, status, friends, wall, post, edit_profile, notifications
 import os
 
 while True:
@@ -20,9 +20,10 @@ while True:
             s = status(name)
             f = friends(name)
             w = wall(name)
+            n = notifications(name)
             log = logout()
             while True:
-                choice = raw_input("What do you want to do? (P - Profile, M - Messages, S - Status, F - Friends, W - Wall, L - Logout) ")
+                choice = raw_input("What do you want to do? (P - Profile, M - Messages, S - Status, F - Friends, W - Wall, N - Notifications L - Logout) ")
                 choice = choice.lower()
                 if choice == 'p':
                     while True:
@@ -99,6 +100,40 @@ while True:
                 elif choice == 'w':
                     w.status()
                     w.print_wall()
+                elif choice == 'n':
+                    while True:
+                        choice = raw_input("What do you want to do? (M - Messages, F - Friends R - Return)")
+                        choice = choice.lower()
+                        if choice == 'm':
+                            while True:
+                                n.messages()
+                                choice = raw_input("What do you want to do? (M - Messages, C - Counter, R - Return)")
+                                choice = choice.lower()
+                                if choice == 'm':
+                                    n.print_messages_new()
+                                elif choice == 'c':
+                                    n.messages_counter()
+                                elif choice == 'r':
+                                    break
+                                else:
+                                    print "Invalid input"
+                        elif choice == 'f':
+                            while True:
+                                n.friend_requests()
+                                choice = raw_input("What do you want to do? (F - Friends, C - Counter, R - Return)")
+                                choice = choice.lower()
+                                if choice == 'f':
+                                    n.print_friend_requests_new()
+                                elif choice == 'c':
+                                    n.friend_requests_counter()
+                                elif choice == 'r':
+                                    break
+                                else:
+                                    print "Invalid input"
+                        elif choice == 'r':
+                            break
+                        else:
+                            print "Invalid input"
                 elif choice == 'l':
                     log.exit(l.get_name(), l.get_password())
                     break

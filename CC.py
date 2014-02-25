@@ -88,7 +88,31 @@ class creation(CC): #profile creation
         self.registry.register()
         os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + str(self.get_name()) + "/pictures")
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.get_name() + "/" + self.get_name(), 'w')
-        f.write("Details 2013-20376\n" + "<INSERT NAME HERE>" + '\n' + self.get_password() + '\n\n\n\n[[],[],[]]\nOffline Setup\n\n' + 'DP 2013-20376\nGUIE//femaleDP.png\n\n' + "Friends 2013-20376\n[]\n\n" + "Status 2013-20376\n{}\n\n" + "Messages Recieved 2013-20376\n{}\n\n" + "Messages Sent 2013-20376\n{}\n\n" + "Friend Requests Recieved 2013-20376\n[]\n\n" + "Friend Requests Sent 2013-20376\n[]\n\n" + "Wall 2013-20376\n{}\n")
+        f.write("Details\n") 
+        f.write("<INSERT NAME HERE>\n")
+        f.write(self.get_password())
+        f.write("\n\n\n\n[[],[],[]]\n")
+        f.write('Offline Setup\n\n')
+        f.write("DP\n")
+        f.write("GUIE//femaleDP.png\n\n")
+        f.write("Friends\n")
+        f.write("[]\n\n")
+        f.write("Status\n")
+        f.write("{}\n\n")
+        f.write("Messages Recieved\n")
+        f.write("{}\n\n")
+        f.write("Messages Sent\n")
+        f.write("{}\n\n")
+        f.write("Friend Requests Recieved\n")
+        f.write("[]\n\n")
+        f.write("Friend Requests Sent\n")
+        f.write("[]\n\n")
+        f.write("Wall\n")
+        f.write("{}\n\n")
+        f.write("Messages Copy\n")
+        f.write("{}\n\n")
+        f.write("Friend Requests Recieved Copy\n")
+        f.write("[]")
         f.close()
 
     def validate(self, username, password1, password2):
@@ -340,6 +364,8 @@ class import_database(registryDatabase): #importing data from the profile's data
         self.messages_sent = {}
         self.friend_requests = []
         self.friend_requests_sent = []
+        self.messages_copy = {}
+        self.friend_requests_copy = []
 
     def get_DP(self):
         return self.DP
@@ -364,6 +390,12 @@ class import_database(registryDatabase): #importing data from the profile's data
 
     def get_wall(self):
         return self.wall
+
+    def get_messages_copy(self):
+        return self.messages_copy
+
+    def get_friend_requests_copy(self):
+        return self.friend_requests_copy
 
     def import_all(self, name):
         self.import_details(name)
@@ -400,7 +432,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         while True:
             temp = f.readline()
-            if "DP 2013-20376" in temp:
+            if temp == "DP\n":
                 break
         temp = f.readline()
         temp = temp[0:-1]
@@ -411,7 +443,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         while True: #scanning untill it reaches the friends list
             temp = f.readline()
-            if "Friends 2013-20376" in temp:
+            if temp == "Friends\n":
                 break
         self.friends = eval(f.readline().rstrip())
         f.close()
@@ -420,7 +452,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         while True: #scanning untill it reaches the status
             temp = f.readline()
-            if "Status 2013-20376" in temp:
+            if temp == "Status\n":
                 break
         self.status = f.readline().rstrip()
         f.close()
@@ -429,7 +461,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         while True: #scanning untill it reaches the messages
             temp = f.readline()
-            if "Messages Recieved 2013-20376" in temp:
+            if temp == "Messages Recieved\n":
                 break
         messages = f.readline()
         f.close()
@@ -438,7 +470,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         for key in messages.iterkeys():
             a = []
             for counter in range(len(messages[key])):
-                x = message()
+                x = message_object()
                 x.set_reciever(name)
                 x.set_sender(key)
                 temp = messages[key][counter].split(':')
@@ -451,7 +483,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         while True: #scanning untill it reaches the messages
             temp = f.readline()
-            if "Messages Sent 2013-20376" in temp:
+            if temp == "Messages Sent\n":
                 break
         messages = f.readline()
         f.close()
@@ -460,7 +492,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         for key in messages.iterkeys():
             a = []
             for counter in range(len(messages[key])):
-                x = message()
+                x = message_object()
                 x.set_reciever(name)
                 x.set_sender(key)
                 temp = messages[key][counter].split(':')
@@ -473,7 +505,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         while True:
             temp = f.readline()
-            if "Friend Requests Recieved 2013-20376" in temp:
+            if temp == "Friend Requests Recieved\n":
                 break
         self.friend_requests = f.readline().rstrip()
         f.close()
@@ -482,7 +514,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         while True:
             temp = f.readline()
-            if "Friend Requests Sent 2013-20376" in temp:
+            if temp == "Friend Requests Sent\n":
                 break
         self.friend_requests_sent = f.readline().rstrip()
         f.close()
@@ -490,9 +522,28 @@ class import_database(registryDatabase): #importing data from the profile's data
     def import_wall(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         while True:
-            if "Wall 2013-20376" in f.readline():
+            temp = f.readline()
+            if temp == "Wall\n":
                 break
         self.wall = f.readline().rstrip()
+        f.close()
+
+    def import_messages_copy(self, name):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        while True:
+            temp = f.readline()
+            if temp == "Messages Copy\n":
+                break
+        self.messages_copy = eval(f.readline().rstrip())
+        f.close()
+
+    def import_friend_requests_copy(self, name):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        while True:
+            temp = f.readline()
+            if temp == "Friend Requests Recieved Copy\n":
+                break
+        self.friend_requests_copy = f.readline().rstrip()
         f.close()
 
 class export_database(): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
@@ -536,7 +587,7 @@ class export_database(): #exporting data to the database by creating a temporary
         while True:
             temp = f.readline()
             g.write(temp)
-            if 'Friends 2013-20376' in temp:
+            if temp == "Friends\n":
                 break
         g.write(str(friends) + '\n')
         f.readline()
@@ -570,7 +621,7 @@ class export_database(): #exporting data to the database by creating a temporary
         while True:
             temp = f.readline()
             g.write(temp)
-            if "Status 2013-20376" in temp:
+            if temp == "Status\n":
                 break
         temp = eval(f.readline())
         temp[time] = status
@@ -591,7 +642,7 @@ class export_database(): #exporting data to the database by creating a temporary
         while True:
             temp = f.readline()
             g.write(temp)
-            if "Messages Recieved 2013-20376" in temp:
+            if temp == "Messages Recieved\n":
                 break
         temp = eval(f.readline())
         if reciever not in temp:
@@ -614,7 +665,7 @@ class export_database(): #exporting data to the database by creating a temporary
         while True:
             temp = f.readline()
             g.write(temp)
-            if "Messages Sent 2013-20376" in temp:
+            if temp == "Messages Sent\n":
                 break
         temp = eval(f.readline())
         if sender not in temp:
@@ -634,7 +685,7 @@ class export_database(): #exporting data to the database by creating a temporary
         while True:
             temp = f.readline()
             g.write(temp)
-            if "Friend Requests Recieved 2013-20376" in temp:
+            if temp == "Friend Requests Recieved\n":
                 break
         g.write(str(friend_requests) + '\n')
         f.readline()
@@ -651,7 +702,7 @@ class export_database(): #exporting data to the database by creating a temporary
         while True:
             temp = f.readline()
             g.write(temp)
-            if "Friend Requests Sent 2013-20376" in temp:
+            if temp == "Friend Requests Sent\n":
                 break
         g.write(str(friend_requests_sent) + '\n')
         f.readline()
@@ -669,7 +720,7 @@ class export_database(): #exporting data to the database by creating a temporary
         while True:
             temp = f.readline()
             g.write(temp)
-            if "Wall 2013-20376" in temp:
+            if temp == "Wall\n":
                 break
         g.write(wall + '\n')
         f.readline()
@@ -679,6 +730,55 @@ class export_database(): #exporting data to the database by creating a temporary
         g.close()
         os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name+ '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+
+    def export_messages_copy(self, name):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + "1", "w")
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if temp == "Messages Recieved\n":
+                break
+        x = f.readline()
+        g.write(x)
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if temp == "Messages Copy\n":
+                break
+        f.readline()
+        g.write(x)
+        for line in f:
+            g.write(line)
+        f.close()
+        g.close()
+        os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name+ '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+
+    def export_friend_requests_copy(self, name):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + "1", "w")
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if temp == "Friend Requests Recieved\n":
+                break
+        x = f.readline()
+        g.write(x)
+        while True:
+            temp = f.readline()
+            g.write(temp)
+            if temp == "Friend Requests Recieved Copy\n":
+                break
+        f.readline()
+        g.write(x)
+        for line in f:
+            g.write(line)
+        f.close()
+        g.close()
+        os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name+ '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+
 
 class logout(object): #will reset the name and password of CC after returning to the main GUI
 

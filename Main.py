@@ -20,13 +20,16 @@ class messages():
         self.messages_sent = self.importer.get_messages_sent()
 
     def print_messages(self): #Displaying the messages
+        self.exporter.export_messages_copy(self.name) #To remove the notifications
+
         print "Messages Recieved"
-        if self.messages != {}:
-            for x in self.messages.iterkeys():
-                for counter in range(len(self.messages[x])):
-                    print self.messages[x][counter].get_sender()
-                    print '\t' + self.messages[x][counter].get_text()
-                    print '\t\t' + self.messages[x][counter].get_date()
+        if self.messages != {}: #If the messasges is not blank
+            for x in self.messages.iterkeys(): #Iteration over the senders
+                for counter in range(len(self.messages[x])): #Length of the messages per sender
+                    print self.messages[x][counter].get_sender() #Name of sender
+                    print '\t' + self.messages[x][counter].get_text() #Body of the message
+                    print '\t\t' + self.messages[x][counter].get_date() #Date & time the message was sent
+
         print "Messages Sent"
         if self.messages_sent != {}:
             for x in self.messages_sent.iterkeys():
@@ -36,7 +39,8 @@ class messages():
                     print '\t\t' + self.messages_sent[x][counter].get_date()
 
     def send_message(self): #Sending messages
-        reciever = str(raw_input("Send to: "))
+        reciever = str(raw_input("Send to: ")) #The reciever of the message
+
         if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + reciever) is False: #Searching for a file with the inputed name in the database
             print "User does not exist"
         elif reciever == self.name:
@@ -44,6 +48,7 @@ class messages():
         else:
             message = str(raw_input("Message: "))
             time = strftime("%m/%d/%Y, %I.%M.%S%p") #Format for the time
+
             self.exporter.export_sent_messages(self.name, message, time, reciever) #Exporting sent message
             self.exporter.export_messages(reciever, message, time, self.name) #Exporting the recieved message
 
@@ -55,56 +60,68 @@ class messages():
         elif self.messages.has_key(sender) is False:
             print "User did not send a message"
             return
+
         date = str(raw_input("Date of the message:"))
-        self.get_messages(self.name)
-        messages = self.messages[sender]
+        self.get_messages(self.name) #Importing messages of the user
+        messages = self.messages[sender] #Getting the messages sent by a specific user
+
         counter = 0
-        for item in messages:
-            if date == item.get_date():
-                messages.pop(counter)
-                f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
-                g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + '1', 'w')
+
+        for item in messages: #For each message by that user
+            if date == item.get_date(): #If the date inputed is equal to the date of the message
+                messages.pop(counter) #That message would be removed
+
+                f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+                g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', 'w')
+                
                 for line in f:
-                    if sender and date not in line:
+                    if sender and date not in line: #If the line is not the messages line in the file
                         g.write(line)
                     else:
-                        a = []
-                        for x in range(len(messages)):
-                            a.append(messages[x].get_date() + ':' + messages[x].get_text())
-                        g.write(str({str(sender):a}) + '\n')
+                        a = [] #A temporary list
+                        for x in range(len(messages)): #For each message minus the message to be deleted
+                            a.append(messages[x].get_date() + ':' + messages[x].get_text()) #It would be appended to the temporary list
+                        g.write(str({str(sender):a}) + '\n') #It would then be written to the file in dictionary form
+
                 f.close()
                 g.close()
-                os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
-                os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+                os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+                os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+                
                 self.get_messages_sent(sender)
                 messages = self.messages_sent[self.name]
                 messages.pop(counter)
+
                 f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender)
                 g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender + '1', 'w')
+                
                 for line in f:
-                    if name and date not in line:
+                    if self.name and date not in line:
                         g.write(line)
                     else:
                         a = []
                         for x in range(len(messages)):
                             a.append(messages[x].get_date() + ':' + messages[x].get_text())
                         g.write(str({str(sender):a}) + '\n')
+
                 f.close()
                 g.close()
                 os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender)
                 os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender)
-                counter += 1
-        if counter == 0:
+
+                counter += 1 #Counter would be the number of times this has looped
+
+        if counter == 0: #If the counter never iterated
             print "Message does not exist"
 
-class post(object):
+class post(object): #Getters and Setters for posts
 	def __init__(self, name):
 		self.name = name
 		self.text = ''
 		self.date = ''
 		self.state = ''
 		self.tags = []
-		self.comments = []
+		self.comments = [] #List of comment()s
 		self.exporter = export_database()
 
 	def get_name(self):
@@ -140,8 +157,8 @@ class post(object):
 	def set_comments(self, comments):
 		self.comments = comments
 
-class comment():
-	def __init__(self):
+class comment(): #Getters and Setters for comments
+	def __init__(self): 
 		self.name = ''
 		self.date = ''
 		self.text = ''
@@ -165,93 +182,95 @@ class comment():
 		self.text = text
 
 class edit_profile():
-        def __init__(self, name):
-            self.name = name
-            self.profile = profile_object(self.name)
-            self.importer = import_database()
-            self.exporter = export_database()
+    def __init__(self, name):
+        self.name = name
+        self.profile = profile_object(self.name)
+        self.importer = import_database()
+        self.exporter = export_database()
 
-        def get_details(self):
-            self.importer.import_details(self.name)
-            temp = self.importer.get_details()
-            self.profile.set_gender(temp[0])
-            self.profile.set_age(temp[1])
-            self.profile.set_job(temp[2])
-            self.profile.set_education(eval(temp[3]))
+    def get_details(self):
+        self.importer.import_details(self.name)
+        temp = self.importer.get_details()
+        self.profile.set_gender(temp[0])
+        self.profile.set_age(temp[1])
+        self.profile.set_job(temp[2])
+        self.profile.set_education(eval(temp[3]))
 
-        def change_gender(self):
-            gender = raw_input("Male or Female? ")
-            gender = gender.lower()
-            self.profile.set_gender(gender)
-            self.exporter.export_details(self.name, self.profile.get_gender(), self.profile.get_age(), self.profile.get_job(), self.profile.get_education())
+    def change_gender(self):
+        gender = raw_input("Male or Female? ")
+        gender = gender.lower()
+        self.profile.set_gender(gender)
+        self.exporter.export_details(self.name, self.profile.get_gender(), self.profile.get_age(), self.profile.get_job(), self.profile.get_education())
 
-        def change_age(self):
-            age = raw_input("Age: ")
-            self.profile.set_age(age)
-            self.exporter.export_details(self.name, self.profile.get_gender(), self.profile.get_age(), self.profile.get_job(), self.profile.get_education())
+    def change_age(self):
+        age = raw_input("Age: ")
+        self.profile.set_age(age)
+        self.exporter.export_details(self.name, self.profile.get_gender(), self.profile.get_age(), self.profile.get_job(), self.profile.get_education())
 
-        def change_job(self):
-            job = raw_input("Job: ")
-            self.profile.set_job(job)
-            self.exporter.export_details(self.name, self.profile.get_gender(), self.profile.get_age(), self.profile.get_job(), self.profile.get_education())
+    def change_job(self):
+        job = raw_input("Job: ")
+        self.profile.set_job(job)
+        self.exporter.export_details(self.name, self.profile.get_gender(), self.profile.get_age(), self.profile.get_job(), self.profile.get_education())
 
-        def change_education(self):
+    def change_education(self): #MUST BE CHANGED FOR GUI VERSION
+        while True:
+            choice = raw_input("E - Elementary, H - High School, C - College, R - Return: ")
+            choice = choice.lower()
+            if choice == 'e':
+                choice = 0
+            elif choice == 'h':
+                choice = 1
+            elif choice == 'c':
+                choice = 2
+            elif choice == 'r':
+                break
+            else:
+                print "Invalid input"
             while True:
-                choice = raw_input("E - Elementary, H - High School, C - College, R - Return: ")
-                choice = choice.lower()
-                if choice == 'e':
-                    choice = 0
-                elif choice == 'h':
-                    choice = 1
-                elif choice == 'c':
-                    choice = 2
-                elif choice == 'r':
-                    break
-                else:
-                    print "Invalid input"
-                while True:
-                    state = raw_input("A - Add, D - Delete, R - Return: ")
-                    state = state.lower()
-                    if state == 'a':
-                        add = raw_input("Enter school: ")
+                state = raw_input("A - Add, D - Delete, R - Return: ")
+                state = state.lower()
+                if state == 'a':
+                    add = raw_input("Enter school: ")
+                    temp = self.profile.get_education()
+                    temp[choice].append(str(add))
+                    self.profile.set_education(temp)
+                    self.exporter.export_details(self.name, self.profile.get_gender(), self.profile.get_age(), self.profile.get_job(), self.profile.get_education())
+                elif state == 'd':
+                    for x in range(len(self.profile.get_education()[choice])):
+                        print str(x) + ' ' + self.profile.get_education()[choice][x]
+                    delete = input("Enter number of the school to be deleted: ")
+                    if delete in range(len(self.profile.get_education()[choice])):
                         temp = self.profile.get_education()
-                        temp[choice].append(str(add))
+                        temp[choice].pop(delete)
                         self.profile.set_education(temp)
                         self.exporter.export_details(self.name, self.profile.get_gender(), self.profile.get_age(), self.profile.get_job(), self.profile.get_education())
-                    elif state == 'd':
-                        for x in range(len(self.profile.get_education()[choice])):
-                            print str(x) + ' ' + self.profile.get_education()[choice][x]
-                        delete = input("Enter number of the school to be deleted: ")
-                        if delete in range(len(self.profile.get_education()[choice])):
-                            temp = self.profile.get_education()
-                            temp[choice].pop(delete)
-                            self.profile.set_education(temp)
-                            self.exporter.export_details(self.name, self.profile.get_gender(), self.profile.get_age(), self.profile.get_job(), self.profile.get_education())
-                        else:
-                            print"Invalid input"
-                    elif state == 'r':
-                        break
                     else:
                         print"Invalid input"
-                    
-        def print_gender(self):
-            print self.profile.get_gender()
+                elif state == 'r':
+                    break
+                else:
+                    print"Invalid input"
+                
+    def print_gender(self):
+        print self.profile.get_gender()
 
-        def print_age(self):
-            print self.profile.get_age()
+    def print_age(self):
+        print self.profile.get_age()
 
-        def print_job(self):
-            print self.profile.get_job()
+    def print_job(self):
+        print self.profile.get_job()
 
-        def print_education(self):
-            if self.profile.get_education()[0] != []:
-                print "Elementary: " + str(self.profile.get_education()[0])
-            if self.profile.get_education()[1] != []:
-                print "High School: " + str(self.profile.get_education()[1])
-            if self.profile.get_education()[2] != []:
-                print "College: " + str(self.profile.get_education()[2])
+    def print_education(self):
+        if self.profile.get_education()[0] != []:
+            print "Elementary: " + str(self.profile.get_education()[0])
 
-class profile_object():
+        if self.profile.get_education()[1] != []:
+            print "High School: " + str(self.profile.get_education()[1])
+
+        if self.profile.get_education()[2] != []:
+            print "College: " + str(self.profile.get_education()[2])
+
+class profile_object(): #Getters and setters for profiles
     def __init__(self, name):
         self.name = name
         #self.profile_picture =
@@ -259,20 +278,28 @@ class profile_object():
         self.age = 0
         self.job = ''
         self.education = [[],[],[]]
+
     def get_gender(self):
         return self.gender
+
     def get_age(self):
         return self.age
+
     def get_job(self):
         return self.job
+
     def get_education(self):
         return self.education
+
     def set_gender(self, gender):
         self.gender = gender
+
     def set_age(self, age):
         self.age = age
+
     def set_job(self, job):
         self.job = job
+
     def set_education(self, education):
         self.education = education
 
@@ -315,7 +342,7 @@ class status(post):
         f.close()
         g.close()
         os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-        os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + "1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + "1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
 
 class friends():
     def __init__(self, name):
@@ -359,10 +386,15 @@ class friends():
     def see_friend_requests(self): #Displaying the friend requests recieved and sent
         self.importer.import_friend_requests(self.name)
         self.friend_requests = self.importer.get_friend_requests()
+
+        print self.friend_requests
+
         self.importer.import_friend_requests_sent(self.name)
         self.friend_requests_sent = self.importer.get_friend_requests_sent()
-        print self.friend_requests
+
         print self.friend_requests_sent
+
+        self.exporter.export_friend_requests_copy(self.name) #For the notifications
 
     def delete_friends(self):
         delete = raw_input("Delete who? ")
@@ -370,7 +402,7 @@ class friends():
             print "User does not exist"
         else:
             self.importer.import_friends(self.name)
-            self.friends = eval(self.importer.get_friends())
+            self.friends = self.importer.get_friends()
             if delete not in self.friends:
                 print "User is not your friend"
             else:
@@ -378,8 +410,8 @@ class friends():
                 self.exporter.export_friends(self.name, self.friends)
                 self.importer.import_friends(delete)
                 friends = self.importer.get_friends()
-                self.friends.remove(self.name)
-                self.exporter.export_friends(delete, self.friends)
+                friends.remove(self.name)
+                self.exporter.export_friends(delete, friends)
 
     def approve_request(self):
         friend = str(raw_input("Approve who? "))
@@ -449,8 +481,6 @@ class wall():
         for x,y in sortedWall.iteritems():
             print x, y
 
-#class thread_friend_request():
-#	def run(self):
 class thread_status(threading.Thread):
     def __init__(self, queue, out_queue):
         threading.Thread.__init__(self)
@@ -465,3 +495,71 @@ class thread_status(threading.Thread):
         status = eval(self.importer.get_status())
         self.out_queue.put({name:status})
         self.queue.task_done()
+
+class notifications():
+    def __init__(self, name):
+        self.name = name
+        self.importer = import_database()
+        self.exporter = export_database()
+        self.messages_new = {}
+        self.friend_requests_new = []
+        self.posts_new = {}
+
+    def messages(self):
+        self.importer.import_messages(self.name)
+        x = self.importer.get_messages()
+
+        self.importer.import_messages_copy(self.name)
+        y = self.importer.get_messages_copy()
+
+        self.messages_new = {} #Reset the messages
+
+        for key in x:
+            if key not in y: #If in x but not in y
+                self.messages_new[key] = x[key]
+            else:
+                for counter in range(len(x[key])):
+                    x[key][counter] = x[key][counter].get_date() + ':' + x[key][counter].get_text()
+                
+                self.messages_new[key] = list(set(x[key]) - set(y[key]))
+
+                if self.messages_new[key] == []: #If all the messages from that user has been removed, remove the user itself
+                    del self.messages_new[key]
+
+    def messages_counter(self):
+        print len(self.messages_new)
+
+    def print_messages_new(self): #Just like printing the messages in the original messages()
+        if self.messages_new != {}:
+            for x in self.messages_new.iterkeys():
+                for counter in range(len(self.messages_new[x])):
+                    print self.messages_new[x][counter].get_sender()
+                    print '\t' + self.messages_new[x][counter].get_text()
+                    print '\t\t' + self.messages_new[x][counter].get_date()
+
+        self.exporter.export_messages_copy(self.name)
+
+    def friend_requests(self):
+        self.importer.import_friend_requests(self.name)
+        friends = eval(self.importer.get_friend_requests())
+
+        self.importer.import_friend_requests_copy(self.name)
+        temp = eval(self.importer.get_friend_requests_copy())
+
+        for x in temp:
+            if x in friends:
+                friends.remove(x)
+            elif x not in friends:
+                friends.append(x)
+
+        self.friend_requests_new = friends
+
+    def friend_requests_counter(self):
+        print len(self.friend_requests_new)
+
+    def print_friend_requests_new(self):
+        print self.friend_requests_new
+        self.exporter.export_friend_requests_copy(self.name)
+        
+    def notifications(self):
+        print len(friend_requests_new) + len(posts_new)
