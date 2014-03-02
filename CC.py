@@ -94,7 +94,7 @@ class creation(CC): #profile creation
         f.write("\n\n\n\n[[],[],[]]\n")
         f.write('Offline Setup\n\n')
         f.write("DP\n")
-        f.write("GUIE//default.gif\n\n")
+        f.write("GUIE/default.gif\n\n")
         f.write("Friends\n")
         f.write("[]\n\n")
         f.write("Status\n")
@@ -144,11 +144,11 @@ class validation(CC): #validation for logging in and deleting profiles
         else:
             return self.successor.handleCreate(self.get_name(), self.get_password(), password2)
 
-    def guis(self, displayname, month, day, year, gender, checkboxjobs, position, company, years, checkboxeduc, school, graduateyear):
+    def guis(self, firstname, lastname, month, day, year, gender, checkboxjobs, position, company, years, checkboxeduc, school, graduateyear):
 
-        if displayname == "":
+        if firstname == "" or lastname == "":
             return "DISPLAY NAME IS\nBLANK"
-        for x in set(displayname):                              #Check for special characters in creating usernames
+        for x in set(firstname).union(set(lastname)):                              #Check for special characters in creating usernames
             if x in set([".", "^", "&", "!", "$", ",", "\\", "?", "/", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"])  or x in range(0,10):
                 return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
 
@@ -403,6 +403,8 @@ class import_database(registryDatabase): #importing data from the profile's data
     def __init__(self):
         registryDatabase.__init__(self)
         self.displayname = ""
+        self.firstname = ""
+        self.lastname = ""
         self.details = []
         self.status = {}
         self.onoroff = ""
@@ -417,6 +419,12 @@ class import_database(registryDatabase): #importing data from the profile's data
 
     def get_display_name(self):
         return self.displayname
+
+    def get_first_name(self):
+        return self.firstname
+
+    def get_last_name(self):
+        return self.lastname
 
     def get_DP(self):
         return self.DP
@@ -469,8 +477,11 @@ class import_database(registryDatabase): #importing data from the profile's data
     def import_display_name(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         f.readline()
-        self.displayname = f.readline()
-        self.displayname = self.displayname[0:-1]
+        a = f.readline().split("|")
+        a[1] = a[1].rstrip()
+        self.firstname = a[0]
+        self.lastname = a[1]
+        self.displayname = self.firstname + " " + self.lastname        
         f.close()
 
     def import_onoroff(self, name):
@@ -626,12 +637,12 @@ class export_database(): #exporting data to the database by creating a temporary
         os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)        
 
-    def export_details(self, name, password, dispname = None, gender = None, birthday = None, jobs = None, education = None): #exporting username and password
+    def export_details(self, name, password, firstname=None, lastname=None, gender=None, birthday=None, jobs=None, education=None): #exporting username and password
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + "1", 'w')
         if gender != None:
             g.write(f.readline())       #Details 2013-20376
-            g.write(dispname + '\n')    #DISPLAYNAME
+            g.write(firstname + '|' + lastname + '\n')    #DISPLAYNAME
             f.readline()                # Skip reading the name from f
             g.write(f.readline())       #Write the Password (from f's readline) to g
             g.write(gender + '\n')

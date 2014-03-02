@@ -14,12 +14,12 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 		self.createWidgets()		
 
 	def receiveDatabase(self, database):
-		self.displayName.config(text=database.get_display_name())
-		self.DP = PhotoImage(file=database.get_DP())		
-		self.canvasDP.itemconfigure(self.canvasDPHolder, image=self.DP)		
+		self.displayNameVariable.set(database.get_display_name())
+		self.DP = PhotoImage(file=database.get_DP())
+		self.labelDP.config(image=self.DP)		
 
 	def createWidgets(self):
-		profileMainWindow = Frame(self, width=1000, height=550)	#Profile container
+		profileMainWindow = Frame(self, width=1000, height=550, bg="#eeeeee")	#Profile container
 		profileMainWindow.pack()
 
 		homeShadow = Canvas(profileMainWindow, width=1000, height=550, highlightthickness=0, bg=backgroundColor)
@@ -28,21 +28,22 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 		homeShadow.create_image(500, 275, image=shadow)
 		homeShadow.image = shadow
 
-		profilePicture = Frame(profileMainWindow, width=profilePic, height=profilePic) #ProfPic
+		profilePicture = Frame(profileMainWindow, width=profilePic, height=profilePic, bg="#eeeeee") #ProfPic
 		profilePicture.place(anchor=CENTER, relx=0.25, rely=0.25)
 
-		self.canvasDP = Canvas(profilePicture, width=profilePic, height=profilePic, highlightthickness=0)
-		self.canvasDP.pack()
-		self.canvasDPHolder = self.canvasDP.create_image(profilePic/2, profilePic/2, image=self.dp)
-		self.canvasDP.image = self.dp
+		self.labelDP = Label(profilePicture, width=profilePic, height=profilePic, highlightthickness=0, bg="#eeeeee", image=self.dp)
+		self.labelDP.pack()		
+		self.labelDP.image = self.dp
 
-		self.displayName = Label(profileMainWindow, font=("Tahoma", 18, "bold"))
+		self.displayNameVariable = StringVar()
+
+		self.displayName = Label(profileMainWindow, font=("Tahoma", 18, "bold"), bg="#eeeeee", textvariable=self.displayNameVariable)
 		self.displayName.place(anchor=W, relx=0.36, rely=0.105) #Name
 		
 		#Label(profileMainWindow, text="WELCOME TO PROFILE PAGE!", font=("Tahoma", 30, "bold"), fg="#000000", bg=bag).place(anchor=CENTER, relx=0.5, rely=0.5)
 
-		wall = LabelFrame(profileMainWindow, text="Wall", width=450, height=400, padx=5, pady=5)
+		wall = LabelFrame(profileMainWindow, text="Wall", width=450, height=400, padx=5, pady=5, bg="#eeeeee")
 		wall.place(anchor=NW, relx=0.36, rely=0.2)
 
-		wall = LabelFrame(profileMainWindow, text="Links", width=175, height=268, padx=3, pady=3)
+		wall = LabelFrame(profileMainWindow, text="Links", width=175, height=268, padx=3, pady=3, bg="#eeeeee")
 		wall.place(anchor=NW, relx=0.1625, rely=0.44)

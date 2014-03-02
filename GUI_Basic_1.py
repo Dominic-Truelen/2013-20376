@@ -12,11 +12,10 @@ def isPlatform(x):
 		return 1
 	return 0
 
-
 try:
 	from PIL import ImageTk
 except:
-	if isPlatform("linux"):
+	if isPlatform("linux") or isPlatform("mac"):
 		Window = Tk()        		 													# Creates an empty window
 		Window.withdraw()
 		tkMessageBox.showerror("Error", "Please install PIL.")		
@@ -119,7 +118,14 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		Label(bottomLayer, text="Thank you for choosing Caffy™ | Copyright © 2014. All rights are reserved", fg="#FFFFFF", bg=toplayerColor, font=("Tahoma", 8)).place(anchor=CENTER, relx=0.5, rely=0.45)
 
 	def reset(self, x, y):
-		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to log-out?"):			
+		if tkMessageBox.askyesno("Logging-out", "Are you sure you want to log-out?"):
+			if y.notifWindow.getWindowVisibility() == 1:
+				y.notifWindow.lower()
+				y.notifWindow.setWindowVisibility(0)
+				y.topLayerObject.brewingNotifButton.config(image=y.topLayerObject.brewingNotifImage)
+				y.topLayerObject.msgNotifButton.config(image=y.topLayerObject.msgNotifImage)			
+				y.topLayerObject.friendNotifButton.config(image=y.topLayerObject.friendNotifImage)
+				
 			self.usernameInput.delete(0, END)									# Delete any text from login
 			self.passwordInput.delete(0, END)
 			self.usernameInput.focus()
@@ -140,11 +146,36 @@ class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are m
 	def createWidgets(self):
 		notifLayer = Frame(self, width=1000, height=50, bg=toplayerColor)
 		notifLayer.pack(anchor=NW)
+
 		Label(notifLayer, text="caffy", font=defaultLogoStyle, bg=toplayerColor, fg=signatureColor).place(anchor=CENTER, relx=0.2, rely=0.5)
 		self.coff = Label(notifLayer, text="☕", font=defaultLogoStyle, bg=toplayerColor, fg="#FFFFFF")
 		self.coff.place(anchor=CENTER, relx=0.245, rely=0.48)
 		self.coff.bind("<Enter>", lambda f: self.coff.config(fg=signatureColor))
 		self.coff.bind("<Leave>", lambda f: self.coff.config(fg="white"))
+
+		self.brewingNotifImage = PhotoImage(file="GUIE/brewingNotif.gif")
+		self.brewingNotifImageRed = PhotoImage(file="GUIE/brewingNotifRed.gif")
+		self.brewingNotifButton = Button(notifLayer, bg=toplayerColor, relief=FLAT, image=self.brewingNotifImage)
+		self.brewingNotifButton.place(anchor=CENTER, relx=0.6+b, rely=0.5)
+		self.brewingNotifButton.image = self.brewingNotifImage
+
+		self.msgNotifImage = PhotoImage(file="GUIE/msgNotif.gif")
+		self.msgNotifImageRed = PhotoImage(file="GUIE/msgNotifRed.gif")
+		self.msgNotifButton = Button(notifLayer, bg=toplayerColor, relief=FLAT, image=self.msgNotifImage)
+		self.msgNotifButton.place(anchor=CENTER, relx=0.56+b, rely=0.5)
+		self.msgNotifButton.image = self.msgNotifImage
+
+		self.friendNotifImage = PhotoImage(file="GUIE/friendNotif.gif")
+		self.friendNotifImageRed = PhotoImage(file="GUIE/friendNotifRed.gif")
+		self.friendNotifButton = Button(notifLayer, bg=toplayerColor, relief=FLAT, image=self.friendNotifImage)
+		self.friendNotifButton.place(anchor=CENTER, relx=0.52+b, rely=0.5)
+		self.friendNotifButton.image = self.friendNotifImage
+
+		self.profilepageButton = Button(notifLayer, text="☺ Profile", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor)
+		self.profilepageButton.place(anchor=CENTER, relx=0.6875+b, rely=0.5)
+
+		self.homepageButton = Button(notifLayer, text="⌂ Home", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor)
+		self.homepageButton.place(anchor=CENTER, relx=0.76+b, rely=0.5)
 
 		
 class homePageGUI(Frame):														# This is the GUI for the Newsfeed sections
@@ -154,7 +185,7 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		self.createWidgets(database)
 
 	def receiveDatabase(self, database):
-		pass
+		self.homePageDisplayNameVariable.set(database.get_first_name())
 	
 	def createWidgets(self, database):
 		homepageMainWindow = Frame(self, width=1000, height=550)
@@ -166,8 +197,55 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		homeShadow.create_image(500, 275, image=shadow)
 		homeShadow.image = shadow
 
-		Label(homepageMainWindow, text="YOU JUST GOT CAFFIED!", font=("Tahoma", 30, "bold"), fg="#000000").place(anchor=CENTER, relx=0.5, rely=0.5)
+		wall = Frame(homepageMainWindow, width=700, height=500, bg="#eeeeee", highlightthickness=1, highlightbackground="#AAAAAA")
+		wall.place(anchor=CENTER, relx=0.63, rely=0.5)
 
+		smallDP = Frame(homepageMainWindow, width=75, height=75, bg="#555555")
+		smallDP.place(anchor=N, relx=0.06, rely=0.04)
+
+		self.homePageDisplayNameVariable = StringVar()
+		self.homePageDisplayNameVariable.set("")
+
+		self.homePageDisplayName = Label(homepageMainWindow, textvariable=self.homePageDisplayNameVariable, font=("Tahoma", 13), bg="#eeeeee")
+		self.homePageDisplayName.place(anchor=NW, relx=0.11, rely=0.025)
+
+
+class notificationWindow(Frame):
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
+		self.enabled = 0				
+
+		bgimage = PhotoImage(file="GUIE/notifWindowBG2.gif")
+		notifCanvas = Canvas(self, width=400, height=300, highlightthickness=0, bg="#eeeeee")
+		notifCanvas.pack()		
+		notifCanvas.create_image(200, 150, image=bgimage)
+		notifCanvas.image = bgimage
+
+		container = Frame(self, width=381, height=282, highlightthickness=0, bg="white")
+		container.place(anchor=CENTER, relx=0.5, rely=0.5)
+
+		self.notifTitleVar = StringVar()
+
+		self.notifTitle = Label(container, textvariable = self.notifTitleVar, bg="white", font=("Tahoma", 16))
+		self.notifTitle.place(anchor=NW)
+
+	def setWindowVisibility(self, onoroff):
+		self.enabled = onoroff
+
+	def getWindowVisibility(self):
+		return self.enabled
+
+	def setState(self, state, notifSystem):
+		if state == "brewing":
+			self.notifTitleVar.set("What's brewing for today?")
+			notifSystem.brewingNotifButton.config(image=notifSystem.brewingNotifImageRed)
+
+		elif state == "msg":
+			self.notifTitleVar.set("My messages")
+			notifSystem.msgNotifButton.config(image=notifSystem.msgNotifImageRed)
+		else:		# state == "friends"
+			self.notifTitleVar.set("Wanna-be friends")
+			notifSystem.friendNotifButton.config(image=notifSystem.friendNotifImageRed)
 
 
 class setupPageGUI(Frame, CC):
@@ -186,7 +264,7 @@ class setupPageGUI(Frame, CC):
 		return list([self.school.get(), self.graduateyear.get()])
 
 	def export_setup_data(self):
-		self.exporter.export_details(self.get_name(), self.get_password(), dispname=self.displayNameVariable.get(), gender=self.genderradio.get(), birthday=self.get_birthday(),  jobs=self.get_job(), education=self.get_educ())
+		self.exporter.export_details(self.get_name(), self.get_password(), firstname=self.FirstNameVariable.get(), lastname=self.LastNameVariable.get(), gender=self.genderradio.get(), birthday=self.get_birthday(),  jobs=self.get_job(), education=self.get_educ())
 		self.set_OnOrOff("Offline")
 
 	def createWidgets(self):
@@ -209,11 +287,14 @@ class setupPageGUI(Frame, CC):
 		Label(temp, text="Education: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.7)
 		Label(temp, text="Jobs: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.6)
 
-		self.displayNameVariable = StringVar()
+		self.FirstNameVariable = StringVar()
+		self.LastNameVariable = StringVar()
 		layer1 = Frame(temp, width=550, height=40, bg="#FFFFFF")
 		layer1.place(anchor=W, relx=0.33, rely=0.3)
-		displayNameInput = Entry(layer1, fg=toplayerColor, width=52, textvariable=self.displayNameVariable, font = defaultCreateStyle, relief=FLAT)
-		displayNameInput.place(anchor=CENTER, relx=0.5, rely=0.5)
+		firstNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.FirstNameVariable, font = defaultCreateStyle, relief=FLAT)
+		firstNameDisplayInput.grid(row=0, column=0, padx=(10, 5), pady=5)
+		lastNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.LastNameVariable, font = defaultCreateStyle, relief=FLAT)
+		lastNameDisplayInput.grid(row=0, column=1, padx=(5, 10), pady=5)
 
 		
 		months = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
@@ -321,6 +402,8 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		Singleton.__init__(self)
 
 		self.topLayerObject = notifSystemGUI(self)
+		self.notifWindow = notificationWindow(self)
+		self.notifWindow.place(anchor=N, relx=0.785, rely=0.11)
 
 		container2 = Frame(self, width=1000, height=550)
 		container2.pack()
@@ -329,34 +412,31 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.homePageObject = homePageGUI(container2)
 				
 		self.createWidgets()
-		self.profilepageLift()
+		self.homepageLift()
+
+	def turnNotifWindowOnOrOff(self, state, notifSystem):
+		if self.notifWindow.getWindowVisibility() == 0:
+			self.notifWindow.setState(state, notifSystem)
+			self.notifWindow.lift()
+			self.notifWindow.setWindowVisibility(1)
+		else:
+			self.notifWindow.lower()
+			notifSystem.brewingNotifButton.config(image=notifSystem.brewingNotifImage)
+			notifSystem.msgNotifButton.config(image=notifSystem.msgNotifImage)
+			notifSystem.friendNotifButton.config(image=notifSystem.friendNotifImage)
+			self.notifWindow.setWindowVisibility(0)
 	
 	def setDatabase(self, database):		
 		self.profilePageObject.receiveDatabase(database)
 		self.homePageObject.receiveDatabase(database)
 			
 	def createWidgets(self):
+		self.topLayerObject.profilepageButton.config(command=self.profilePageObject.lift)
+		self.topLayerObject.homepageButton.config(command=self.homePageObject.lift)
 
-		brewingNotifImage = PhotoImage(file="GUIE/brewingNotif.gif")
-		self.brewingNotifButton = Button(self.topLayerObject, bg=toplayerColor, relief=FLAT, image=brewingNotifImage)
-		self.brewingNotifButton.place(anchor=CENTER, relx=0.6+b, rely=0.5)
-		self.brewingNotifButton.image = brewingNotifImage
-
-		msgNotifImage = PhotoImage(file="GUIE/msgNotif.gif")
-		self.msgNotifButton = Button(self.topLayerObject, bg=toplayerColor, relief=FLAT, image=msgNotifImage)
-		self.msgNotifButton.place(anchor=CENTER, relx=0.56+b, rely=0.5)
-		self.msgNotifButton.image = msgNotifImage
-
-		friendNotifImage = PhotoImage(file="GUIE/friendNotif.gif")
-		self.friendNotifButton = Button(self.topLayerObject, bg=toplayerColor, relief=FLAT, image=friendNotifImage)
-		self.friendNotifButton.place(anchor=CENTER, relx=0.52+b, rely=0.5)
-		self.friendNotifButton.image = friendNotifImage
-
-		self.profilepageButton = Button(self.topLayerObject, text="☺ Profile", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.profilepageLift)
-		self.profilepageButton.place(anchor=CENTER, relx=0.6875+b, rely=0.5)
-
-		self.homepageButton = Button(self.topLayerObject, text="⌂ Home", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=self.homepageLift)
-		self.homepageButton.place(anchor=CENTER, relx=0.76+b, rely=0.5)
+		self.topLayerObject.brewingNotifButton.config(command=lambda: self.turnNotifWindowOnOrOff("brewing", self.topLayerObject))
+		self.topLayerObject.msgNotifButton.config(command=lambda: self.turnNotifWindowOnOrOff("msg", self.topLayerObject))
+		self.topLayerObject.friendNotifButton.config(command=lambda: self.turnNotifWindowOnOrOff("friend", self.topLayerObject))	
 		
 
 	def homepageLift(self):
@@ -537,7 +617,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		t = self.setupPageObject
 		responses = ["DISPLAY NAME IS\nBLANK", "MUST NOT CONTAIN\nSPECIAL CHARACTERS", "DATE INCOMPLETE", "INVALID DATE", "JOB INFORMATION\nINCOMPLETE", "EDUCATION INFORMATION\nINCOMPLETE"]
-		answer = self.val.guis(t.displayNameVariable.get(), t.monthvar.get(), t.dayvar.get(), t.yearvar.get(), t.genderradio.get(), t.jobsCheckboxVariable.get(), t.position.get(), t.company.get(), t.workyears.get(), t.educCheckboxVariable.get(), t.school.get(), t.graduateyear.get())
+		answer = self.val.guis(t.FirstNameVariable.get(), t.LastNameVariable.get(), t.monthvar.get(), t.dayvar.get(), t.yearvar.get(), t.genderradio.get(), t.jobsCheckboxVariable.get(), t.position.get(), t.company.get(), t.workyears.get(), t.educCheckboxVariable.get(), t.school.get(), t.graduateyear.get())
 
 		if answer in responses:																												# If the answer is included in the list above,
 			self.setupPageObject.verifySetupLabel.config(text=answer)
