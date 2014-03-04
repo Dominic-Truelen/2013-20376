@@ -461,6 +461,7 @@ class import_database(registryDatabase): #importing data from the profile's data
 
     def import_all(self, name):
         try:
+            self.import_basics(name)
             self.import_display_name(name)
             self.import_details(name)
             self.import_DP(name)
@@ -492,16 +493,25 @@ class import_database(registryDatabase): #importing data from the profile's data
         self.onoroff = line.rstrip()
         f.close()
 
+    def import_basics(self, name):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        self.name = name     #username from the login username entry
+        f.readline()
+        f.readline()
+        self.password = f.readline()
+        f.close()
+
     def import_details(self, name):
         self.details = []
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
-        f.readline()
-        f.readline()
-        f.readline()
+        f.readline()    #details
+        f.readline()    #name
+        f.readline()    #password
+        self.details.append(f.readline().rstrip())      #gender
         for line in f:
             if line == 'Offline\n' or line == 'Online\n' or line == 'Offline Setup\n':
                 break
-            self.details.append(line.rstrip())
+            self.details.append(eval(line.rstrip()))
         f.close()
 
     def import_DP(self, name):
@@ -658,6 +668,22 @@ class export_database(): #exporting data to the database by creating a temporary
         else:            
             for line in f:
                 g.write(line)
+        f.close()
+        g.close()
+        os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+
+    def export_DP(self, name, DPPath):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + "1", 'w')
+        for x in range(10):
+            g.write(f.readline())          
+        
+        g.write(str(DPPath)+"\n")
+        f.readline()
+        for line in f:
+            g.write(line)
+
         f.close()
         g.close()
         os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)

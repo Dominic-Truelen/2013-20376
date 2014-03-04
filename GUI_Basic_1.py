@@ -4,7 +4,8 @@
 from CC import *																# pack() is for stacking, while place() is for a more
 from Tkinter import *															# accurate placing of widgets. grid() is for tables
 from profilePageGUI import profilePageGUI
-import os, sys, glob, time, subprocess, tkMessageBox, ctypes
+from tkFileDialog import askopenfile
+import os, sys, glob, time, shutil, subprocess, tkMessageBox, ctypes, tkFileDialog
 
 
 def isPlatform(x):
@@ -14,6 +15,7 @@ def isPlatform(x):
 
 try:
 	from PIL import ImageTk
+	import Image
 except:
 	if isPlatform("linux") or isPlatform("mac"):
 		Window = Tk()        		 													# Creates an empty window
@@ -153,23 +155,26 @@ class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are m
 		self.coff.bind("<Enter>", lambda f: self.coff.config(fg=signatureColor))
 		self.coff.bind("<Leave>", lambda f: self.coff.config(fg="white"))
 
-		self.brewingNotifImage = PhotoImage(file="GUIE/brewingNotif.gif")
-		self.brewingNotifImageRed = PhotoImage(file="GUIE/brewingNotifRed.gif")
-		self.brewingNotifButton = Button(notifLayer, bg=toplayerColor, relief=FLAT, image=self.brewingNotifImage)
-		self.brewingNotifButton.place(anchor=CENTER, relx=0.6+b, rely=0.5)
-		self.brewingNotifButton.image = self.brewingNotifImage
+		notifButtonFrame = Frame(notifLayer, bg=toplayerColor)
+		notifButtonFrame.place(anchor=CENTER, relx=0.66, rely=0.5)
+		
+		self.friendNotifImage = PhotoImage(file="GUIE/friendNotif.gif")
+		self.friendNotifImageRed = PhotoImage(file="GUIE/friendNotifRed.gif")
+		self.friendNotifButton = Button(notifButtonFrame, bg=toplayerColor, relief=FLAT, image=self.friendNotifImage)
+		self.friendNotifButton.grid(row=0, column=0)
+		self.friendNotifButton.image = self.friendNotifImage
 
 		self.msgNotifImage = PhotoImage(file="GUIE/msgNotif.gif")
 		self.msgNotifImageRed = PhotoImage(file="GUIE/msgNotifRed.gif")
-		self.msgNotifButton = Button(notifLayer, bg=toplayerColor, relief=FLAT, image=self.msgNotifImage)
-		self.msgNotifButton.place(anchor=CENTER, relx=0.56+b, rely=0.5)
+		self.msgNotifButton = Button(notifButtonFrame, bg=toplayerColor, relief=FLAT, image=self.msgNotifImage)
+		self.msgNotifButton.grid(row=0, column=1, padx=(7,9))
 		self.msgNotifButton.image = self.msgNotifImage
 
-		self.friendNotifImage = PhotoImage(file="GUIE/friendNotif.gif")
-		self.friendNotifImageRed = PhotoImage(file="GUIE/friendNotifRed.gif")
-		self.friendNotifButton = Button(notifLayer, bg=toplayerColor, relief=FLAT, image=self.friendNotifImage)
-		self.friendNotifButton.place(anchor=CENTER, relx=0.52+b, rely=0.5)
-		self.friendNotifButton.image = self.friendNotifImage
+		self.brewingNotifImage = PhotoImage(file="GUIE/brewingNotif.gif")
+		self.brewingNotifImageRed = PhotoImage(file="GUIE/brewingNotifRed.gif")
+		self.brewingNotifButton = Button(notifButtonFrame, bg=toplayerColor, relief=FLAT, image=self.brewingNotifImage)
+		self.brewingNotifButton.grid(row=0, column=2)
+		self.brewingNotifButton.image = self.brewingNotifImage
 
 		self.profilepageButton = Button(notifLayer, text="☺ Profile", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor)
 		self.profilepageButton.place(anchor=CENTER, relx=0.6875+b, rely=0.5)
@@ -185,7 +190,22 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		self.createWidgets(database)
 
 	def receiveDatabase(self, database):
-		self.homePageDisplayNameVariable.set(database.get_first_name())
+		a = database.get_first_name()
+		if len(a) > 17:
+			a = a.split(" ")
+			a = a[0]
+			self.homePageDisplayNameVariable.set(a)
+
+		self.homePageDisplayNameVariable.set(a)
+
+		self.setProfilePicture(database.get_DP())
+
+	def setProfilePicture(self, databaseFile):
+		b = Image.open(databaseFile)
+		b.thumbnail((75,75))
+		self.homePageDPVariable = ImageTk.PhotoImage(b)		
+		self.homePageDP.config(image=self.homePageDPVariable)
+		self.homePageDP.image = self.homePageDPVariable
 	
 	def createWidgets(self, database):
 		homepageMainWindow = Frame(self, width=1000, height=550)
@@ -197,18 +217,47 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		homeShadow.create_image(500, 275, image=shadow)
 		homeShadow.image = shadow
 
-		wall = Frame(homepageMainWindow, width=700, height=500, bg="#eeeeee", highlightthickness=1, highlightbackground="#AAAAAA")
-		wall.place(anchor=CENTER, relx=0.63, rely=0.5)
-
-		smallDP = Frame(homepageMainWindow, width=75, height=75, bg="#555555")
-		smallDP.place(anchor=N, relx=0.06, rely=0.04)
-
 		self.homePageDisplayNameVariable = StringVar()
 		self.homePageDisplayNameVariable.set("")
 
-		self.homePageDisplayName = Label(homepageMainWindow, textvariable=self.homePageDisplayNameVariable, font=("Tahoma", 13), bg="#eeeeee")
-		self.homePageDisplayName.place(anchor=NW, relx=0.11, rely=0.025)
+		self.homePageDisplayName = Label(homepageMainWindow, cursor="hand2", anchor=W, justify=LEFT, wraplength=0, textvariable=self.homePageDisplayNameVariable, font=("Tahoma", 13, "bold"), bg=backgroundColor)
+		self.homePageDisplayName.place(anchor=NW, relx=0.11, rely=0.065)
+		self.homePageDisplayName.bind("<Enter>", lambda a: self.homePageDisplayName.config(fg=signatureColor))
+		self.homePageDisplayName.bind("<Leave>", lambda a: self.homePageDisplayName.config(fg="black"))
 
+		smallDP = Frame(homepageMainWindow, width=75, height=75)
+		smallDP.place(anchor=N, relx=0.06, rely=0.04)
+
+		self.homePageDP = Label(smallDP, width=75, height=75, bg="white")
+		self.homePageDP.place(anchor=CENTER, relx=0.5, rely=0.5)
+
+		self.editProfileButton = Button(homepageMainWindow, relief=FLAT, cursor="hand2", text="Update Profile", font=("Tahoma", 10), bg=backgroundColor, fg="#444444")
+		self.editProfileButton.place(anchor=W, relx=0.11, rely=0.14)
+		self.editProfileButton.bind("<Enter>", lambda a: self.editProfileButton.config(fg="black"))
+		self.editProfileButton.bind("<Leave>", lambda a: self.editProfileButton.config(fg="#444444"))
+
+		postStatus = Frame(homepageMainWindow, width=400, height=75, bg=backgroundColor, highlightthickness=1, highlightbackground="#AAAAAA")
+		postStatus.place(anchor=CENTER, relx=0.5, rely=0.13)
+
+		wall = Frame(homepageMainWindow, width=400, height=400, bg=backgroundColor, highlightthickness=1, highlightbackground="#AAAAAA")
+		wall.place(anchor=CENTER, relx=0.5, rely=0.6)
+
+
+class editProfileGUI(Frame):
+	def __init__(self, master=None):
+		Frame.__init__(self, master)		
+		self.place(in_=master)
+		self.createWidgets()
+
+	def createWidgets(self):
+		editProfileFrame = Frame(self, width=1000, height=500, bg=backgroundColor)
+		editProfileFrame.pack()
+
+		editShadow = Canvas(editProfileFrame, width=1000, height=550, highlightthickness=0, bg=backgroundColor)
+		editShadow.pack()
+		shadow = PhotoImage(file="GUIE/activePageShadow.gif")
+		editShadow.create_image(500, 275, image=shadow)
+		editShadow.image = shadow
 
 class notificationWindow(Frame):
 	def __init__(self, master=None):
@@ -216,7 +265,7 @@ class notificationWindow(Frame):
 		self.enabled = 0				
 
 		bgimage = PhotoImage(file="GUIE/notifWindowBG2.gif")
-		notifCanvas = Canvas(self, width=400, height=300, highlightthickness=0, bg="#eeeeee")
+		notifCanvas = Canvas(self, width=400, height=300, highlightthickness=0, bg=backgroundColor)
 		notifCanvas.pack()		
 		notifCanvas.create_image(200, 150, image=bgimage)
 		notifCanvas.image = bgimage
@@ -289,6 +338,8 @@ class setupPageGUI(Frame, CC):
 
 		self.FirstNameVariable = StringVar()
 		self.LastNameVariable = StringVar()
+		Label(temp, text="First name(s)", bg=backgroundColor).place(anchor=W, relx=0.3357, rely=0.25)
+		Label(temp, text="Last name(s)", bg=backgroundColor).place(anchor=W, relx=0.604, rely=0.25)
 		layer1 = Frame(temp, width=550, height=40, bg="#FFFFFF")
 		layer1.place(anchor=W, relx=0.33, rely=0.3)
 		firstNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.FirstNameVariable, font = defaultCreateStyle, relief=FLAT)
@@ -338,11 +389,11 @@ class setupPageGUI(Frame, CC):
 		label2.place(anchor=W, relx=0.58, rely=0.555)
 		label3 = Label(temp, text="for __ years:", bg=backgroundColor, state=DISABLED)
 		label3.place(anchor=W, relx=0.782, rely=0.555)
-		entrya = Entry(temp, width=14, relief=FLAT, textvariable = self.position, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entrya = Entry(temp, highlightthickness=1, width=14, relief=FLAT, textvariable = self.position, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
 		entrya.place(anchor=W, relx=0.42, rely=0.6)
-		entryb = Entry(temp, width=18, relief=FLAT, textvariable = self.company, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entryb = Entry(temp, highlightthickness=1, width=18, relief=FLAT, textvariable = self.company, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
 		entryb.place(anchor=W, relx=0.5825, rely=0.6)
-		entryc = Entry(temp, width=9, relief=FLAT, textvariable = self.workyears, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entryc = Entry(temp, highlightthickness=1, width=9, relief=FLAT, textvariable = self.workyears, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
 		entryc.place(anchor=W, relx=0.785, rely=0.6)
 
 		self.school = StringVar()
@@ -354,9 +405,9 @@ class setupPageGUI(Frame, CC):
 		labela.place(anchor=W, relx=0.417, rely=0.655)
 		labelb = Label(temp, text="Year graduated:", bg=backgroundColor, state=DISABLED)
 		labelb.place(anchor=W, relx=0.775, rely=0.655)		
-		entry1 = Entry(temp, width=34, relief=FLAT, textvariable = self.school, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entry1 = Entry(temp, highlightthickness=1, width=34, relief=FLAT, textvariable = self.school, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
 		entry1.place(anchor=W, relx=0.42, rely=0.7)
-		entry2 = Entry(temp, width=9, relief=FLAT, textvariable = self.graduateyear, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		entry2 = Entry(temp, highlightthickness=1, width=9, relief=FLAT, textvariable = self.graduateyear, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
 		entry2.place(anchor=W, relx=0.78, rely=0.7)
 
 		self.verifySetupLabel = Label(temp, text="", bg=backgroundColor, fg="red", font=("Tahoma", 9, "bold"), justify=LEFT)
@@ -401,6 +452,9 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		Frame.__init__(self, master)
 		Singleton.__init__(self)
 
+		self.importer = import_database()
+		self.exporter = export_database()
+
 		self.topLayerObject = notifSystemGUI(self)
 		self.notifWindow = notificationWindow(self)
 		self.notifWindow.place(anchor=N, relx=0.785, rely=0.11)
@@ -410,6 +464,7 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 
 		self.profilePageObject = profilePageGUI(container2)		
 		self.homePageObject = homePageGUI(container2)
+		self.editProfileObject = editProfileGUI(container2)
 				
 		self.createWidgets()
 		self.homepageLift()
@@ -425,10 +480,33 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 			notifSystem.msgNotifButton.config(image=notifSystem.msgNotifImage)
 			notifSystem.friendNotifButton.config(image=notifSystem.friendNotifImage)
 			self.notifWindow.setWindowVisibility(0)
+
+	def changeDP(self,event):
+		newDP = tkFileDialog.askopenfile(filetypes=[("Images", "*.jpg *png *.gif")], title="Select your new DP!")
+		if newDP == None:
+			return
+		newDirectory = "DATABASE/" + self.importer.name + "/pictures"
+		newDPNameVariable = str(newDP.name)
+		newDPNameVariable = newDPNameVariable.split("/")
+		newDPNameVariable = newDPNameVariable[-1]
+		try:
+			shutil.copy(str(newDP.name), newDirectory)
+		except:
+			pass
+			
+		newDPCopiedPath = str("DATABASE/" + self.importer.name + "/pictures/" + newDPNameVariable)
+		self.exporter.export_DP(self.importer.name, newDPCopiedPath)
+		self.importer.import_DP(self.importer.get_name())
+		self.setDP(self.importer.get_DP())
 	
-	def setDatabase(self, database):		
+	def setDatabase(self, database):
+		self.importer = database		
 		self.profilePageObject.receiveDatabase(database)
 		self.homePageObject.receiveDatabase(database)
+
+	def setDP(self, databaseFile):
+		self.profilePageObject.setProfilePicture(databaseFile)
+		self.homePageObject.setProfilePicture(databaseFile)
 			
 	def createWidgets(self):
 		self.topLayerObject.profilepageButton.config(command=self.profilePageObject.lift)
@@ -438,12 +516,20 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.topLayerObject.msgNotifButton.config(command=lambda: self.turnNotifWindowOnOrOff("msg", self.topLayerObject))
 		self.topLayerObject.friendNotifButton.config(command=lambda: self.turnNotifWindowOnOrOff("friend", self.topLayerObject))	
 		
+		self.profilePageObject.labelDP.bind("<Button-1>", self.changeDP)
+
+		self.homePageObject.homePageDisplayName.bind("<Button-1>", lambda a: self.profilepageLift())
+		self.homePageObject.editProfileButton.bind("<Button-1>", lambda a: self.editprofileLift())
+
 
 	def homepageLift(self):
 		self.homePageObject.lift()
 
 	def profilepageLift(self):
-		self.profilePageObject.lift()	
+		self.profilePageObject.lift()
+
+	def editprofileLift(self):
+		self.editProfileObject.lift()	
 
 
 class navClass(Frame):															# A GUI that combines the Login and Active Windows. Basically another Faҫade design pattern. Called navClass because of navigation (button fxns)
