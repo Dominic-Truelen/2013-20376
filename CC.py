@@ -1,4 +1,4 @@
-import os, glob, shutil #for deleting and renaming files
+import os, glob, shutil, collections #for deleting and renaming files
 
 class CC(object): #profile management #superclass
 
@@ -209,8 +209,8 @@ class usernameVerify(validation):
             f.close()
 
         f = open("DATABASE/DATABASE")
-        a = f.readlines()
-        if (x + ": " + y + "\n") not in a:
+        a = [line for line in f]
+        if ((x + ": " + y + "\n") not in a):
             return self.successor.handleLoginPassword(x, y, a)  #Handle the Password in Registry
         f.close()
 
@@ -540,7 +540,8 @@ class import_database(registryDatabase): #importing data from the profile's data
             temp = f.readline()
             if temp == "Status\n":
                 break
-        self.status = f.readline().rstrip()
+        temp = eval(f.readline().rstrip())
+        self.status = collections.OrderedDict(sorted(temp.items()))
         f.close()
 
     def import_messages(self, name): #importing messages

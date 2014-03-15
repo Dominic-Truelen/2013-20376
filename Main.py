@@ -121,7 +121,7 @@ class post(object): #Getters and Setters for posts
 		self.date = ''
 		self.state = ''
 		self.tags = []
-		self.comments = [] #List of comment()s
+		self.comments = [] #List of comment()s instances, not just a list, but INSTANCES OF THE COMMENT cLASS
 		self.exporter = export_database()
 
 	def get_name(self):
@@ -152,10 +152,10 @@ class post(object): #Getters and Setters for posts
 		self.state = state
 
 	def set_tags(self, tags):
-		self.tags = tags
+		self.tags.append(tags)
 
 	def set_comments(self, comments):
-		self.comments = comments
+		self.comments.append(comments)
 
 class comment(): #Getters and Setters for comments
 	def __init__(self): 
@@ -305,16 +305,16 @@ class profile_object(): #Getters and setters for profiles
 
 class status(post):
     def __init__(self, name):
-        super(status, self).__init__(name)
-        self.state = 'status'
-        self.status = []
+        post.__init__(self)
+        self.state = 'Status'
+        self.status = {}
         self.importer = import_database()
 
     def get_status(self): #Importing the status
         self.importer.import_status(self.name)
         self.status = eval(self.importer.get_status())
 
-    def create_status(self): #Overwritting the status
+    def create_status(self): #Overwriting the status
         status = str(raw_input("Enter your status: "))
         date = strftime("%m/%d/%Y, %I.%M.%S%p")
         self.exporter.export_status(self.name, status, date)

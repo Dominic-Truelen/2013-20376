@@ -1,11 +1,19 @@
-﻿#!/usr/bin/python																# Allows the use of Non-ASCII characters (password) in app
+#!/usr/bin/python																# Allows the use of Non-ASCII characters (password) in app
 # -*- coding: utf-8 -*-
  
 from CC import *																# pack() is for stacking, while place() is for a more
 from Tkinter import *															# accurate placing of widgets. grid() is for tables
+from Main import *
 from profilePageGUI import profilePageGUI
 from tkFileDialog import askopenfile
-import os, sys, glob, time, shutil, subprocess, tkMessageBox, ctypes, tkFileDialog
+from time import strftime
+import os
+import sys
+import glob
+import time
+import shutil, subprocess
+import tkMessageBox, ctypes, tkFileDialog
+import Queue, threading
 
 
 def isPlatform(x):
@@ -16,9 +24,10 @@ def isPlatform(x):
 try:
 	from PIL import ImageTk
 	import Image
-except:
-	if isPlatform("linux") or isPlatform("mac"):
-		Window = Tk()        		 													# Creates an empty window
+
+except ImportError:
+	if isPlatform("linux"):
+		Window = Tk()        		 											# Creates an empty window
 		Window.withdraw()
 		tkMessageBox.showerror("Error", "Please install PIL.")		
 	elif isPlatform("win32"):
@@ -38,7 +47,7 @@ backgroundColor = "#EEEEEE"														# Grayish-white color
 greenColor = "#52A41D"
 
 
-a =- 0.05																		# Adjuster for widget's y-value placement
+a = -0.05																		# Adjuster for widget's y-value placement
 b = 0.075
 
 
@@ -46,7 +55,7 @@ def anotherUser():																# Instantiate multiple users
 	try:
 		subprocess.Popen("GUI_Basic_1.exe")
 	except:
-		subprocess.Popen("python GUI_Basic_1.py")
+		subprocess.Popen("python GUI_Basic_1.py", shell=True)
 
 
 class loginPageGUI(Frame):														# The login GUI class Interface!
@@ -103,7 +112,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 		self.newPasswordVerifyInput = Entry(layer3, highlightthickness=0, fg=toplayerColor, width=35, show="•", textvariable=self.newPasswordVerifyVariable, font = defaultCreateStyle, relief=FLAT)
 		self.newPasswordVerifyInput.place(anchor=CENTER, relx=0.5, rely=0.5)
 		Label(midLayer, text="Pick a username:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.23+a)
-		Label(midLayer, text="Create a password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.38+a)
+		Label(midLayer, text="Create a password (6 characters minimum!):", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.38+a)
 		Label(midLayer, text="Reenter your password:", bg=backgroundColor, fg=toplayerColor).place(anchor=W, relx=0.508, rely=0.53+a)
 		Label(midLayer, text="Take a    break!\nSign up!", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg="#222222").place(anchor=W, relx=0.08, rely=0.345+a)
 		self.coffcup2 = Label(midLayer, text="☕", font=("Tahoma", 35), justify=LEFT, bg=backgroundColor, fg="#222222")
@@ -134,7 +143,7 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 			self.master.title("Welcome to Caffy!")			
 			self.login_logout.logout()											# Puts user "offline"
 			x.lift()															# Lifts the original login page (passed as argument)
-			y.profilepageLift()													# Reset original starting page to profile page
+			y.homepageLift()													# Reset original starting page to profile page
 		else:
 			return
 
@@ -221,7 +230,7 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		self.homePageDisplayNameVariable.set("")
 
 		self.homePageDisplayName = Label(homepageMainWindow, cursor="hand2", anchor=W, justify=LEFT, wraplength=0, textvariable=self.homePageDisplayNameVariable, font=("Tahoma", 13, "bold"), bg=backgroundColor)
-		self.homePageDisplayName.place(anchor=NW, relx=0.11, rely=0.065)
+		self.homePageDisplayName.place(anchor=NW, relx=0.11, rely=0.064)
 		self.homePageDisplayName.bind("<Enter>", lambda a: self.homePageDisplayName.config(fg=signatureColor))
 		self.homePageDisplayName.bind("<Leave>", lambda a: self.homePageDisplayName.config(fg="black"))
 
@@ -232,12 +241,20 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		self.homePageDP.place(anchor=CENTER, relx=0.5, rely=0.5)
 
 		self.editProfileButton = Button(homepageMainWindow, relief=FLAT, cursor="hand2", text="Update Profile", font=("Tahoma", 10), bg=backgroundColor, fg="#444444")
-		self.editProfileButton.place(anchor=W, relx=0.11, rely=0.14)
+		self.editProfileButton.place(anchor=W, relx=0.11, rely=0.132)
 		self.editProfileButton.bind("<Enter>", lambda a: self.editProfileButton.config(fg="black"))
 		self.editProfileButton.bind("<Leave>", lambda a: self.editProfileButton.config(fg="#444444"))
 
 		postStatus = Frame(homepageMainWindow, width=400, height=75, bg=backgroundColor, highlightthickness=1, highlightbackground="#AAAAAA")
 		postStatus.place(anchor=CENTER, relx=0.5, rely=0.13)
+
+		Label(postStatus, text="What's brewing in your brain?", font=defaultEntryStyle).place(anchor=CENTER, relx=0.31, rely=0.2)
+
+		self.updateStatusEntry = Entry(postStatus, highlightthickness=1, width=30, font=defaultCreateStyle, fg="black", relief=FLAT)
+		self.updateStatusEntry.place(anchor=CENTER, relx=0.42, rely=0.63)
+
+		self.updateStatusButton = Button(postStatus, width=5, relief=FLAT, bg="orange", fg="white", text="Caf!", font=("Tahoma", 9, "bold"))
+		self.updateStatusButton.place(anchor=CENTER, relx=0.9, rely=0.63)
 
 		wall = Frame(homepageMainWindow, width=400, height=400, bg=backgroundColor, highlightthickness=1, highlightbackground="#AAAAAA")
 		wall.place(anchor=CENTER, relx=0.5, rely=0.6)
@@ -259,6 +276,58 @@ class editProfileGUI(Frame):
 		editShadow.create_image(500, 275, image=shadow)
 		editShadow.image = shadow
 
+
+class activePageThreading(threading.Thread):
+	def __init__(self, inqueue, outqueue):
+		threading.Thread.__init__(self)
+		self.inqueue = inqueue
+		self.outqueue = outqueue
+		self.importer = import_database()
+
+	def run(self):
+		while True:
+			try:
+				pass
+			except Exception:
+				pass
+
+			time.sleep(2)
+
+
+class postGUI(Frame, post):
+	def __init__(self, master=None, usernameDatabase=None, date=None, state=None):
+		Frame.__init__(self, master)
+		self.config(bg=backgroundColor)				
+		self.importer = usernameDatabase
+		post.__init__(self, self.importer.get_display_name())		
+		self.set_date(date)
+		self.set_text(self.importer.get_status()[self.get_date()])
+		self.set_state(state)
+		self.pack(anchor=W, pady=5)
+		self.createWidgets()
+
+	def createWidgets(self):
+		postFrame = Frame(self, width=450, bg=backgroundColor)
+		postFrame.pack()
+		postFrame.pack_propagate(False)
+
+		DPThumbnailFrame = Frame(postFrame, width=40, height=40, bg=backgroundColor)
+		DPThumbnailFrame.grid(row=0, column=0, rowspan=3, sticky=N)
+
+		b = Image.open(self.importer.get_DP())
+		b.thumbnail((40,40))
+		DPThumbnailVariable = ImageTk.PhotoImage(b)
+		DPThumbnail = Label(DPThumbnailFrame, bg=backgroundColor, image=DPThumbnailVariable)
+		DPThumbnail.image = DPThumbnailVariable
+		DPThumbnail.place(anchor=CENTER, relx=0.5, rely=0.5)
+
+		posterName = Label(postFrame, bg=backgroundColor, text=self.get_name(), font=("Tahoma", 12, "bold"))
+		posterName.grid(row=0, column=1, sticky=NW, padx=(5,0))
+
+		postStatus = Label(postFrame, bg=backgroundColor, justify=LEFT, wraplength=370, text=self.get_text(), font=("Tahoma", 10))
+		postStatus.grid(row=1, column=1, sticky=W, padx=(5,0))
+
+		
 class notificationWindow(Frame):
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
@@ -342,8 +411,8 @@ class setupPageGUI(Frame, CC):
 		Label(temp, text="Last name(s)", bg=backgroundColor).place(anchor=W, relx=0.604, rely=0.25)
 		layer1 = Frame(temp, width=550, height=40, bg="#FFFFFF")
 		layer1.place(anchor=W, relx=0.33, rely=0.3)
-		firstNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.FirstNameVariable, font = defaultCreateStyle, relief=FLAT)
-		firstNameDisplayInput.grid(row=0, column=0, padx=(10, 5), pady=5)
+		self.firstNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.FirstNameVariable, font = defaultCreateStyle, relief=FLAT)
+		self.firstNameDisplayInput.grid(row=0, column=0, padx=(10, 5), pady=5)
 		lastNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.LastNameVariable, font = defaultCreateStyle, relief=FLAT)
 		lastNameDisplayInput.grid(row=0, column=1, padx=(5, 10), pady=5)
 
@@ -454,6 +523,12 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 
 		self.importer = import_database()
 		self.exporter = export_database()
+		'''
+		self.databaseUpdater = activePageThreading(self.importer)
+		self.databaseUpdater.setDaemon(True)
+		self.databaseUpdater.start()
+		'''
+		self.profilePageQueue = []
 
 		self.topLayerObject = notifSystemGUI(self)
 		self.notifWindow = notificationWindow(self)
@@ -495,19 +570,48 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 			pass
 			
 		newDPCopiedPath = str("DATABASE/" + self.importer.name + "/pictures/" + newDPNameVariable)
-		self.exporter.export_DP(self.importer.name, newDPCopiedPath)
+		self.exporter.export_DP(self.importer.name, newDPCopiedPath)		
 		self.importer.import_DP(self.importer.get_name())
+		#Take note to THREAD THIS PART:
+		self.setDatabase(self.importer)
 		self.setDP(self.importer.get_DP())
 	
 	def setDatabase(self, database):
-		self.importer = database		
+		self.importer = database
+
+		if len(self.profilePageQueue) != 0:
+			for post in self.profilePageQueue:
+				post.destroy()
+			self.profilePageQueue[:] = []
+
+		for date in self.importer.get_status().keys():
+			newpost = postGUI(self.profilePageObject.wallFrame, self.importer, date)
+			newpost.pack_forget()
+			self.profilePageQueue.append(newpost)
+
+		for post in reversed(self.profilePageQueue):
+			post.pack(anchor=W, pady=5)
+
 		self.profilePageObject.receiveDatabase(database)
 		self.homePageObject.receiveDatabase(database)
 
 	def setDP(self, databaseFile):
 		self.profilePageObject.setProfilePicture(databaseFile)
 		self.homePageObject.setProfilePicture(databaseFile)
-			
+
+	def setStatus(self):
+		date = strftime("%m/%d/%Y, %I.%M.%S%p")
+		self.exporter.export_status(self.importer.get_name(), self.homePageObject.updateStatusEntry.get(), date)
+		self.importer.import_status(self.importer.get_name())
+		newpost = postGUI(self.profilePageObject.wallFrame, self.importer, date)
+		self.profilePageQueue.append(newpost)
+		self.homePageObject.updateStatusEntry.delete(0, END)
+		self.master.focus()
+		for post in self.profilePageQueue:
+			post.pack_forget()
+		for post in reversed(self.profilePageQueue):
+			post.pack(anchor=W, pady=5)
+					
 	def createWidgets(self):
 		self.topLayerObject.profilepageButton.config(command=self.profilePageObject.lift)
 		self.topLayerObject.homepageButton.config(command=self.homePageObject.lift)
@@ -519,7 +623,10 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.profilePageObject.labelDP.bind("<Button-1>", self.changeDP)
 
 		self.homePageObject.homePageDisplayName.bind("<Button-1>", lambda a: self.profilepageLift())
-		self.homePageObject.editProfileButton.bind("<Button-1>", lambda a: self.editprofileLift())
+		self.homePageObject.editProfileButton.config(command=self.editprofileLift)
+
+		self.homePageObject.updateStatusButton.config(command=self.setStatus)
+		self.homePageObject.updateStatusEntry.bind("<Return>", lambda a: self.homePageObject.updateStatusButton.invoke())
 
 
 	def homepageLift(self):
@@ -571,7 +678,9 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.loginPageObject.passwordInput.bind("<Return>", lambda event: self.loginButton.invoke())
 
 		newCaffyButton = PhotoImage(file="GUIE/switchButton.gif")
-		self.anotherUserButton = Button(self.loginPageObject, highlightthickness=0, image=newCaffyButton, relief=FLAT, bg=toplayerColor, command=anotherUser)
+		self.anotherUserButton = Button(self.loginPageObject, cursor="hand2", highlightthickness=0, image=newCaffyButton, relief=FLAT, bg=toplayerColor, command=anotherUser)
+		self.anotherUserButton.bind("<Enter>", lambda a: self.tooltips(self.anotherUserButton, "Instantiate another user!"))
+		self.anotherUserButton.bind("<Leave>", lambda a: self.tooltip.destroy())
 		self.anotherUserButton.place(anchor=CENTER, relx=0.04, rely=0.07)
 		self.anotherUserButton.image = newCaffyButton
 		
@@ -603,6 +712,15 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			if tkMessageBox.askyesno("Exiting", "You are leaving caffy. Continue?"):	#Otherwise if user is logged-out, when x button is pressed, show the exit application message
 				self.master.destroy()											# Function to destroy the whole application
 		return 
+
+	def tooltips(self, widget, message):
+		x = y = 0
+		self.tooltip = Toplevel(widget)
+		self.tooltip.wm_overrideredirect(1)
+		x += widget.winfo_rootx() + 27
+		y += widget.winfo_rooty() + 27
+		self.tooltip.wm_geometry("+%d+%d" % (x, y))
+		Label(self.tooltip, bg="#ffffff", fg="black", justify=LEFT, relief=SOLID, text=message, borderwidth=1).pack()
 
 	def eraseContents(self, *args):												# Function allows unlimited number of arguments by the *args keyword
 		for x in args:															# The *args is a tuple, so every element in it must be iterated
@@ -645,8 +763,9 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.loginPageObject.login_logout.set_password(self.loginCC.get_password())
 
 			a = self.loginPageObject.login_logout.login()
-			if a == "SETUPCREATED":															# IF SETUPCREATED (Meaning account is newly created), show the setup window
+			if a == "SETUPCREATED":														# IF SETUPCREATED (Meaning account is newly created), show the setup window
 				self.setupPageObject.lift()
+				self.setupPageObject.firstNameDisplayInput.focus()
 				self.setupPageObject.set_name(self.loginCC.get_name())
 				self.setupPageObject.set_password(self.loginCC.get_password())				
 			elif a == "OLREADY":
@@ -718,11 +837,18 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.activePageObject.lift()										# otherwise, if entries are correct, execute & display the home page
 			self.master.title("Congratulations and Welcome!")
 
+try:
+	Window = Tk()        		 													# Creates an empty window
+	Main = navClass(Window)
+	Window.geometry('1000x600+170+80')												# Set dimensions to 1000x600 pos @ screen center
+	Window.resizable(0,0)			 												# Does not resize the window, ever 	
+	if isPlatform("win32"):
+		Window.wm_iconbitmap('GUIE/CoffeeCup.ico')									# Adds a little mug icon over the top left corner
+	Window.mainloop()																# Executes code above in a loop
 
-Window = Tk()        		 													# Creates an empty window
-Main = navClass(Window)
-Window.geometry('1000x600+170+80')												# Set dimensions to 1000x600 pos @ screen center
-Window.resizable(0,0)			 												# Does not resize the window, ever 	
-if isPlatform("win32"):
-	Window.wm_iconbitmap('GUIE/CoffeeCup.ico')									# Adds a little mug icon over the top left corner
-Window.mainloop()																# Executes code above in a loop
+except Exception:
+	temp = Tk()
+	temp.withdraw()
+	tkMessageBox.showerror("Overbrewing!", "Ooooh! I encountered an error! Closing up...")
+	temp.destroy()
+	sys.exit()
