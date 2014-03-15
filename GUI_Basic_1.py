@@ -136,6 +136,9 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 				y.topLayerObject.brewingNotifButton.config(image=y.topLayerObject.brewingNotifImage)
 				y.topLayerObject.msgNotifButton.config(image=y.topLayerObject.msgNotifImage)			
 				y.topLayerObject.friendNotifButton.config(image=y.topLayerObject.friendNotifImage)
+			for post in y.profilePageQueue:
+				post.destroy()
+			y.profilePageQueue[:] = []
 				
 			self.usernameInput.delete(0, END)									# Delete any text from login
 			self.passwordInput.delete(0, END)
@@ -311,13 +314,13 @@ class postGUI(Frame, post):
 		postFrame.pack()
 		postFrame.pack_propagate(False)
 
-		DPThumbnailFrame = Frame(postFrame, width=40, height=40, bg=backgroundColor)
+		DPThumbnailFrame = Frame(postFrame, width=40, height=40, bg="white")
 		DPThumbnailFrame.grid(row=0, column=0, rowspan=3, sticky=N)
 
 		b = Image.open(self.importer.get_DP())
 		b.thumbnail((40,40))
 		DPThumbnailVariable = ImageTk.PhotoImage(b)
-		DPThumbnail = Label(DPThumbnailFrame, bg=backgroundColor, image=DPThumbnailVariable)
+		DPThumbnail = Label(DPThumbnailFrame, bg="white", image=DPThumbnailVariable)
 		DPThumbnail.image = DPThumbnailVariable
 		DPThumbnail.place(anchor=CENTER, relx=0.5, rely=0.5)
 
@@ -479,8 +482,8 @@ class setupPageGUI(Frame, CC):
 		entry2 = Entry(temp, highlightthickness=1, width=9, relief=FLAT, textvariable = self.graduateyear, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
 		entry2.place(anchor=W, relx=0.78, rely=0.7)
 
-		self.verifySetupLabel = Label(temp, text="", bg=backgroundColor, fg="red", font=("Tahoma", 9, "bold"), justify=LEFT)
-		self.verifySetupLabel.place(anchor=W, relx=0.6, rely=0.85)		
+		self.verifySetupLabel = Label(temp, text="", bg=backgroundColor, fg="red", font=("Tahoma", 9, "bold"), justify=RIGHT)
+		self.verifySetupLabel.place(anchor=E, relx=0.73, rely=0.85)		
 
 		bottomLayer = Frame(temp, width=1000, height=30, bg=toplayerColor)		# Code here for the extra details
 		bottomLayer.place(anchor=S, relx=0.5, rely=1)
@@ -754,6 +757,15 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 				self.loginPageObject.passwordInput.focus()			
 		
 		elif answer == "SETUP":
+			self.loginPageObject.login_logout.set_name(self.loginCC.get_name())
+			self.loginPageObject.login_logout.set_password(self.loginCC.get_password())
+
+			self.setupPageObject.set_name(self.loginCC.get_name())
+			self.setupPageObject.set_password(self.loginCC.get_password())
+			self.setupPageObject.firstNameDisplayInput.focus()
+			self.cre.set_name(self.loginCC.get_name())
+			self.cre.set_password(self.loginCC.get_name())
+			self.cre.createFromPreExisting()
 			self.setupPageObject.lift()														# CODE HERE SO THAT OUT OF NOWHERE REGISTERED LINES (FROM TESTFILE) MAY HAVE THEIR OWN INDIVIDUAL DATABASES AT LAST. ALSO,
 			#Code here to input registry info into setup page (USE CREATION.CREATE() BUT MIND THE REGISTRY.REGISTER())		# NOTE TO CODE: DATABASE WOULD NO LONGER HAVE "OFFLINE SETUP" AS ONOROFF STATUS. INSTEAD, GO DIRECTLY TO OFFLINE.
 

@@ -116,7 +116,34 @@ class creation(CC): #profile creation
         f.close()
 
     def createFromPreExisting(self):
-        self
+        os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + str(self.get_name()) + "/pictures")
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.get_name() + "/" + self.get_name(), 'w')
+        f.write("Details\n") 
+        f.write("<INSERT NAME HERE>\n")
+        f.write(self.get_password())
+        f.write("\n\n\n\n[[],[],[]]\n")
+        f.write('Offline Setup\n\n')
+        f.write("DP\n")
+        f.write("GUIE/default.gif\n\n")
+        f.write("Friends\n")
+        f.write("[]\n\n")
+        f.write("Status\n")
+        f.write("{}\n\n")
+        f.write("Messages Recieved\n")
+        f.write("{}\n\n")
+        f.write("Messages Sent\n")
+        f.write("{}\n\n")
+        f.write("Friend Requests Recieved\n")
+        f.write("[]\n\n")
+        f.write("Friend Requests Sent\n")
+        f.write("[]\n\n")
+        f.write("Wall\n")
+        f.write("{}\n\n")
+        f.write("Messages Copy\n")
+        f.write("{}\n\n")
+        f.write("Friend Requests Recieved Copy\n")
+        f.write("[]")
+        f.close()
 
     def validate(self, username, password1, password2):
         return self.val.guic(username, password1, password2)
@@ -149,8 +176,8 @@ class validation(CC): #validation for logging in and deleting profiles
         if firstname == "" or lastname == "":
             return "DISPLAY NAME IS\nBLANK"
         for x in set(firstname).union(set(lastname)):                              #Check for special characters in creating usernames
-            if x in set([".", "^", "&", "!", "$", ",", "\\", "?", "/", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}"])  or x in range(0,10):
-                return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"
+            if x in set([".", "^", "&", "!", "$", ",", "\\", "?", "/", "|", "+", "#", "*", "\"", "<", ">", ";", "=", "[", "]", "%", "~", "`", "{", "}", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]):
+                return "MUST NOT CONTAIN\nSPECIAL CHARACTERS"                
 
         if month == "Month" or day == "Day" or year == "Year":  #If passed variables have no actual dates, return incomplete
             return "DATE INCOMPLETE"
@@ -370,7 +397,7 @@ class registryDatabase(object):
         return self.friends
 
     def register(self):                         # For existing database without each account's formal setup from the creation class
-        f = open("DATABASE/DATABASE", 'a')
+        f = open("DATABASE/DATABASE", 'a+')        
         f.write(self.get_name() + ': ' + self.get_password() + '\n')
         if self.get_friends() != []:
             for x in self.get_friends():
