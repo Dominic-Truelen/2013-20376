@@ -374,6 +374,14 @@ class setupPageGUI(Frame, CC):
 		Frame.__init__(self, master)
 		CC.__init__(self)
 		self.createWidgets()
+		self.initialFriends = []		
+
+	def set_friends(self):
+		self.registry.set_friends(self.get_name(), self.get_password())
+		self.initialFriends = self.registry.get_friends()
+
+	def get_friends(self):
+		return self.initialFriends
 
 	def get_birthday(self):
 		return list([self.monthvar.get(), self.dayvar.get(), self.yearvar.get()])
@@ -386,7 +394,11 @@ class setupPageGUI(Frame, CC):
 
 	def export_setup_data(self):
 		self.exporter.export_details(self.get_name(), self.get_password(), firstname=self.FirstNameVariable.get(), lastname=self.LastNameVariable.get(), gender=self.genderradio.get(), birthday=self.get_birthday(),  jobs=self.get_job(), education=self.get_educ())
+		self.export_friends()
 		self.set_OnOrOff("Offline")
+
+	def export_friends(self):
+		self.exporter.export_friends(self.get_name(), self.get_friends())
 
 	def createWidgets(self):
 		temp = Frame(self, width=1000, height=600, bg=backgroundColor)
@@ -416,8 +428,8 @@ class setupPageGUI(Frame, CC):
 		layer1.place(anchor=W, relx=0.33, rely=0.3)
 		self.firstNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.FirstNameVariable, font = defaultCreateStyle, relief=FLAT)
 		self.firstNameDisplayInput.grid(row=0, column=0, padx=(10, 5), pady=5)
-		lastNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.LastNameVariable, font = defaultCreateStyle, relief=FLAT)
-		lastNameDisplayInput.grid(row=0, column=1, padx=(5, 10), pady=5)
+		self.lastNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.LastNameVariable, font = defaultCreateStyle, relief=FLAT)
+		self.lastNameDisplayInput.grid(row=0, column=1, padx=(5, 10), pady=5)
 
 		
 		months = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
@@ -449,38 +461,38 @@ class setupPageGUI(Frame, CC):
 
 
 		self.jobsCheckboxVariable = IntVar()
-		includeJobsCheckbox = Checkbutton(temp, text="Include", bg=backgroundColor, variable=self.jobsCheckboxVariable, command=lambda: self.CheckboxState(self.jobsCheckboxVariable, entrya, entryb, entryc, label1, label2, label3))
+		includeJobsCheckbox = Checkbutton(temp, text="Include", bg=backgroundColor, variable=self.jobsCheckboxVariable, command=lambda: self.CheckboxState(self.jobsCheckboxVariable, self.entrya, self.entryb, self.entryc, self.label1, self.label2, self.label3))
 		includeJobsCheckbox.place(anchor=W, relx=0.33, rely=0.6)
 
 		self.position = StringVar()
 		self.company = StringVar()
 		self.workyears = StringVar() 	#NB: Could be IntVar()				
-		label1 = Label(temp, text="Work:", bg=backgroundColor, state=DISABLED)
-		label1.place(anchor=W, relx=0.417, rely=0.555)
-		label2 = Label(temp, text="at the company:", bg=backgroundColor, state=DISABLED)
-		label2.place(anchor=W, relx=0.58, rely=0.555)
-		label3 = Label(temp, text="for __ years:", bg=backgroundColor, state=DISABLED)
-		label3.place(anchor=W, relx=0.782, rely=0.555)
-		entrya = Entry(temp, highlightthickness=1, width=14, relief=FLAT, textvariable = self.position, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
-		entrya.place(anchor=W, relx=0.42, rely=0.6)
-		entryb = Entry(temp, highlightthickness=1, width=18, relief=FLAT, textvariable = self.company, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
-		entryb.place(anchor=W, relx=0.5825, rely=0.6)
-		entryc = Entry(temp, highlightthickness=1, width=9, relief=FLAT, textvariable = self.workyears, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
-		entryc.place(anchor=W, relx=0.785, rely=0.6)
+		self.label1 = Label(temp, text="Work:", bg=backgroundColor, state=DISABLED)
+		self.label1.place(anchor=W, relx=0.417, rely=0.555)
+		self.label2 = Label(temp, text="at the company:", bg=backgroundColor, state=DISABLED)
+		self.label2.place(anchor=W, relx=0.58, rely=0.555)
+		self.label3 = Label(temp, text="for __ years:", bg=backgroundColor, state=DISABLED)
+		self.label3.place(anchor=W, relx=0.782, rely=0.555)
+		self.entrya = Entry(temp, highlightthickness=1, width=14, relief=FLAT, textvariable = self.position, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		self.entrya.place(anchor=W, relx=0.42, rely=0.6)
+		self.entryb = Entry(temp, highlightthickness=1, width=18, relief=FLAT, textvariable = self.company, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		self.entryb.place(anchor=W, relx=0.5825, rely=0.6)
+		self.entryc = Entry(temp, highlightthickness=1, width=9, relief=FLAT, textvariable = self.workyears, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		self.entryc.place(anchor=W, relx=0.785, rely=0.6)
 
 		self.school = StringVar()
 		self.graduateyear = StringVar()
 		self.educCheckboxVariable = IntVar()
-		includeEducCheckbox = Checkbutton(temp, text="Include", bg=backgroundColor, variable=self.educCheckboxVariable, command=lambda: self.CheckboxState(self.educCheckboxVariable, entry1, entry2, labela, labelb))
+		includeEducCheckbox = Checkbutton(temp, text="Include", bg=backgroundColor, variable=self.educCheckboxVariable, command=lambda: self.CheckboxState(self.educCheckboxVariable, self.entry1, self.entry2, self.labela, self.labelb))
 		includeEducCheckbox.place(anchor=W, relx=0.33, rely=0.7)
-		labela = Label(temp, text="School:", bg=backgroundColor, state=DISABLED)
-		labela.place(anchor=W, relx=0.417, rely=0.655)
-		labelb = Label(temp, text="Year graduated:", bg=backgroundColor, state=DISABLED)
-		labelb.place(anchor=W, relx=0.775, rely=0.655)		
-		entry1 = Entry(temp, highlightthickness=1, width=34, relief=FLAT, textvariable = self.school, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
-		entry1.place(anchor=W, relx=0.42, rely=0.7)
-		entry2 = Entry(temp, highlightthickness=1, width=9, relief=FLAT, textvariable = self.graduateyear, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
-		entry2.place(anchor=W, relx=0.78, rely=0.7)
+		self.labela = Label(temp, text="School:", bg=backgroundColor, state=DISABLED)
+		self.labela.place(anchor=W, relx=0.417, rely=0.655)
+		self.labelb = Label(temp, text="Year graduated:", bg=backgroundColor, state=DISABLED)
+		self.labelb.place(anchor=W, relx=0.775, rely=0.655)		
+		self.entry1 = Entry(temp, highlightthickness=1, width=34, relief=FLAT, textvariable = self.school, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		self.entry1.place(anchor=W, relx=0.42, rely=0.7)
+		self.entry2 = Entry(temp, highlightthickness=1, width=9, relief=FLAT, textvariable = self.graduateyear, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
+		self.entry2.place(anchor=W, relx=0.78, rely=0.7)
 
 		self.verifySetupLabel = Label(temp, text="", bg=backgroundColor, fg="red", font=("Tahoma", 9, "bold"), justify=RIGHT)
 		self.verifySetupLabel.place(anchor=E, relx=0.73, rely=0.85)		
@@ -494,8 +506,25 @@ class setupPageGUI(Frame, CC):
 				x.config(state=DISABLED)
 		else:
 			for x in widgets:
-				x.config(state=NORMAL)	
+				x.config(state=NORMAL)
 
+	def clearFields(self):
+		self.initialFriends[:] = []
+		self.registry.friends[:] = []
+		self.firstNameDisplayInput.delete(0, END)
+		self.lastNameDisplayInput.delete(0, END)
+		self.monthvar.set("Month")
+		self.dayvar.set("Day")
+		self.yearvar.set("Year")
+		self.jobsCheckboxVariable.set(0)
+		self.educCheckboxVariable.set(0)
+		self.entrya.delete(0, END)
+		self.entryb.delete(0, END)
+		self.entryc.delete(0, END)
+		self.entry1.delete(0, END)
+		self.entry2.delete(0, END)
+		self.CheckboxState(self.jobsCheckboxVariable, self.entrya, self.entryb, self.entryc, self.label1, self.label2, self.label3, self.entry1, self.entry2, self.labela, self.labelb)
+		
 	def reset(self, x):
 		if tkMessageBox.askyesno("Quitting Setup", "Are you sure you want to quit setup?"):			
 			self.master.title("Welcome to Caffy!")
@@ -507,6 +536,7 @@ class setupPageGUI(Frame, CC):
 			x.passwordInput.delete(0, END)
 			x.usernameInput.focus()			
 			x.lift()															# Lifts the original login page (passed as argument)
+			self.clearFields()
 		else:
 			return
 
@@ -759,9 +789,9 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		elif answer == "SETUP":
 			self.loginPageObject.login_logout.set_name(self.loginCC.get_name())
 			self.loginPageObject.login_logout.set_password(self.loginCC.get_password())
-
 			self.setupPageObject.set_name(self.loginCC.get_name())
 			self.setupPageObject.set_password(self.loginCC.get_password())
+			self.setupPageObject.set_friends()	#import from testfile
 			self.setupPageObject.firstNameDisplayInput.focus()
 			self.cre.set_name(self.loginCC.get_name())
 			self.cre.set_password(self.loginCC.get_name())
@@ -847,6 +877,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.setupPageObject.set_name("")									#Clears the setup garbage
 			self.setupPageObject.set_password("")
 			self.activePageObject.lift()										# otherwise, if entries are correct, execute & display the home page
+			self.setupPageObject.clearFields()
 			self.master.title("Congratulations and Welcome!")
 
 try:

@@ -42,6 +42,7 @@ class CC(object): #profile management #superclass
         self.set_name("")
         self.set_password("")
 
+
 class creation(CC): #profile creation
 
     def __init__(self):
@@ -148,6 +149,7 @@ class creation(CC): #profile creation
     def validate(self, username, password1, password2):
         return self.val.guic(username, password1, password2)
 
+
 class validation(CC): #validation for logging in and deleting profiles
 
     def handler(self, successor):
@@ -225,6 +227,7 @@ class validation(CC): #validation for logging in and deleting profiles
         f.close()
         return 0
 
+
 class usernameVerify(validation):
 
     def handleLogin(self, x, y):
@@ -274,6 +277,7 @@ class usernameVerify(validation):
         f.close()
         return self.successor.handleCreate(password1, password2)    #Handle the Password
 
+
 class passwordVerify(validation):
 
     def handleLoginPassword(self, x, y, f):
@@ -298,6 +302,7 @@ class passwordVerify(validation):
                 return 1
             else:
                 return "RETYPE YOUR PASSWORD\nCORRECTLY"
+
 
 class deletion(CC): #profile deletion
 
@@ -348,6 +353,7 @@ class deletion(CC): #profile deletion
         else:
             print "NO SUCH PROFILE EXISTS"
 
+
 class login(CC): #logging in
 
     def __init__(self):
@@ -375,6 +381,7 @@ class login(CC): #logging in
             return 1
         return 0
 
+
 class registryDatabase(object):
     def __init__(self):
         self.name = ''
@@ -393,11 +400,37 @@ class registryDatabase(object):
     def get_password(self):
         return self.password
 
+    def set_friends(self, name, pwd):
+        entry = name + ": " + pwd + "\n"
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
+        while True:
+            if f.readline() == entry:
+                break
+        while True:
+            friend = f.readline()
+            print friend, list(friend), self.friends, friend.strip()
+            if len(friend) != 0:
+                if list(friend)[0] != "\t":
+                    break
+            if len(friend) == 0:
+                break
+            self.friends.append(friend.strip())
+        f.close()
+
     def get_friends(self):
         return self.friends
 
+    def import_friends(self, name): #importing friends list
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        while True: #scanning untill it reaches the friends list
+            temp = f.readline()
+            if temp == "Friends\n":
+                break
+        self.friends = eval(f.readline().rstrip())
+        f.close()
+
     def register(self):                         # For existing database without each account's formal setup from the creation class
-        f = open("DATABASE/DATABASE", 'a+')        
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE", 'a+')        
         f.write(self.get_name() + ': ' + self.get_password() + '\n')
         if self.get_friends() != []:
             for x in self.get_friends():
@@ -405,21 +438,21 @@ class registryDatabase(object):
         f.close()
 
     def registerFriends(self):                  # Still experimental
-        entry = self.get_name() + ": " + self.get_password()
+        entry = self.get_name() + ": " + self.get_password() + "\n"
         f = open("DATABASE/DATABASE", 'a')
         g = open("DATABASE/DATABASE1", 'w')
 
         while True:
-            g.write(f.readline())               # Traverse through DB until entry is found
             if f.readline() == entry:
                 break
-        while True:                             # Traverse through entry's friends until blank is found
-            if f.readline() == "\n":
-                break
+            g.write(f.readline())               # Traverse through DB until entry is found
+        
 
+
+        '''
         for x in self.get_friends():            # At the blank line, write the added friends
             g.write("\t"+x+"\n")
-
+        '''
         f.write("\n")                           # Then at the end, write the blank line for future friend adding
         f.close()
         g.close()
@@ -550,16 +583,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         temp = f.readline()
         temp = temp[0:-1]
         self.DP = temp
-        f.close()
-
-    def import_friends(self, name): #importing friends list
-        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
-        while True: #scanning untill it reaches the friends list
-            temp = f.readline()
-            if temp == "Friends\n":
-                break
-        self.friends = eval(f.readline().rstrip())
-        f.close()
+        f.close()    
 
     def import_status(self, name): #importing status
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
@@ -660,6 +684,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         self.friend_requests_copy = f.readline().rstrip()
         f.close()
 
+
 class export_database(): #exporting data to the database by creating a temporary file, deleting the original file, then renaming the temporary file
 
     def export_onoroff(self, name, onoroff):
@@ -733,6 +758,7 @@ class export_database(): #exporting data to the database by creating a temporary
         g.close()
         os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
+        '''
         f = open("DATABASE/DATABASE")
         g = open("DATABASE/DATABASE" + '1', 'w')
         while True:
@@ -750,7 +776,8 @@ class export_database(): #exporting data to the database by creating a temporary
         g.close()
         os.remove("DATABASE/DATABASE")
         os.rename("DATABASE/DATABASE" + '1', "DATABASE/DATABASE")
-
+        '''
+        
     def export_status(self, name, status, time): #exporting status
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + "1", 'w')
@@ -926,6 +953,7 @@ class logout(object): #will reset the name and password of CC after returning to
         self.exporter.export_details(name)
         self.quit.set_name('')
         self.quit.set_password('')
+
 
 class message_object():
     def __init__(self):
