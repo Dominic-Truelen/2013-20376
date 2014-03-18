@@ -1,7 +1,12 @@
 from Tkinter import *
-from PIL import ImageTk
-import Image, shutil, os
+import shutil, os
 from datetime import date
+
+try:
+	from PIL import ImageTk, Image
+
+except ImportError:
+	raise ImportError
 
 profilePic = 175		#Square profile picture frame
 profilePicBgColor = "#CCCCFF"
@@ -45,10 +50,20 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 		if self.position.get() == "":
 			self.jobsName.set("")
 		else:
-			self.jobsName.set("Works at " + self.company.get() + ".")	
+			self.jobsName.set("Works at " + self.company.get() + ".")
+		
+		if self.school.get() == "":
+			self.schoolDisplay.set("")
+		else:
+			self.schoolDisplay.set("Goes to " + self.school.get() + ".")
+					
+		if len(database.get_friends()) == 1:
+			self.friendsNumber.set(str(len(database.get_friends())) + " friend. =(")
+		else:
+			self.friendsNumber.set(str(len(database.get_friends())) + " friends.")	
 
 	def createWidgets(self):
-		profileMainWindow = Frame(self, width=1000, height=550, bg="#eeeeee")	#Profile container
+		profileMainWindow = Frame(self, width=1000, height=550, bg=backgroundColor)	#Profile container
 		profileMainWindow.pack()
 
 		homeShadow = Canvas(profileMainWindow, width=1000, height=550, highlightthickness=0, bg=backgroundColor)
@@ -57,7 +72,7 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 		homeShadow.create_image(500, 275, image=shadow)
 		homeShadow.image = shadow
 
-		profilePictureFrame = Frame(profileMainWindow, cursor="hand2", width=profilePic, height=profilePic, bg="#eeeeee") #ProfPic
+		profilePictureFrame = Frame(profileMainWindow, cursor="hand2", width=profilePic, height=profilePic, bg=backgroundColor) #ProfPic
 		profilePictureFrame.place(anchor=CENTER, relx=0.25, rely=0.25)
 
 		changeDPLabelFrame = Frame(profilePictureFrame, width=175, height=20, bg="#111111")
@@ -84,7 +99,7 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 		self.school = StringVar()
 		self.yearGraduated = IntVar()
 
-		detailsWindow = Frame(profileMainWindow, bg="#eeeeee")
+		detailsWindow = Frame(profileMainWindow, bg=backgroundColor)
 		detailsWindow.place(anchor=W, relx=0.36, rely=0.105)
 
 		displayName = Label(detailsWindow, font=("Tahoma", 18, "bold"), bg=backgroundColor, textvariable=self.displayNameVariable)
@@ -104,10 +119,18 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 		
 		Label(detailsWindow, font=("Tahoma", 11), bg=backgroundColor, textvariable=self.jobsName).grid(row=1, column=3, sticky=W)	
 		
+		self.schoolDisplay = StringVar()
+		Label(detailsWindow, font=("Tahoma", 11), bg=backgroundColor, textvariable=self.schoolDisplay).grid(row=2, column=0, columnspan=3, sticky=W)
+		
+		self.friendsNumber = StringVar()
+		Label(detailsWindow, font=("Tahoma", 11), bg=backgroundColor, textvariable=self.friendsNumber).grid(row=2, column=3, padx=(5,0), sticky=W)
 
-		self.wall = LabelFrame(profileMainWindow, text="Wall", width=450, height=400, padx=7, pady=7, bg=backgroundColor)
+
+		self.wall = LabelFrame(profileMainWindow, text="Wall", width=470, height=400, padx=7, pady=7, bg=backgroundColor)
 		self.wall.place(anchor=NW, relx=0.36, rely=0.2)
 		self.wall.pack_propagate(False)
+
+		# code below is courtesy of tkinter.unpythonic.net/wiki/VerticalScrolledFrame
 
 		wallScroll = Scrollbar(self.wall, orient=VERTICAL, relief=FLAT)
 		wallScroll.pack(fill=Y, side=RIGHT)
@@ -136,3 +159,14 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 
 		self.links = LabelFrame(profileMainWindow, text="Links", width=175, height=268, padx=3, pady=3, bg=backgroundColor)
 		self.links.place(anchor=NW, relx=0.1625, rely=0.44)
+		self.links.pack_propagate(False)
+
+		self.friendsPageButton = Button(self.links, text="My Friends", relief=FLAT)
+		self.friendsPageButton.pack()
+
+		self.messagesPageButton = Button(self.links, text="My Messages", relief=FLAT, pady=10)
+		self.messagesPageButton.pack()
+
+		self.poolPageButton = Button(self.links, text="Coffee Pool", relief=FLAT)
+		self.poolPageButton.pack()
+

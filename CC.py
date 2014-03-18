@@ -32,9 +32,9 @@ class CC(object): #profile management #superclass
             return "OLREADY"
         else:
             self.set_OnOrOff("Online")
-            self.importer.set_name(self.get_name())
-            self.importer.set_password(self.get_password())
-            self.importer.import_all(self.get_name())
+            self.importer.set_name(self.get_name()) #username
+            self.importer.set_password(self.get_password())            
+            self.importer.import_all(self.get_name())            
             return self.importer
 
     def logout(self):
@@ -407,8 +407,7 @@ class registryDatabase(object):
             if f.readline() == entry:
                 break
         while True:
-            friend = f.readline()
-            print friend, list(friend), self.friends, friend.strip()
+            friend = f.readline()            
             if len(friend) != 0:
                 if list(friend)[0] != "\t":
                     break
@@ -426,7 +425,8 @@ class registryDatabase(object):
             temp = f.readline()
             if temp == "Friends\n":
                 break
-        self.friends = eval(f.readline().rstrip())
+        temp = f.readline()        
+        self.friends = eval(temp.rstrip())
         f.close()
 
     def register(self):                         # For existing database without each account's formal setup from the creation class
@@ -446,8 +446,6 @@ class registryDatabase(object):
             if f.readline() == entry:
                 break
             g.write(f.readline())               # Traverse through DB until entry is found
-        
-
 
         '''
         for x in self.get_friends():            # At the blank line, write the added friends
@@ -468,7 +466,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         self.details = []
         self.status = {}
         self.onoroff = ""
-        self.DP = ""
+        self.DP = "GUIE/default.gif"
         self.wall = {}
         self.messages = {}
         self.messages_sent = {}
@@ -520,8 +518,7 @@ class import_database(registryDatabase): #importing data from the profile's data
         return self.friend_requests_copy
 
     def import_all(self, name):
-        try:
-            self.import_basics(name)
+        try:            
             self.import_display_name(name)
             self.import_details(name)
             self.import_DP(name)
@@ -533,7 +530,7 @@ class import_database(registryDatabase): #importing data from the profile's data
             self.import_friend_requests_sent(name)
             self.import_wall(name)
         except:
-            pass
+            raise IOError
 
     def import_display_name(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
@@ -777,7 +774,7 @@ class export_database(): #exporting data to the database by creating a temporary
         os.remove("DATABASE/DATABASE")
         os.rename("DATABASE/DATABASE" + '1', "DATABASE/DATABASE")
         '''
-        
+
     def export_status(self, name, status, time): #exporting status
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name + "1", 'w')

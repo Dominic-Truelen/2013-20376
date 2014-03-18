@@ -22,8 +22,7 @@ def isPlatform(x):
 	return 0
 
 try:
-	from PIL import ImageTk
-	import Image
+	from PIL import ImageTk, Image
 
 except ImportError:
 	if isPlatform("linux"):
@@ -50,6 +49,8 @@ greenColor = "#52A41D"
 a = -0.05																		# Adjuster for widget's y-value placement
 b = 0.075
 
+profilePic = 175
+
 
 def anotherUser():																# Instantiate multiple users
 	try:
@@ -57,6 +58,51 @@ def anotherUser():																# Instantiate multiple users
 	except:
 		subprocess.Popen("python GUI_Basic_1.py", shell=True)
 
+
+class welcome(Frame):
+	def __init__(self, master=None):	
+		Frame.__init__(self, master)
+		self.createWidgets()
+
+	def createWidgets(self):
+		holder = Frame(self, width=1000, height=600, bg=backgroundColor)
+		holder.pack()
+
+		welcomemessage = Label(holder, text="Welcome to\nCaffy! ☕\nPlease select\na database.", justify=CENTER, font=("Tahoma", 40), bg=backgroundColor, fg="#333333")
+		welcomemessage.place(anchor=CENTER, relx=0.25, rely=0.5)
+		welcomemessage.bind("<Enter>", lambda x: welcomemessage.config(fg=signatureColor))
+		welcomemessage.bind("<Leave>", lambda x: welcomemessage.config(fg="#333333"))
+
+		self.foreignButton = Button(holder, highlightthickness=0, text="Import new Database", font=("Tahoma", 16, "bold"), fg="#FFFFFF", bg=greenColor, relief=FLAT, command=self.selectForeign)
+		self.foreignButton.place(anchor=CENTER, relx=0.75, rely=0.4)
+
+		self.localButton = Button(holder, highlightthickness=0, text="Use built-in", font=("Tahoma", 16, "bold"), fg="#FFFFFF", bg=signatureColor, relief=FLAT, command=self.selectLocal)
+		self.localButton.place(anchor=CENTER, relx=0.75, rely=0.6)
+
+	def selectForeign(self):
+		newDB = tkFileDialog.askopenfile(title="Select your new Database!")
+		if newDB == None:
+			return
+
+		if glob.glob("DATABASE") == []:
+			os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE")
+
+		if glob.glob("DATABASE/DATABASE") == []:                                       # For a first time user who logged in without creating an account first (error is handled by creating the database folder)
+			f = open("DATABASE/DATABASE", "w")
+			f.close()
+
+		f = open(newDB.name)
+		g = open("DATABASE/DATABASE", "w")
+		for line in f:
+			temp = line.rstrip()
+			g.write(temp+"\n")
+		g.write("\n")
+		f.close()
+		g.close()
+		self.lower()		
+
+	def selectLocal(self):
+		self.lower()
 
 class loginPageGUI(Frame):														# The login GUI class Interface!
 	def __init__(self, master=None):	
@@ -136,9 +182,14 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 				y.topLayerObject.brewingNotifButton.config(image=y.topLayerObject.brewingNotifImage)
 				y.topLayerObject.msgNotifButton.config(image=y.topLayerObject.msgNotifImage)			
 				y.topLayerObject.friendNotifButton.config(image=y.topLayerObject.friendNotifImage)
+			
 			for post in y.profilePageQueue:
 				post.destroy()
 			y.profilePageQueue[:] = []
+
+			for friend in y.friendsPageObject.friendsList:
+				friend.destroy()
+			y.friendsPageObject.friendsList[:] = []
 				
 			self.usernameInput.delete(0, END)									# Delete any text from login
 			self.passwordInput.delete(0, END)
@@ -172,26 +223,26 @@ class notifSystemGUI(Frame):													# The TOPLAYER GUI. Included here are m
 		
 		self.friendNotifImage = PhotoImage(file="GUIE/friendNotif.gif")
 		self.friendNotifImageRed = PhotoImage(file="GUIE/friendNotifRed.gif")
-		self.friendNotifButton = Button(notifButtonFrame, bg=toplayerColor, relief=FLAT, image=self.friendNotifImage)
+		self.friendNotifButton = Button(notifButtonFrame, highlightthickness=0, bg=toplayerColor, relief=FLAT, image=self.friendNotifImage)
 		self.friendNotifButton.grid(row=0, column=0)
 		self.friendNotifButton.image = self.friendNotifImage
 
 		self.msgNotifImage = PhotoImage(file="GUIE/msgNotif.gif")
 		self.msgNotifImageRed = PhotoImage(file="GUIE/msgNotifRed.gif")
-		self.msgNotifButton = Button(notifButtonFrame, bg=toplayerColor, relief=FLAT, image=self.msgNotifImage)
+		self.msgNotifButton = Button(notifButtonFrame, highlightthickness=0, bg=toplayerColor, relief=FLAT, image=self.msgNotifImage)
 		self.msgNotifButton.grid(row=0, column=1, padx=(7,9))
 		self.msgNotifButton.image = self.msgNotifImage
 
 		self.brewingNotifImage = PhotoImage(file="GUIE/brewingNotif.gif")
 		self.brewingNotifImageRed = PhotoImage(file="GUIE/brewingNotifRed.gif")
-		self.brewingNotifButton = Button(notifButtonFrame, bg=toplayerColor, relief=FLAT, image=self.brewingNotifImage)
+		self.brewingNotifButton = Button(notifButtonFrame, highlightthickness=0, bg=toplayerColor, relief=FLAT, image=self.brewingNotifImage)
 		self.brewingNotifButton.grid(row=0, column=2)
 		self.brewingNotifButton.image = self.brewingNotifImage
 
-		self.profilepageButton = Button(notifLayer, text="☺ Profile", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor)
+		self.profilepageButton = Button(notifLayer, highlightthickness=0, text="☺ Profile", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor)
 		self.profilepageButton.place(anchor=CENTER, relx=0.6875+b, rely=0.5)
 
-		self.homepageButton = Button(notifLayer, text="⌂ Home", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor)
+		self.homepageButton = Button(notifLayer, highlightthickness=0, text="⌂ Home", width=7, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor)
 		self.homepageButton.place(anchor=CENTER, relx=0.76+b, rely=0.5)
 
 		
@@ -243,7 +294,7 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		self.homePageDP = Label(smallDP, width=75, height=75, bg="white")
 		self.homePageDP.place(anchor=CENTER, relx=0.5, rely=0.5)
 
-		self.editProfileButton = Button(homepageMainWindow, relief=FLAT, cursor="hand2", text="Update Profile", font=("Tahoma", 10), bg=backgroundColor, fg="#444444")
+		self.editProfileButton = Button(homepageMainWindow, highlightthickness=0, relief=FLAT, cursor="hand2", text="Update Profile", font=("Tahoma", 10), bg=backgroundColor, fg="#444444")
 		self.editProfileButton.place(anchor=W, relx=0.11, rely=0.132)
 		self.editProfileButton.bind("<Enter>", lambda a: self.editProfileButton.config(fg="black"))
 		self.editProfileButton.bind("<Leave>", lambda a: self.editProfileButton.config(fg="#444444"))
@@ -251,24 +302,90 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		postStatus = Frame(homepageMainWindow, width=400, height=75, bg=backgroundColor, highlightthickness=1, highlightbackground="#AAAAAA")
 		postStatus.place(anchor=CENTER, relx=0.5, rely=0.13)
 
-		Label(postStatus, text="What's brewing in your brain?", font=defaultEntryStyle).place(anchor=CENTER, relx=0.31, rely=0.2)
+		Label(postStatus, text="What's brewing in your brain?", font=defaultEntryStyle, bg=backgroundColor).place(anchor=CENTER, relx=0.31, rely=0.2)
 
 		self.updateStatusEntry = Entry(postStatus, highlightthickness=1, width=30, font=defaultCreateStyle, fg="black", relief=FLAT)
 		self.updateStatusEntry.place(anchor=CENTER, relx=0.42, rely=0.63)
 
-		self.updateStatusButton = Button(postStatus, width=5, relief=FLAT, bg="orange", fg="white", text="Caf!", font=("Tahoma", 9, "bold"))
+		self.updateStatusButton = Button(postStatus, highlightthickness=0, width=5, relief=FLAT, bg="orange", fg="white", text="Caf!", font=("Tahoma", 9, "bold"))
 		self.updateStatusButton.place(anchor=CENTER, relx=0.9, rely=0.63)
 
-		wall = Frame(homepageMainWindow, width=400, height=400, bg=backgroundColor, highlightthickness=1, highlightbackground="#AAAAAA")
-		wall.place(anchor=CENTER, relx=0.5, rely=0.6)
+		self.wall = Frame(homepageMainWindow, padx=7, pady=7, width=400, height=400, bg=backgroundColor, highlightthickness=1, highlightbackground="#AAAAAA")
+		self.wall.place(anchor=CENTER, relx=0.5, rely=0.6)
+		self.wall.pack_propagate(False)
 
+		# code below is courtesy of tkinter.unpythonic.net/wiki/VerticalScrolledFrame
 
+		wallScroll = Scrollbar(self.wall, orient=VERTICAL, relief=FLAT)
+		wallScroll.pack(fill=Y, side=RIGHT)
+
+		self.wallCanvas = Canvas(self.wall, highlightthickness=0, bg=backgroundColor, yscrollcommand=wallScroll.set)
+		self.wallCanvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+		wallScroll.config(command=self.wallCanvas.yview)
+
+		self.wallCanvas.xview_moveto(0)
+		self.wallCanvas.yview_moveto(0)
+
+		self.wallFrame = wframe = Frame(self.wallCanvas, bg=backgroundColor)
+		wallFrameID = self.wallCanvas.create_window(0, 0, window=wframe, anchor=NW)
+		
+		def _configFrame(event):
+			size = (wframe.winfo_reqwidth(), wframe.winfo_reqheight())
+			self.wallCanvas.config(scrollregion="0 0 %s %s" % size)
+			if wframe.winfo_reqheight() != self.wallCanvas.winfo_width():
+				self.wallCanvas.config(width=wframe.winfo_reqwidth())
+		wframe.bind("<Configure>", _configFrame)
+
+		def _configCanvas(event):
+			if wframe.winfo_reqwidth() != self.wallCanvas.winfo_width():
+				self.wallCanvas.itemconfigure(wallFrameID, width=self.wallCanvas.winfo_width())
+		self.wallCanvas.bind("<Configure>", _configCanvas)
+
+#UNDER CONSTRUCTION
 class editProfileGUI(Frame):
 	def __init__(self, master=None):
 		Frame.__init__(self, master)		
-		self.place(in_=master)
+		self.place(in_=master)		
 		self.createWidgets()
 
+	def CheckboxState(self, var, *widgets):
+		if var.get() == 0:
+			for x in widgets:
+				x.config(state=DISABLED)
+		else:
+			for x in widgets:
+				x.config(state=NORMAL)
+
+	def get_birthday(self):
+		return list([self.monthvar.get(), self.dayvar.get(), self.yearvar.get()])
+
+	def get_job(self):
+		return list([self.position.get(), self.company.get(), self.workyears.get()])
+
+	def get_educ(self):
+		return list([self.school.get(), self.graduateyear.get()])
+
+	def saveChanges(self):
+		self.exporter.export_details(self.importer.get_name(), self.importer.get_password(), firstname=self.firstNameDisplayInput.get(), lastname=self.lastNameDisplayInput.get(), gender=self.genderradio.get(), birthday=self.get_birthday(),  jobs=self.get_job(), education=self.get_educ())
+
+	def receiveDatabase(self, database, exportdatabase):
+		self.importer = database
+		self.exporter = exportdatabase
+
+		self.FirstNameVariable.set(self.importer.get_first_name())
+		self.LastNameVariable.set(self.importer.get_last_name())
+		self.yearvar.set(self.importer.get_details()[1][2])
+		self.dayvar.set(self.importer.get_details()[1][1])
+		self.monthvar.set(self.importer.get_details()[1][0])
+		self.genderradio.set(self.importer.get_details()[0])
+		self.jobsCheckboxVariable.set(1)
+		self.educCheckboxVariable.set(1)
+		self.position.set(self.importer.get_details()[2][0])
+		self.company.set(self.importer.get_details()[2][1])
+		self.workyears.set(self.importer.get_details()[2][2])
+		self.school.set(self.importer.get_details()[3][0])
+		self.graduateyear.set(self.importer.get_details()[3][1])
+		
 	def createWidgets(self):
 		editProfileFrame = Frame(self, width=1000, height=500, bg=backgroundColor)
 		editProfileFrame.pack()
@@ -278,6 +395,92 @@ class editProfileGUI(Frame):
 		shadow = PhotoImage(file="GUIE/activePageShadow.gif")
 		editShadow.create_image(500, 275, image=shadow)
 		editShadow.image = shadow
+
+		Label(editProfileFrame, text="Edit profile settings", font=("Segoe UI Light", 24), bg=backgroundColor, fg="black").place(anchor=CENTER, relx=0.5, rely=0.1)
+		Label(editProfileFrame, text="Display Name: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.3)
+		Label(editProfileFrame, text="Birthday: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.4)
+		Label(editProfileFrame, text="Sex: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.5)		
+		Label(editProfileFrame, text="Education: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.7)
+		Label(editProfileFrame, text="Jobs: ", font = defaultSetupStyle, bg=backgroundColor).place(anchor=E, relx=0.3, rely=0.6)
+
+		self.FirstNameVariable = StringVar()
+		self.LastNameVariable = StringVar()
+		Label(editProfileFrame, text="New First name(s)", bg=backgroundColor).place(anchor=W, relx=0.3357, rely=0.25)
+		Label(editProfileFrame, text="New Last name(s)", bg=backgroundColor).place(anchor=W, relx=0.604, rely=0.25)
+		layer1 = Frame(editProfileFrame, width=550, height=40, bg="#FFFFFF")
+		layer1.place(anchor=W, relx=0.33, rely=0.3)
+		self.firstNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.FirstNameVariable, font = defaultCreateStyle, relief=FLAT)
+		self.firstNameDisplayInput.grid(row=0, column=0, padx=(10, 5), pady=5)
+		self.lastNameDisplayInput = Entry(layer1, highlightthickness=1, fg=toplayerColor, width=25, textvariable=self.LastNameVariable, font = defaultCreateStyle, relief=FLAT)
+		self.lastNameDisplayInput.grid(row=0, column=1, padx=(5, 10), pady=5)
+
+		months = ("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+		days31 = ["Day"] + range(1,32)		
+		years = ["Year"] + range(int(time.strftime("%Y")), 1949, -1)
+
+		self.monthvar = StringVar()
+		self.dayvar = StringVar()
+		self.yearvar = StringVar()		
+
+		layer2 = Frame(editProfileFrame, width=550, height=40, bg=backgroundColor)
+		layer2.place(anchor=W, relx=0.33, rely=0.4)
+
+		OptionMenu(layer2, self.yearvar, *years).grid(row=0, column=1)
+		OptionMenu(layer2, self.monthvar, *months).grid(row=0, column=2, padx=6)
+		OptionMenu(layer2, self.dayvar, *days31).grid(row=0, column=3)	
+
+		
+		self.genderradio = StringVar()		
+		male = Radiobutton(editProfileFrame, text="Male", variable=self.genderradio, value="Male", font=defaultCreateStyle, bg=backgroundColor)
+		male.place(anchor=W, relx=0.33, rely=0.5)
+		male.select()
+		female = Radiobutton(editProfileFrame, text="Female", variable=self.genderradio, value="Female", font=defaultCreateStyle, bg=backgroundColor)
+		female.place(anchor=W, relx=0.43, rely=0.5)
+		female.deselect()
+
+
+		self.jobsCheckboxVariable = IntVar()
+		includeJobsCheckbox = Checkbutton(editProfileFrame, text="Include", bg=backgroundColor, variable=self.jobsCheckboxVariable, command=lambda: self.CheckboxState(self.jobsCheckboxVariable, self.entrya, self.entryb, self.entryc, self.label1, self.label2, self.label3))
+		includeJobsCheckbox.place(anchor=W, relx=0.33, rely=0.6)
+
+		self.position = StringVar()
+		self.company = StringVar()
+		self.workyears = StringVar() 	#NB: Could be IntVar()				
+		self.label1 = Label(editProfileFrame, text="Work:", bg=backgroundColor)
+		self.label1.place(anchor=W, relx=0.417, rely=0.555)
+		self.label2 = Label(editProfileFrame, text="at the company:", bg=backgroundColor)
+		self.label2.place(anchor=W, relx=0.58, rely=0.555)
+		self.label3 = Label(editProfileFrame, text="for __ year(s):", bg=backgroundColor)
+		self.label3.place(anchor=W, relx=0.782, rely=0.555)
+		self.entrya = Entry(editProfileFrame, highlightthickness=1, width=14, relief=FLAT, textvariable = self.position, font=defaultCreateStyle, fg=toplayerColor)
+		self.entrya.place(anchor=W, relx=0.42, rely=0.6)
+		self.entryb = Entry(editProfileFrame, highlightthickness=1, width=18, relief=FLAT, textvariable = self.company, font=defaultCreateStyle, fg=toplayerColor)
+		self.entryb.place(anchor=W, relx=0.5825, rely=0.6)
+		self.entryc = Entry(editProfileFrame, highlightthickness=1, width=9, relief=FLAT, textvariable = self.workyears, font=defaultCreateStyle, fg=toplayerColor)
+		self.entryc.place(anchor=W, relx=0.785, rely=0.6)
+
+		self.school = StringVar()
+		self.graduateyear = StringVar()
+		self.educCheckboxVariable = IntVar()
+		includeEducCheckbox = Checkbutton(editProfileFrame, text="Include", bg=backgroundColor, variable=self.educCheckboxVariable, command=lambda: self.CheckboxState(self.educCheckboxVariable, self.entry1, self.entry2, self.labela, self.labelb))
+		includeEducCheckbox.place(anchor=W, relx=0.33, rely=0.7)
+		self.labela = Label(editProfileFrame, text="School:", bg=backgroundColor)
+		self.labela.place(anchor=W, relx=0.417, rely=0.655)
+		self.labelb = Label(editProfileFrame, text="Year graduated:", bg=backgroundColor)
+		self.labelb.place(anchor=W, relx=0.775, rely=0.655)		
+		self.entry1 = Entry(editProfileFrame, highlightthickness=1, width=34, relief=FLAT, textvariable = self.school, font=defaultCreateStyle, fg=toplayerColor)
+		self.entry1.place(anchor=W, relx=0.42, rely=0.7)
+		self.entry2 = Entry(editProfileFrame, highlightthickness=1, width=9, relief=FLAT, textvariable = self.graduateyear, font=defaultCreateStyle, fg=toplayerColor)
+		self.entry2.place(anchor=W, relx=0.78, rely=0.7)
+
+		self.verifySetupLabel = Label(editProfileFrame, text="", bg=backgroundColor, fg="red", font=("Tahoma", 9, "bold"), justify=RIGHT)
+		self.verifySetupLabel.place(anchor=E, relx=0.73, rely=0.85)
+
+		self.saveChangesButton = Button(editProfileFrame, highlightthickness=0, text="Save changes", font=("Tahoma", 16, "bold"), fg="#FFFFFF", bg=greenColor, relief=FLAT)
+		self.saveChangesButton.place(anchor=CENTER, relx=0.81, rely=0.85)
+
+		self.backButton = Button(editProfileFrame, highlightthickness=0, text="Cancel", font=("Tahoma", 16), fg="#FFFFFF", bg="#999999", relief=FLAT)
+		self.backButton.place(anchor=CENTER, relx=0.67, rely=0.85)
 
 
 class activePageThreading(threading.Thread):
@@ -306,6 +509,9 @@ class postGUI(Frame, post):
 		self.set_date(date)
 		self.set_text(self.importer.get_status()[self.get_date()])
 		self.set_state(state)
+		self.predicate = StringVar()
+		if self.get_state() == "Status":
+			self.predicate.set("posted a status.")
 		self.pack(anchor=W, pady=5)
 		self.createWidgets()
 
@@ -325,12 +531,253 @@ class postGUI(Frame, post):
 		DPThumbnail.place(anchor=CENTER, relx=0.5, rely=0.5)
 
 		posterName = Label(postFrame, bg=backgroundColor, text=self.get_name(), font=("Tahoma", 12, "bold"))
-		posterName.grid(row=0, column=1, sticky=NW, padx=(5,0))
+		posterName.grid(row=0, column=1, sticky=NW, padx=(5,0))		
+
+		Label(postFrame, bg=backgroundColor, textvariable=self.predicate, font=("Tahoma", 10), fg="#888888").grid(row=0, column=2, sticky=SW, padx=(3,0))
 
 		postStatus = Label(postFrame, bg=backgroundColor, justify=LEFT, wraplength=370, text=self.get_text(), font=("Tahoma", 10))
 		postStatus.grid(row=1, column=1, sticky=W, padx=(5,0))
 
+
+class thumbnailGUI(Frame):
+	def __init__(self, master=None, name=None, dp=None, friendViewer=None, DB=None):
+		Frame.__init__(self, master)
+		self.name = name		
+		self.DP = dp				
+		self.createWidgets()
+		self.bind("<Button-1>", lambda a: friendViewer.receiveDatabase(DB))		
+		#self.bind("<Enter>", lambda a: self.posterName.config(bg="yellow"))
+		#self.bind("<Leave>", lambda a: self.posterName.config(bg=backgroundColor))
+		self.config(cursor="hand2")
+
+	def createWidgets(self):
+		thumbnailFrame = Frame(self, width=450, bg=backgroundColor)
+		thumbnailFrame.pack()
+		thumbnailFrame.pack_propagate(False)
+
+		DPThumbnailFrame = Frame(thumbnailFrame, width=40, height=40, bg="white")
+		DPThumbnailFrame.grid(row=0, column=0, rowspan=1, sticky=E)
+
+		b = Image.open(self.DP)
+		b.thumbnail((40,40))
+		DPThumbnailVariable = ImageTk.PhotoImage(b)
+		DPThumbnail = Label(DPThumbnailFrame, bg="white", image=DPThumbnailVariable)
+		DPThumbnail.image = DPThumbnailVariable
+		DPThumbnail.place(anchor=CENTER, relx=0.5, rely=0.5)
+
+		self.posterName = Label(thumbnailFrame, bg=backgroundColor, text=self.name, font=("Tahoma", 12, "bold"), wraplength=160, justify=LEFT)
+		self.posterName.grid(row=0, column=1, sticky=W, padx=(5,0))
+
 		
+class friendsPageGUI(Frame):
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
+		self.place(in_=master)
+		self.friendsList = []
+		self.createWidgets()
+
+	def createWidgets(self):
+		self.container = Frame(self, bg=backgroundColor, width=1000, height=550)
+		self.container.pack()
+		self.container.pack_propagate(False)
+
+		homeShadow = Canvas(self.container, width=1000, height=550, highlightthickness=0, bg=backgroundColor)
+		homeShadow.pack()
+		shadow = PhotoImage(file="GUIE/activePageShadow.gif")
+		homeShadow.create_image(500, 275, image=shadow)
+		homeShadow.image = shadow
+
+		Label(self.container, text="My friends", font=("Segoe UI Light", 28), bg=backgroundColor).place(anchor=CENTER, relx=0.3, rely=0.1)
+		
+		self.friendsFrame = Frame(self.container, bg=backgroundColor, width=500, height=350, padx=7, pady=7, highlightthickness=1, highlightbackground="#AAAAAA")
+		self.friendsFrame.place(anchor=CENTER, relx=0.5, rely=0.6)
+		self.friendsFrame.pack_propagate(False)
+
+		wallScroll = Scrollbar(self.friendsFrame, orient=VERTICAL, relief=FLAT)
+		wallScroll.pack(fill=Y, side=RIGHT)
+
+		self.wallCanvas = Canvas(self.friendsFrame, highlightthickness=0, bg=backgroundColor, yscrollcommand=wallScroll.set)
+		self.wallCanvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+		wallScroll.config(command=self.wallCanvas.yview)
+
+		self.wallCanvas.xview_moveto(0)
+		self.wallCanvas.yview_moveto(0)
+
+		self.wallFrame = wframe = Frame(self.wallCanvas, bg=backgroundColor)
+		self.wallFrame.grid_columnconfigure(0, minsize=250)
+		wallFrameID = self.wallCanvas.create_window(0, 0, window=wframe, anchor=NW)
+		
+		def _configFrame(event):
+			size = (wframe.winfo_reqwidth(), wframe.winfo_reqheight())
+			self.wallCanvas.config(scrollregion="0 0 %s %s" % size)
+			if wframe.winfo_reqheight() != self.wallCanvas.winfo_width():
+				self.wallCanvas.config(width=wframe.winfo_reqwidth())
+		wframe.bind("<Configure>", _configFrame)
+
+		def _configCanvas(event):
+			if wframe.winfo_reqwidth() != self.wallCanvas.winfo_width():
+				self.wallCanvas.itemconfigure(wallFrameID, width=self.wallCanvas.winfo_width())
+		self.wallCanvas.bind("<Configure>", _configCanvas)		
+		
+	def receiveDatabase(self, database, friendViewer):
+		self.importer = database
+
+		if len(self.friendsList) != 0:
+			for post in self.friendsList:
+				post.destroy()
+			self.friendsList[:] = []
+
+		for friend in self.importer.get_friends():
+			indivImporter = import_database()
+			try:
+				indivImporter.import_all(friend)
+				name = indivImporter.get_display_name()
+				dp = indivImporter.get_DP()
+				newfriend = thumbnailGUI(self.wallFrame, name, dp, friendViewer, indivImporter)
+				#friendViewer.receiveDatabase(indivImporter)
+				#newfriend.bind("<Button-1>", lambda a: friendViewer.receiveDatabase(indivImporter))
+				self.friendsList.append(newfriend)
+			except IOError:								
+				newfriend = thumbnailGUI(self.wallFrame, "Inactive", "GUIE/default.gif")
+				self.friendsList.append(newfriend)
+		
+		counter1 = 0
+		counter2 = 0
+		for friend in self.friendsList:
+			if counter2 % 2 == 0:
+				if counter1 % 2 == 0:
+					friend.grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
+					counter1 += 1
+					continue				
+				else:
+					friend.grid(row=counter2, column=1, pady=20, sticky=W)
+			else:
+				if counter1 % 2 == 1:
+					friend.grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
+					#friend.grid_columnconfigure(0, minsize=400)
+					counter1 += 1
+					continue				
+				else:
+					friend.grid(row=counter2, column=1, pady=20, sticky=W)		
+			
+			counter2 += 1
+
+
+class friendViewer(profilePageGUI):
+	def __init__(self, master=None):
+		profilePageGUI.__init__(self, master)
+
+	def changeDP(self):
+		pass
+
+	def createWidgets(self):
+		profileMainWindow = Frame(self, width=1000, height=550, bg=backgroundColor)	#Profile container
+		profileMainWindow.pack()
+
+		homeShadow = Canvas(profileMainWindow, width=1000, height=550, highlightthickness=0, bg=backgroundColor)
+		homeShadow.pack()
+		shadow = ImageTk.PhotoImage(file="GUIE/activePageShadow.png")
+		homeShadow.create_image(500, 275, image=shadow)
+		homeShadow.image = shadow
+
+		self.addFriendButton = Button(profileMainWindow, text="Add me up!", fg="#FFFFFF", font=("Tahoma", 11), bg=signatureColor, relief=FLAT)
+		self.addFriendButton.place(anchor=W, relx=0.037, rely=0.12)
+
+		profilePictureFrame = Frame(profileMainWindow, width=profilePic, height=profilePic, bg=backgroundColor) #ProfPic
+		profilePictureFrame.place(anchor=CENTER, relx=0.25, rely=0.25)
+
+		self.labelDP = Label(profilePictureFrame, width=profilePic, height=profilePic, highlightthickness=0, bg="white")
+		self.labelDP.place(anchor=CENTER, relx=0.5, rely=0.5)
+
+		self.displayNameVariable = StringVar()
+		self.age = IntVar()
+		self.gender = StringVar()
+		self.monthDate = StringVar()
+		self.dayDate = IntVar()
+		self.yearDate = IntVar()
+		self.position = StringVar()
+		self.company = StringVar()
+		self.yearsWorked = IntVar()
+		self.school = StringVar()
+		self.yearGraduated = IntVar()
+
+		detailsWindow = Frame(profileMainWindow, bg=backgroundColor)
+		detailsWindow.place(anchor=W, relx=0.36, rely=0.105)
+
+		displayName = Label(detailsWindow, font=("Tahoma", 18, "bold"), bg=backgroundColor, textvariable=self.displayNameVariable)
+		displayName.grid(row=0, column=0, sticky=W, columnspan=4) #Name
+
+		gender = Label(detailsWindow, font=("Tahoma", 11), bg=backgroundColor, textvariable=self.gender)
+		gender.grid(row=1, column=0, sticky=W) #Gender
+
+		age = Label(detailsWindow, font=("Tahoma", 11), bg=backgroundColor, textvariable=self.age)
+		age.grid(row=1, column=1, sticky=W, padx=(5, 2))
+
+		self.birthdayDisplay = StringVar()	
+		
+		Label(detailsWindow, font=("Tahoma", 11), bg=backgroundColor, textvariable=self.birthdayDisplay).grid(row=1, column=2, padx=(3,5), sticky=W)
+		
+		self.jobsName = StringVar()
+		
+		Label(detailsWindow, font=("Tahoma", 11), bg=backgroundColor, textvariable=self.jobsName).grid(row=1, column=3, sticky=W)	
+		
+		self.schoolDisplay = StringVar()
+		Label(detailsWindow, font=("Tahoma", 11), bg=backgroundColor, textvariable=self.schoolDisplay).grid(row=2, column=0, columnspan=3, sticky=W)
+		
+		self.friendsNumber = StringVar()
+		Label(detailsWindow, font=("Tahoma", 11), bg=backgroundColor, textvariable=self.friendsNumber).grid(row=2, column=3, padx=(5,0), sticky=W)
+
+
+		self.wall = LabelFrame(profileMainWindow, text="Wall", width=470, height=400, padx=7, pady=7, bg=backgroundColor)
+		self.wall.place(anchor=NW, relx=0.36, rely=0.2)
+		self.wall.pack_propagate(False)
+
+		# code below is courtesy of tkinter.unpythonic.net/wiki/VerticalScrolledFrame
+
+		wallScroll = Scrollbar(self.wall, orient=VERTICAL, relief=FLAT)
+		wallScroll.pack(fill=Y, side=RIGHT)
+
+		self.wallCanvas = Canvas(self.wall, highlightthickness=0, bg=backgroundColor, yscrollcommand=wallScroll.set)
+		self.wallCanvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+		wallScroll.config(command=self.wallCanvas.yview)
+
+		self.wallCanvas.xview_moveto(0)
+		self.wallCanvas.yview_moveto(0)
+
+		self.wallFrame = wframe = Frame(self.wallCanvas, bg=backgroundColor)
+		wallFrameID = self.wallCanvas.create_window(0, 0, window=wframe, anchor=NW)
+		
+		def _configFrame(event):
+			size = (wframe.winfo_reqwidth(), wframe.winfo_reqheight())
+			self.wallCanvas.config(scrollregion="0 0 %s %s" % size)
+			if wframe.winfo_reqheight() != self.wallCanvas.winfo_width():
+				self.wallCanvas.config(width=wframe.winfo_reqwidth())
+		wframe.bind("<Configure>", _configFrame)
+
+		def _configCanvas(event):
+			if wframe.winfo_reqwidth() != self.wallCanvas.winfo_width():
+				self.wallCanvas.itemconfigure(wallFrameID, width=self.wallCanvas.winfo_width())
+		self.wallCanvas.bind("<Configure>", _configCanvas)
+
+		self.links = LabelFrame(profileMainWindow, text="Links", width=175, height=268, padx=3, pady=3, bg=backgroundColor)
+		self.links.place(anchor=NW, relx=0.1625, rely=0.44)
+		self.links.pack_propagate(False)
+
+		self.friendsPageButton = Button(self.links, text="My Friends", relief=FLAT)
+		self.friendsPageButton.pack()
+
+		self.messagesPageButton = Button(self.links, text="My Messages", relief=FLAT, pady=10)
+		self.messagesPageButton.pack()
+
+		self.poolPageButton = Button(self.links, text="Coffee Pool", relief=FLAT)
+		self.poolPageButton.pack()
+
+	def receiveDatabase(self, db):
+		print "clicked"
+		profilePageGUI.receiveDatabase(self, db)
+		self.lift()
+		
+
 class notificationWindow(Frame):
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
@@ -452,16 +899,16 @@ class setupPageGUI(Frame, CC):
 
 		
 		self.genderradio = StringVar()		
-		male = Radiobutton(temp, text="Male", variable=self.genderradio, value="Male", font=defaultCreateStyle, bg=backgroundColor)
+		male = Radiobutton(temp, highlightthickness=0, text="Male", variable=self.genderradio, value="Male", font=defaultCreateStyle, bg=backgroundColor)
 		male.place(anchor=W, relx=0.33, rely=0.5)
 		male.select()
-		female = Radiobutton(temp, text="Female", variable=self.genderradio, value="Female", font=defaultCreateStyle, bg=backgroundColor)
+		female = Radiobutton(temp, highlightthickness=0, text="Female", variable=self.genderradio, value="Female", font=defaultCreateStyle, bg=backgroundColor)
 		female.place(anchor=W, relx=0.43, rely=0.5)
 		female.deselect()
 
 
 		self.jobsCheckboxVariable = IntVar()
-		includeJobsCheckbox = Checkbutton(temp, text="Include", bg=backgroundColor, variable=self.jobsCheckboxVariable, command=lambda: self.CheckboxState(self.jobsCheckboxVariable, self.entrya, self.entryb, self.entryc, self.label1, self.label2, self.label3))
+		includeJobsCheckbox = Checkbutton(temp, highlightthickness=0, text="Include", bg=backgroundColor, variable=self.jobsCheckboxVariable, command=lambda: self.CheckboxState(self.jobsCheckboxVariable, self.entrya, self.entryb, self.entryc, self.label1, self.label2, self.label3))
 		includeJobsCheckbox.place(anchor=W, relx=0.33, rely=0.6)
 
 		self.position = StringVar()
@@ -471,7 +918,7 @@ class setupPageGUI(Frame, CC):
 		self.label1.place(anchor=W, relx=0.417, rely=0.555)
 		self.label2 = Label(temp, text="at the company:", bg=backgroundColor, state=DISABLED)
 		self.label2.place(anchor=W, relx=0.58, rely=0.555)
-		self.label3 = Label(temp, text="for __ years:", bg=backgroundColor, state=DISABLED)
+		self.label3 = Label(temp, text="for __ year(s):", bg=backgroundColor, state=DISABLED)
 		self.label3.place(anchor=W, relx=0.782, rely=0.555)
 		self.entrya = Entry(temp, highlightthickness=1, width=14, relief=FLAT, textvariable = self.position, font=defaultCreateStyle, fg=toplayerColor, state=DISABLED)
 		self.entrya.place(anchor=W, relx=0.42, rely=0.6)
@@ -483,7 +930,7 @@ class setupPageGUI(Frame, CC):
 		self.school = StringVar()
 		self.graduateyear = StringVar()
 		self.educCheckboxVariable = IntVar()
-		includeEducCheckbox = Checkbutton(temp, text="Include", bg=backgroundColor, variable=self.educCheckboxVariable, command=lambda: self.CheckboxState(self.educCheckboxVariable, self.entry1, self.entry2, self.labela, self.labelb))
+		includeEducCheckbox = Checkbutton(temp, highlightthickness=0, text="Include", bg=backgroundColor, variable=self.educCheckboxVariable, command=lambda: self.CheckboxState(self.educCheckboxVariable, self.entry1, self.entry2, self.labela, self.labelb))
 		includeEducCheckbox.place(anchor=W, relx=0.33, rely=0.7)
 		self.labela = Label(temp, text="School:", bg=backgroundColor, state=DISABLED)
 		self.labela.place(anchor=W, relx=0.417, rely=0.655)
@@ -567,15 +1014,51 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.notifWindow = notificationWindow(self)
 		self.notifWindow.place(anchor=N, relx=0.785, rely=0.11)
 
-		container2 = Frame(self, width=1000, height=550)
-		container2.pack()
+		self.container2 = Frame(self, width=1000, height=550)
+		self.container2.pack()
 
-		self.profilePageObject = profilePageGUI(container2)		
-		self.homePageObject = homePageGUI(container2)
-		self.editProfileObject = editProfileGUI(container2)
+		self.profilePageObject = profilePageGUI(self.container2)		
+		self.homePageObject = homePageGUI(self.container2)
+		self.editProfileObject = editProfileGUI(self.container2)		
+		self.friendsPageObject = friendsPageGUI(self.container2)
+		self.friendViewerObject = friendViewer(self.container2)		
 				
 		self.createWidgets()
 		self.homepageLift()
+	'''
+	def viewFriend(self):
+		self.friendViewerObject = friendViewer(self.container2)
+		self.friendViewerObject.receiveDatabase(database)
+	'''
+	def addFriend(self):
+		pass
+
+	def approveFriendRequest(self):
+		pass
+
+	def cancelAddFriend(self):
+		pass
+
+	def disapproveFriendRequest(self):
+		pass
+
+	def updateProfile(self):
+		self.editProfileObject.saveChanges()		#exporter function in the editprofileGUI class
+		self.importer.import_all(self.importer.get_name())
+		self.setDatabase(self.importer)
+		self.homepageLift()
+
+	def cancelUpdateProfile(self):		
+		if tkMessageBox.askyesno("Save changes", "Do you want to save all changes?"):
+			self.updateProfile()
+		else:
+			self.homepageLift()
+			self.editProfileObject.FirstNameVariable.set(self.importer.get_first_name())
+			self.editProfileObject.LastNameVariable.set(self.importer.get_last_name())
+			self.editProfileObject.yearvar.set(self.importer.get_details()[1][2])
+			self.editProfileObject.dayvar.set(self.importer.get_details()[1][1])
+			self.editProfileObject.monthvar.set(self.importer.get_details()[1][0])
+			self.editProfileObject.genderradio.set(self.importer.get_details()[0])
 
 	def turnNotifWindowOnOrOff(self, state, notifSystem):
 		if self.notifWindow.getWindowVisibility() == 0:
@@ -618,7 +1101,7 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 			self.profilePageQueue[:] = []
 
 		for date in self.importer.get_status().keys():
-			newpost = postGUI(self.profilePageObject.wallFrame, self.importer, date)
+			newpost = postGUI(self.profilePageObject.wallFrame, self.importer, date, state="Status")
 			newpost.pack_forget()
 			self.profilePageQueue.append(newpost)
 
@@ -627,6 +1110,8 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 
 		self.profilePageObject.receiveDatabase(database)
 		self.homePageObject.receiveDatabase(database)
+		self.editProfileObject.receiveDatabase(database, self.exporter)
+		self.friendsPageObject.receiveDatabase(database, self.friendViewerObject)		
 
 	def setDP(self, databaseFile):
 		self.profilePageObject.setProfilePicture(databaseFile)
@@ -634,9 +1119,12 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 
 	def setStatus(self):
 		date = strftime("%m/%d/%Y, %I.%M.%S%p")
+		if self.homePageObject.updateStatusEntry.get() == "":
+			tkMessageBox.showerror("Nothing", "You have nothing to post :D")
+			return
 		self.exporter.export_status(self.importer.get_name(), self.homePageObject.updateStatusEntry.get(), date)
 		self.importer.import_status(self.importer.get_name())
-		newpost = postGUI(self.profilePageObject.wallFrame, self.importer, date)
+		newpost = postGUI(self.profilePageObject.wallFrame, self.importer, date, state="Status")
 		self.profilePageQueue.append(newpost)
 		self.homePageObject.updateStatusEntry.delete(0, END)
 		self.master.focus()
@@ -660,6 +1148,11 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 
 		self.homePageObject.updateStatusButton.config(command=self.setStatus)
 		self.homePageObject.updateStatusEntry.bind("<Return>", lambda a: self.homePageObject.updateStatusButton.invoke())
+
+		self.editProfileObject.saveChangesButton.config(command=self.updateProfile)
+		self.editProfileObject.backButton.config(command=self.cancelUpdateProfile)
+
+		self.profilePageObject.friendsPageButton.config(command=self.friendsPageObject.lift)
 
 
 	def homepageLift(self):
@@ -687,7 +1180,10 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.usernameVerifyObject.handler(self.passwordVerifyObject)
 
 		container = Frame(self, width=1000, height=600)							# Frame for all the to-be-children pages
-		container.pack()	
+		container.pack()
+
+		self.welcomePage = welcome()
+		self.welcomePage.place(in_=container)	
 
 		self.activePageObject = activePageGUI()
 		self.activePageObject.place(in_=container)
@@ -697,7 +1193,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		self.loginPageObject = loginPageGUI()
 		self.loginPageObject.place(in_=container)
-		self.loginPageObject.lift()												# Displays first ever page, which is the login page	
+		self.welcomePage.lift()													# Displays first ever page, which is the login page	
 
 		self.pack()
 		self.createWidgets()
@@ -717,22 +1213,22 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		self.anotherUserButton.place(anchor=CENTER, relx=0.04, rely=0.07)
 		self.anotherUserButton.image = newCaffyButton
 		
-		self.createButton = Button(self.loginPageObject, text="Sign Me Up!", width=12, font=("Tahoma", 13, "bold"), relief=FLAT, fg="#FFFFFF", bg=greenColor, command=self.verifyCreate)
+		self.createButton = Button(self.loginPageObject, highlightthickness=0, text="Sign Me Up!", width=12, font=("Tahoma", 13, "bold"), relief=FLAT, fg="#FFFFFF", bg=greenColor, command=self.verifyCreate)
 		self.createButton.place(anchor=CENTER, relx=0.82, rely=0.75)
 		
 		self.loginPageObject.newUsernameInput.bind("<Return>", lambda event: self.createButton.invoke())	#Allows the use of the Enter key when creating accounts
 		self.loginPageObject.newPasswordInput.bind("<Return>", lambda event: self.createButton.invoke())
 		self.loginPageObject.newPasswordVerifyInput.bind("<Return>", lambda event: self.createButton.invoke())
 
-		self.logoutButton = Button(self.activePageObject, text="Log Out", width=6, height=1, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject, self.activePageObject))
+		self.logoutButton = Button(self.activePageObject, highlightthickness=0, text="Log Out", width=6, height=1, font=("Tahoma", 10, "bold"), relief=FLAT, fg="#FFFFFF", bg=toplayerColor, command=lambda: self.loginPageObject.reset(self.loginPageObject, self.activePageObject))
 		self.logoutButton.place(anchor=CENTER, relx=0.83+b, rely=0.042)
 
 		self.master.protocol("WM_DELETE_WINDOW", self.exit)
 
-		self.setupBackButton = Button(self.setupPageObject, text="Back", width=6, height=1, font=("Tahoma", 16, "bold"), relief=FLAT, fg="white", bg=toplayerColor, command=lambda: self.setupPageObject.reset(self.loginPageObject))
+		self.setupBackButton = Button(self.setupPageObject, highlightthickness=0, text="Back", width=6, height=1, font=("Tahoma", 16, "bold"), relief=FLAT, fg="white", bg=toplayerColor, command=lambda: self.setupPageObject.reset(self.loginPageObject))
 		self.setupBackButton.place(anchor=CENTER, relx=0.1, rely=0.069)
 
-		self.setupSubmitButton = Button(self.setupPageObject, text="I'm Ready", font=("Tahoma", 16, "bold"), fg="#FFFFFF", bg=greenColor, relief=FLAT, command=self.verifySetup)
+		self.setupSubmitButton = Button(self.setupPageObject, highlightthickness=0, text="I'm Ready", font=("Tahoma", 16, "bold"), fg="#FFFFFF", bg=greenColor, relief=FLAT, command=self.verifySetup)
 		self.setupSubmitButton.place(anchor=CENTER, relx=0.81, rely=0.85)
 			
 	def exit(self):
@@ -744,7 +1240,9 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		else:
 			if tkMessageBox.askyesno("Exiting", "You are leaving caffy. Continue?"):	#Otherwise if user is logged-out, when x button is pressed, show the exit application message
 				self.master.destroy()											# Function to destroy the whole application
-		return 
+		return
+
+	#tooltips code retrieved from python.org 
 
 	def tooltips(self, widget, message):
 		x = y = 0
@@ -792,10 +1290,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.setupPageObject.set_name(self.loginCC.get_name())
 			self.setupPageObject.set_password(self.loginCC.get_password())
 			self.setupPageObject.set_friends()	#import from testfile
-			self.setupPageObject.firstNameDisplayInput.focus()
-			self.cre.set_name(self.loginCC.get_name())
-			self.cre.set_password(self.loginCC.get_name())
-			self.cre.createFromPreExisting()
+			self.setupPageObject.firstNameDisplayInput.focus()			
 			self.setupPageObject.lift()														# CODE HERE SO THAT OUT OF NOWHERE REGISTERED LINES (FROM TESTFILE) MAY HAVE THEIR OWN INDIVIDUAL DATABASES AT LAST. ALSO,
 			#Code here to input registry info into setup page (USE CREATION.CREATE() BUT MIND THE REGISTRY.REGISTER())		# NOTE TO CODE: DATABASE WOULD NO LONGER HAVE "OFFLINE SETUP" AS ONOROFF STATUS. INSTEAD, GO DIRECTLY TO OFFLINE.
 
@@ -803,8 +1298,18 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.loginButton.flash()
 			self.loginPageObject.login_logout.set_name(self.loginCC.get_name())
 			self.loginPageObject.login_logout.set_password(self.loginCC.get_password())
-
-			a = self.loginPageObject.login_logout.login()
+			
+			try:
+				a = self.loginPageObject.login_logout.login()
+			except:
+				tkMessageBox.showerror("ERROR", "Something's wrong with your database!")
+				self.loginPageObject.usernameInput.delete(0, END)									# Delete any text from login
+				self.loginPageObject.passwordInput.delete(0, END)
+				self.loginPageObject.login_logout.set_name("")
+				self.loginPageObject.login_logout.set_password("")
+				self.loginPageObject.usernameInput.focus()
+				return
+			
 			if a == "SETUPCREATED":														# IF SETUPCREATED (Meaning account is newly created), show the setup window
 				self.setupPageObject.lift()
 				self.setupPageObject.firstNameDisplayInput.focus()
@@ -870,7 +1375,10 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.setupPageObject.verifySetupLabel.config(text=answer)
 			self.setupPageObject.verifySetupLabel.after(2000, waitLabel)						
 		
-		else:						
+		else:
+			self.cre.set_name(self.loginCC.get_name())
+			self.cre.set_password(self.loginCC.get_name())
+			self.cre.createFromPreExisting()						
 			self.setupPageObject.export_setup_data()							#Export the data from setup into newly created database
 			b = self.setupPageObject.login()									#Log-in and assign the returned importer database to b
 			self.activePageObject.setDatabase(b)								#Database information will be passed to activepage
@@ -889,9 +1397,9 @@ try:
 		Window.wm_iconbitmap('GUIE/CoffeeCup.ico')									# Adds a little mug icon over the top left corner
 	Window.mainloop()																# Executes code above in a loop
 
-except Exception:
-	temp = Tk()
-	temp.withdraw()
+except Exception, e:	
+	Window.withdraw()
 	tkMessageBox.showerror("Overbrewing!", "Ooooh! I encountered an error! Closing up...")
-	temp.destroy()
+	print e
+	Window.destroy()
 	sys.exit()
