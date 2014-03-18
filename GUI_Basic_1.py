@@ -13,7 +13,7 @@ import glob
 import time
 import shutil, subprocess
 import tkMessageBox, ctypes, tkFileDialog
-import Queue, threading
+import Queue, threading, functools
 
 
 def isPlatform(x):
@@ -25,12 +25,13 @@ try:
 	from PIL import ImageTk, Image
 
 except ImportError:
-	if isPlatform("linux"):
+	if isPlatform("win32"):
+		ctypes.windll.user32.MessageBoxA(None, "Please install PIL.", "Error", 0)
+	else:
 		Window = Tk()        		 											# Creates an empty window
 		Window.withdraw()
-		tkMessageBox.showerror("Error", "Please install PIL.")		
-	elif isPlatform("win32"):
-		ctypes.windll.user32.MessageBoxA(None, "Please install PIL.", "Error", 0)
+		tkMessageBox.showerror("Error", "Please install PIL.")
+		Window.destroy()	
 		
 	eval(exit())
 
@@ -103,6 +104,7 @@ class welcome(Frame):
 
 	def selectLocal(self):
 		self.lower()
+
 
 class loginPageGUI(Frame):														# The login GUI class Interface!
 	def __init__(self, master=None):	
@@ -294,7 +296,7 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 		self.homePageDP = Label(smallDP, width=75, height=75, bg="white")
 		self.homePageDP.place(anchor=CENTER, relx=0.5, rely=0.5)
 
-		self.editProfileButton = Button(homepageMainWindow, highlightthickness=0, relief=FLAT, cursor="hand2", text="Update Profile", font=("Tahoma", 10), bg=backgroundColor, fg="#444444")
+		self.editProfileButton = Button(homepageMainWindow, highlightthickness=0, relief=FLAT, cursor="hand2", text="Edit Profile", font=("Tahoma", 10), bg=backgroundColor, fg="#444444")
 		self.editProfileButton.place(anchor=W, relx=0.11, rely=0.132)
 		self.editProfileButton.bind("<Enter>", lambda a: self.editProfileButton.config(fg="black"))
 		self.editProfileButton.bind("<Leave>", lambda a: self.editProfileButton.config(fg="#444444"))
@@ -341,7 +343,7 @@ class homePageGUI(Frame):														# This is the GUI for the Newsfeed sectio
 				self.wallCanvas.itemconfigure(wallFrameID, width=self.wallCanvas.winfo_width())
 		self.wallCanvas.bind("<Configure>", _configCanvas)
 
-#UNDER CONSTRUCTION
+
 class editProfileGUI(Frame):
 	def __init__(self, master=None):
 		Frame.__init__(self, master)		
@@ -482,23 +484,30 @@ class editProfileGUI(Frame):
 		self.backButton = Button(editProfileFrame, highlightthickness=0, text="Cancel", font=("Tahoma", 16), fg="#FFFFFF", bg="#999999", relief=FLAT)
 		self.backButton.place(anchor=CENTER, relx=0.67, rely=0.85)
 
+		self.deleteAccountButton = Button(editProfileFrame, highlightthickness=0, text="Delete Account", font=("Tahoma", 16), fg="#FFFFFF", bg="#999999", relief=FLAT)
+		self.deleteAccountButton.place(anchor=CENTER, relx=0.24, rely=0.85)
+		self.deleteAccountButton.bind("<Enter>", lambda a: self.deleteAccountButton.config(bg="red"))
+		self.deleteAccountButton.bind("<Leave>", lambda a: self.deleteAccountButton.config(bg="#999999"))
+
 
 class activePageThreading(threading.Thread):
-	def __init__(self, inqueue, outqueue):
+	def __init__(self, importer, namer):
 		threading.Thread.__init__(self)
-		self.inqueue = inqueue
-		self.outqueue = outqueue
-		self.importer = import_database()
-
+		
+		self.importer = importer
+		self.namer = namer
+		
 	def run(self):
 		while True:
 			try:
-				pass
-			except Exception:
-				pass
+				if self.namer.get() == "":
+					break
+				self.importer.import_all(self.namer.get())				
+			except Exception, e:
+				print e
 
 			time.sleep(2)
-
+			
 
 class postGUI(Frame, post):
 	def __init__(self, master=None, usernameDatabase=None, date=None, state=None):
@@ -540,22 +549,31 @@ class postGUI(Frame, post):
 
 
 class thumbnailGUI(Frame):
-	def __init__(self, master=None, name=None, dp=None, friendViewer=None, DB=None):
+	def __init__(self, master=None, name=None, dp=None, db=None):
 		Frame.__init__(self, master)
 		self.name = name		
-		self.DP = dp				
-		self.createWidgets()
-		self.bind("<Button-1>", lambda a: friendViewer.receiveDatabase(DB))		
-		#self.bind("<Enter>", lambda a: self.posterName.config(bg="yellow"))
-		#self.bind("<Leave>", lambda a: self.posterName.config(bg=backgroundColor))
-		self.config(cursor="hand2")
+		self.DP = dp
+		self.database = db		
+		#self.Q = Q
+						
+		self.createWidgets()		
+		#self.bind("<Button-1>", lambda a: self.thumbnailFrame.config(bg="yellow"))
+		#self.bind("<ButtonRelease-1>", lambda a: self.thumbnailFrame.config(bg=backgroundColor))
+		
+	'''	
+	def putToQ(self, event):
+		print "Hello"
+		self.Q.put(self.get_database())
+	'''
+	def get_database(self):
+		return self.database
 
 	def createWidgets(self):
-		thumbnailFrame = Frame(self, width=450, bg=backgroundColor)
-		thumbnailFrame.pack()
-		thumbnailFrame.pack_propagate(False)
+		self.thumbnailFrame = Frame(self, width=450, bg=backgroundColor)
+		self.thumbnailFrame.pack()
+		self.thumbnailFrame.pack_propagate(False)
 
-		DPThumbnailFrame = Frame(thumbnailFrame, width=40, height=40, bg="white")
+		DPThumbnailFrame = Frame(self.thumbnailFrame, width=40, height=40, bg="white")
 		DPThumbnailFrame.grid(row=0, column=0, rowspan=1, sticky=E)
 
 		b = Image.open(self.DP)
@@ -565,7 +583,7 @@ class thumbnailGUI(Frame):
 		DPThumbnail.image = DPThumbnailVariable
 		DPThumbnail.place(anchor=CENTER, relx=0.5, rely=0.5)
 
-		self.posterName = Label(thumbnailFrame, bg=backgroundColor, text=self.name, font=("Tahoma", 12, "bold"), wraplength=160, justify=LEFT)
+		self.posterName = Label(self.thumbnailFrame, bg=backgroundColor, text=self.name, font=("Tahoma", 12, "bold"), wraplength=160, justify=LEFT)
 		self.posterName.grid(row=0, column=1, sticky=W, padx=(5,0))
 
 		
@@ -590,7 +608,7 @@ class friendsPageGUI(Frame):
 		Label(self.container, text="My friends", font=("Segoe UI Light", 28), bg=backgroundColor).place(anchor=CENTER, relx=0.3, rely=0.1)
 		
 		self.friendsFrame = Frame(self.container, bg=backgroundColor, width=500, height=350, padx=7, pady=7, highlightthickness=1, highlightbackground="#AAAAAA")
-		self.friendsFrame.place(anchor=CENTER, relx=0.5, rely=0.6)
+		self.friendsFrame.place(anchor=CENTER, relx=0.5, rely=0.55)
 		self.friendsFrame.pack_propagate(False)
 
 		wallScroll = Scrollbar(self.friendsFrame, orient=VERTICAL, relief=FLAT)
@@ -619,13 +637,13 @@ class friendsPageGUI(Frame):
 				self.wallCanvas.itemconfigure(wallFrameID, width=self.wallCanvas.winfo_width())
 		self.wallCanvas.bind("<Configure>", _configCanvas)		
 		
-	def receiveDatabase(self, database, friendViewer):
+	def receiveDatabase(self, database):
 		self.importer = database
 
 		if len(self.friendsList) != 0:
 			for post in self.friendsList:
 				post.destroy()
-			self.friendsList[:] = []
+			self.friendsList[:] = []		
 
 		for friend in self.importer.get_friends():
 			indivImporter = import_database()
@@ -633,34 +651,12 @@ class friendsPageGUI(Frame):
 				indivImporter.import_all(friend)
 				name = indivImporter.get_display_name()
 				dp = indivImporter.get_DP()
-				newfriend = thumbnailGUI(self.wallFrame, name, dp, friendViewer, indivImporter)
-				#friendViewer.receiveDatabase(indivImporter)
-				#newfriend.bind("<Button-1>", lambda a: friendViewer.receiveDatabase(indivImporter))
+				newfriend = thumbnailGUI(self.wallFrame, name, dp, indivImporter)
+				newfriend.config(cursor="hand2")				
 				self.friendsList.append(newfriend)
 			except IOError:								
-				newfriend = thumbnailGUI(self.wallFrame, "Inactive", "GUIE/default.gif")
-				self.friendsList.append(newfriend)
-		
-		counter1 = 0
-		counter2 = 0
-		for friend in self.friendsList:
-			if counter2 % 2 == 0:
-				if counter1 % 2 == 0:
-					friend.grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
-					counter1 += 1
-					continue				
-				else:
-					friend.grid(row=counter2, column=1, pady=20, sticky=W)
-			else:
-				if counter1 % 2 == 1:
-					friend.grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
-					#friend.grid_columnconfigure(0, minsize=400)
-					counter1 += 1
-					continue				
-				else:
-					friend.grid(row=counter2, column=1, pady=20, sticky=W)		
-			
-			counter2 += 1
+				newfriend = thumbnailGUI(self.wallFrame, "Inactive", "GUIE/default.gif", indivImporter)
+				self.friendsList.append(newfriend)			
 
 
 class friendViewer(profilePageGUI):
@@ -680,8 +676,12 @@ class friendViewer(profilePageGUI):
 		homeShadow.create_image(500, 275, image=shadow)
 		homeShadow.image = shadow
 
-		self.addFriendButton = Button(profileMainWindow, text="Add me up!", fg="#FFFFFF", font=("Tahoma", 11), bg=signatureColor, relief=FLAT)
-		self.addFriendButton.place(anchor=W, relx=0.037, rely=0.12)
+
+		self.addFriendButton = Button(profileMainWindow, text="Add me up!", fg="#FFFFFF", font=("Tahoma", 10, "bold"), bg=signatureColor, relief=FLAT)
+		self.addFriendButton.place(anchor=CENTER, relx=0.082, rely=0.12)
+
+		self.cancelFriendButton = Button(profileMainWindow, text="Cancel Request", fg="#FFFFFF", font=("Tahoma", 10, "bold"), bg="#AAAAAA", relief=FLAT)
+		
 
 		profilePictureFrame = Frame(profileMainWindow, width=profilePic, height=profilePic, bg=backgroundColor) #ProfPic
 		profilePictureFrame.place(anchor=CENTER, relx=0.25, rely=0.25)
@@ -764,13 +764,7 @@ class friendViewer(profilePageGUI):
 		self.links.pack_propagate(False)
 
 		self.friendsPageButton = Button(self.links, text="My Friends", relief=FLAT)
-		self.friendsPageButton.pack()
-
-		self.messagesPageButton = Button(self.links, text="My Messages", relief=FLAT, pady=10)
-		self.messagesPageButton.pack()
-
-		self.poolPageButton = Button(self.links, text="Coffee Pool", relief=FLAT)
-		self.poolPageButton.pack()
+		self.friendsPageButton.pack()		
 
 	def receiveDatabase(self, db):
 		print "clicked"
@@ -973,7 +967,8 @@ class setupPageGUI(Frame, CC):
 		self.CheckboxState(self.jobsCheckboxVariable, self.entrya, self.entryb, self.entryc, self.label1, self.label2, self.label3, self.entry1, self.entry2, self.labela, self.labelb)
 		
 	def reset(self, x):
-		if tkMessageBox.askyesno("Quitting Setup", "Are you sure you want to quit setup?"):			
+		if tkMessageBox.askyesno("Quitting Setup", "Are you sure you want to quit setup?"):
+			shutil.rmtree(os.path.abspath(os.path.dirname(__file__)) + '/DATABASE/' + self.get_name())			
 			self.master.title("Welcome to Caffy!")
 			x.login_logout.set_name("")
 			x.login_logout.set_password("")
@@ -1000,15 +995,12 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
 		Singleton.__init__(self)
-
-		self.importer = import_database()
+		
 		self.exporter = export_database()
-		'''
-		self.databaseUpdater = activePageThreading(self.importer)
-		self.databaseUpdater.setDaemon(True)
-		self.databaseUpdater.start()
-		'''
+		
 		self.profilePageQueue = []
+
+		self.friendsViewerQueue = Queue.Queue()
 
 		self.topLayerObject = notifSystemGUI(self)
 		self.notifWindow = notificationWindow(self)
@@ -1021,23 +1013,33 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.homePageObject = homePageGUI(self.container2)
 		self.editProfileObject = editProfileGUI(self.container2)		
 		self.friendsPageObject = friendsPageGUI(self.container2)
-		self.friendViewerObject = friendViewer(self.container2)		
+		self.friendViewerObject = friendViewer(self.container2)
+
+		self.homepageLift()		
 				
 		self.createWidgets()
-		self.homepageLift()
-	'''
-	def viewFriend(self):
-		self.friendViewerObject = friendViewer(self.container2)
-		self.friendViewerObject.receiveDatabase(database)
-	'''
+	
+	def viewFriend(self, db):
+		print "hello"		
+		self.friendViewerObject.receiveDatabase(db)
+		self.friendViewerObject.lift()
+	
 	def addFriend(self):
-		pass
+		self.friendViewerObject.addFriendButton.config(state=DISABLED, bg="#CCCCCC", text="Request sent")
+		self.friendViewerObject.cancelFriendButton.place(anchor=W, relx=0.026, rely=0.22)
+		self.friendObject.add_friend_gui(self.friendViewerObject.username)
 
 	def approveFriendRequest(self):
-		pass
+		self.friendObject.approve_request_gui(self.friendViewerObject.username)
+
+		self.importer.import_all(self.importer.get_name())
+		#THREAD THIS PART
+		self.setDatabase(self.importer)
 
 	def cancelAddFriend(self):
-		pass
+		self.friendViewerObject.addFriendButton.config(state=NORMAL, bg=signatureColor, text="Add me up!")
+		self.friendViewerObject.cancelFriendButton.place_forget()
+		self.friendObject.cancel_friend_request_gui(self.friendViewerObject.username)
 
 	def disapproveFriendRequest(self):
 		pass
@@ -1045,7 +1047,7 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 	def updateProfile(self):
 		self.editProfileObject.saveChanges()		#exporter function in the editprofileGUI class
 		self.importer.import_all(self.importer.get_name())
-		self.setDatabase(self.importer)
+		self.setDatabase(self.importer)				#TAKE NOT IF THREADING
 		self.homepageLift()
 
 	def cancelUpdateProfile(self):		
@@ -1072,7 +1074,7 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 			notifSystem.friendNotifButton.config(image=notifSystem.friendNotifImage)
 			self.notifWindow.setWindowVisibility(0)
 
-	def changeDP(self,event):
+	def changeDP(self, event):
 		newDP = tkFileDialog.askopenfile(filetypes=[("Images", "*.jpg *png *.gif")], title="Select your new DP!")
 		if newDP == None:
 			return
@@ -1095,6 +1097,11 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 	def setDatabase(self, database):
 		self.importer = database
 
+		self.namer = StringVar()
+		self.namer.set(self.importer.get_name())
+
+		self.friendObject = friends(self.importer.get_name(), self.importer)
+
 		if len(self.profilePageQueue) != 0:
 			for post in self.profilePageQueue:
 				post.destroy()
@@ -1111,8 +1118,42 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.profilePageObject.receiveDatabase(database)
 		self.homePageObject.receiveDatabase(database)
 		self.editProfileObject.receiveDatabase(database, self.exporter)
-		self.friendsPageObject.receiveDatabase(database, self.friendViewerObject)		
+		self.friendsPageObject.receiveDatabase(database)
 
+		#Algorithm for putting the friends of logged-in user into a table (my algorithm!)
+
+		counter1 = 0
+		counter2 = 0		
+
+		for i, friend in enumerate(self.friendsPageObject.friendsList):
+			
+			if counter2 % 2 == 0:
+				if counter1 % 2 == 0:
+					friend.grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
+					friend.bind("<Button-1>", functools.partial(self.viewFriend, friend.get_database()))
+					counter1 += 1
+					continue				
+				else:
+					friend.grid(row=counter2, column=1, pady=20, sticky=W)
+					friend.bind("<Button-1>", functools.partial(self.viewFriend, friend.get_database()))
+			else:
+				if counter1 % 2 == 1:
+					friend.grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
+					friend.bind("<Button-1>", functools.partial(self.viewFriend, friend.get_database()))					
+					counter1 += 1
+					continue				
+				else:
+					friend.grid(row=counter2, column=1, pady=20, sticky=W)
+					friend.bind("<Button-1>", functools.partial(self.viewFriend, friend.get_database()))
+			counter2 += 1			
+
+		#self.friendViewerObject.receiveDatabase(self.importer)
+		#self.friendViewerObject.lift()
+		
+		self.databaseUpdater = activePageThreading(self.importer, self.namer)
+		self.databaseUpdater.setDaemon(True)
+		self.databaseUpdater.start()				
+		
 	def setDP(self, databaseFile):
 		self.profilePageObject.setProfilePicture(databaseFile)
 		self.homePageObject.setProfilePicture(databaseFile)
@@ -1154,6 +1195,8 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 
 		self.profilePageObject.friendsPageButton.config(command=self.friendsPageObject.lift)
 
+		self.friendViewerObject.addFriendButton.config(command=self.addFriend)
+		self.friendViewerObject.cancelFriendButton.config(command=self.cancelAddFriend)
 
 	def homepageLift(self):
 		self.homePageObject.lift()
@@ -1230,6 +1273,8 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 
 		self.setupSubmitButton = Button(self.setupPageObject, highlightthickness=0, text="I'm Ready", font=("Tahoma", 16, "bold"), fg="#FFFFFF", bg=greenColor, relief=FLAT, command=self.verifySetup)
 		self.setupSubmitButton.place(anchor=CENTER, relx=0.81, rely=0.85)
+
+		self.activePageObject.editProfileObject.deleteAccountButton.config(command=self.deleteAccount)
 			
 	def exit(self):
 		if self.loginPageObject.login_logout.get_name() != "":					# If log in is occupied
@@ -1240,9 +1285,38 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 		else:
 			if tkMessageBox.askyesno("Exiting", "You are leaving caffy. Continue?"):	#Otherwise if user is logged-out, when x button is pressed, show the exit application message
 				self.master.destroy()											# Function to destroy the whole application
-		return
+		return	
 
-	#tooltips code retrieved from python.org 
+	def deleteAccount(self):
+		if tkMessageBox.askyesno("Warning!", "You are about to become inactive. Continue?"):		
+			if self.activePageObject.notifWindow.getWindowVisibility() == 1:
+				self.activePageObject.notifWindow.lower()
+				self.activePageObject.notifWindow.setWindowVisibility(0)
+				self.activePageObject.topLayerObject.brewingNotifButton.config(image=self.activePageObject.topLayerObject.brewingNotifImage)
+				self.activePageObject.topLayerObject.msgNotifButton.config(image=self.activePageObject.topLayerObject.msgNotifImage)			
+				self.activePageObject.topLayerObject.friendNotifButton.config(image=self.activePageObject.topLayerObject.friendNotifImage)
+			
+			for post in self.activePageObject.profilePageQueue:
+				post.destroy()
+			self.activePageObject.profilePageQueue[:] = []
+
+			for friend in self.activePageObject.friendsPageObject.friendsList:
+				friend.destroy()
+			self.activePageObject.friendsPageObject.friendsList[:] = []
+				
+			self.loginPageObject.usernameInput.delete(0, END)									# Delete any text from login
+			self.loginPageObject.usernameInput.delete(0, END)									# Delete any text from login
+			self.loginPageObject.passwordInput.delete(0, END)
+			self.loginPageObject.usernameInput.focus()
+			self.master.title("Welcome to Caffy!")			
+			self.loginPageObject.login_logout.set_name("")
+			self.loginPageObject.login_logout.set_password("")
+			self.loginPageObject.lift()
+			shutil.rmtree(os.path.abspath(os.path.dirname(__file__)) + '/DATABASE/' + self.activePageObject.importer.get_name())
+		else:
+			return
+
+	#"paraphrased" tooltips code below retrieved from www.daniweb.org/software-development/python/code/234888/tooltip-box 
 
 	def tooltips(self, widget, message):
 		x = y = 0
@@ -1285,6 +1359,9 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 				self.loginPageObject.passwordInput.focus()			
 		
 		elif answer == "SETUP":
+			self.cre.set_name(self.loginCC.get_name())
+			self.cre.set_password(self.loginCC.get_password())
+			self.cre.createFromPreExisting()
 			self.loginPageObject.login_logout.set_name(self.loginCC.get_name())
 			self.loginPageObject.login_logout.set_password(self.loginCC.get_password())
 			self.setupPageObject.set_name(self.loginCC.get_name())
@@ -1375,10 +1452,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.setupPageObject.verifySetupLabel.config(text=answer)
 			self.setupPageObject.verifySetupLabel.after(2000, waitLabel)						
 		
-		else:
-			self.cre.set_name(self.loginCC.get_name())
-			self.cre.set_password(self.loginCC.get_name())
-			self.cre.createFromPreExisting()						
+		else:									
 			self.setupPageObject.export_setup_data()							#Export the data from setup into newly created database
 			b = self.setupPageObject.login()									#Log-in and assign the returned importer database to b
 			self.activePageObject.setDatabase(b)								#Database information will be passed to activepage

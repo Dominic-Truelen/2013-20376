@@ -170,3 +170,5 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 		self.poolPageButton = Button(self.links, text="Coffee Pool", relief=FLAT)
 		self.poolPageButton.pack()
 
+		
+
