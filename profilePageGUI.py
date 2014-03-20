@@ -17,7 +17,6 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
 		self.place(in_=master)
-		self.dp = PhotoImage(file="GUIE/maleDP.gif") # I think proxy should be implemented now...
 		self.createWidgets()
 
 	def setProfilePicture(self, databaseFile):
@@ -25,9 +24,10 @@ class profilePageGUI(Frame):													# This is the GUI for the Profile Page.
 		b.thumbnail((175,175))		
 		self.DP = ImageTk.PhotoImage(b)
 		self.labelDP.config(image=self.DP)
-		self.labelDP.image = self.dp
+		self.labelDP.image = self.DP
 
-	def receiveDatabase(self, database):
+	def receiveDatabase(self, database):		
+		self.importer = database
 		self.username = database.get_name()
 		self.password = database.get_password()
 

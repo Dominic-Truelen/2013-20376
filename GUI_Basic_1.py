@@ -192,7 +192,13 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 			for friend in y.friendsPageObject.friendsList:
 				friend.destroy()
 			y.friendsPageObject.friendsList[:] = []
-				
+
+			y.coffeePoolObject.importer.get_pool()[:] = []			
+
+			for friend in y.coffeePoolObject.friendsList:
+				friend.destroy()
+			y.coffeePoolObject.friendsList[:] = []
+
 			self.usernameInput.delete(0, END)									# Delete any text from login
 			self.passwordInput.delete(0, END)
 			self.usernameInput.focus()
@@ -491,9 +497,9 @@ class editProfileGUI(Frame):
 
 
 class activePageThreading(threading.Thread):
-	def __init__(self, importer, namer):
+	def __init__(self, setdatabase, importer, namer):
 		threading.Thread.__init__(self)
-		
+		self.setdatabase = setdatabase
 		self.importer = importer
 		self.namer = namer
 		
@@ -502,7 +508,8 @@ class activePageThreading(threading.Thread):
 			try:
 				if self.namer.get() == "":
 					break
-				self.importer.import_all(self.namer.get())				
+				self.importer.import_all(self.namer.get())
+				self.setdatabase(self.importer)			
 			except Exception, e:
 				print e
 
@@ -549,24 +556,12 @@ class postGUI(Frame, post):
 
 
 class thumbnailGUI(Frame):
-	def __init__(self, master=None, name=None, dp=None, db=None):
-		Frame.__init__(self, master)
+	def __init__(self, master=None, name=None, dp=None, db=None, **kw):
+		Frame.__init__(self, master, **kw)
 		self.name = name		
 		self.DP = dp
-		self.database = db		
-		#self.Q = Q
-						
-		self.createWidgets()		
-		#self.bind("<Button-1>", lambda a: self.thumbnailFrame.config(bg="yellow"))
-		#self.bind("<ButtonRelease-1>", lambda a: self.thumbnailFrame.config(bg=backgroundColor))
-		
-	'''	
-	def putToQ(self, event):
-		print "Hello"
-		self.Q.put(self.get_database())
-	'''
-	def get_database(self):
-		return self.database
+		self.database = db				
+		self.createWidgets()					
 
 	def createWidgets(self):
 		self.thumbnailFrame = Frame(self, width=450, bg=backgroundColor)
@@ -643,20 +638,66 @@ class friendsPageGUI(Frame):
 		if len(self.friendsList) != 0:
 			for post in self.friendsList:
 				post.destroy()
-			self.friendsList[:] = []		
+			self.friendsList[:] = []
 
-		for friend in self.importer.get_friends():
-			indivImporter = import_database()
-			try:
-				indivImporter.import_all(friend)
-				name = indivImporter.get_display_name()
-				dp = indivImporter.get_DP()
-				newfriend = thumbnailGUI(self.wallFrame, name, dp, indivImporter)
-				newfriend.config(cursor="hand2")				
-				self.friendsList.append(newfriend)
-			except IOError:								
-				newfriend = thumbnailGUI(self.wallFrame, "Inactive", "GUIE/default.gif", indivImporter)
-				self.friendsList.append(newfriend)			
+
+class coffeePoolGUI(friendsPageGUI):
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
+		self.place(in_=master)
+		self.friendsList = []
+		self.createWidgets()		
+
+	def createWidgets(self):
+		self.container = Frame(self, bg=backgroundColor, width=1000, height=550)
+		self.container.pack()
+		self.container.pack_propagate(False)
+
+		homeShadow = Canvas(self.container, width=1000, height=550, highlightthickness=0, bg=backgroundColor)
+		homeShadow.pack()
+		shadow = PhotoImage(file="GUIE/activePageShadow.gif")
+		homeShadow.create_image(500, 275, image=shadow)
+		homeShadow.image = shadow
+
+		Label(self.container, text="List of Existing Users", font=("Segoe UI Light", 28), bg=backgroundColor).place(anchor=CENTER, relx=0.25, rely=0.1)
+		
+		self.friendsFrame = Frame(self.container, bg=backgroundColor, width=500, height=350, padx=7, pady=7, highlightthickness=1, highlightbackground="#AAAAAA")
+		self.friendsFrame.place(anchor=CENTER, relx=0.5, rely=0.55)
+		self.friendsFrame.pack_propagate(False)
+
+		wallScroll = Scrollbar(self.friendsFrame, orient=VERTICAL, relief=FLAT)
+		wallScroll.pack(fill=Y, side=RIGHT)
+
+		self.wallCanvas = Canvas(self.friendsFrame, highlightthickness=0, bg=backgroundColor, yscrollcommand=wallScroll.set)
+		self.wallCanvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+		wallScroll.config(command=self.wallCanvas.yview)
+
+		self.wallCanvas.xview_moveto(0)
+		self.wallCanvas.yview_moveto(0)
+
+		self.wallFrame = wframe = Frame(self.wallCanvas, bg=backgroundColor)
+		self.wallFrame.grid_columnconfigure(0, minsize=250)
+		wallFrameID = self.wallCanvas.create_window(0, 0, window=wframe, anchor=NW)
+		
+		def _configFrame(event):
+			size = (wframe.winfo_reqwidth(), wframe.winfo_reqheight())
+			self.wallCanvas.config(scrollregion="0 0 %s %s" % size)
+			if wframe.winfo_reqheight() != self.wallCanvas.winfo_width():
+				self.wallCanvas.config(width=wframe.winfo_reqwidth())
+		wframe.bind("<Configure>", _configFrame)
+
+		def _configCanvas(event):
+			if wframe.winfo_reqwidth() != self.wallCanvas.winfo_width():
+				self.wallCanvas.itemconfigure(wallFrameID, width=self.wallCanvas.winfo_width())
+		self.wallCanvas.bind("<Configure>", _configCanvas)
+
+	def receiveDatabase(self, database):
+		self.importer = database
+
+		if len(self.friendsList) != 0:
+			for post in self.friendsList:
+				post.destroy()
+			self.friendsList[:] = []		
 
 
 class friendViewer(profilePageGUI):
@@ -677,10 +718,13 @@ class friendViewer(profilePageGUI):
 		homeShadow.image = shadow
 
 
-		self.addFriendButton = Button(profileMainWindow, text="Add me up!", fg="#FFFFFF", font=("Tahoma", 10, "bold"), bg=signatureColor, relief=FLAT)
-		self.addFriendButton.place(anchor=CENTER, relx=0.082, rely=0.12)
+		self.addFriendButton = Button(profileMainWindow, text="Add me up!", fg="#FFFFFF", font=("Tahoma", 10, "bold"), bg=signatureColor, relief=FLAT)		
 
 		self.cancelFriendButton = Button(profileMainWindow, text="Cancel Request", fg="#FFFFFF", font=("Tahoma", 10, "bold"), bg="#AAAAAA", relief=FLAT)
+
+		self.approveFriendButton = Button(profileMainWindow, text="Accept!", fg="#FFFFFF", font=("Tahoma", 10, "bold"), bg=signatureColor, relief=FLAT)		
+
+		self.notnowFriendButton = Button(profileMainWindow, text="Not now", fg="#FFFFFF", font=("Tahoma", 10, "bold"), bg="#AAAAAA", relief=FLAT)
 		
 
 		profilePictureFrame = Frame(profileMainWindow, width=profilePic, height=profilePic, bg=backgroundColor) #ProfPic
@@ -767,7 +811,7 @@ class friendViewer(profilePageGUI):
 		self.friendsPageButton.pack()		
 
 	def receiveDatabase(self, db):
-		print "clicked"
+		#print db, db.get_friends(), db.get_name()
 		profilePageGUI.receiveDatabase(self, db)
 		self.lift()
 		
@@ -789,7 +833,36 @@ class notificationWindow(Frame):
 		self.notifTitleVar = StringVar()
 
 		self.notifTitle = Label(container, textvariable = self.notifTitleVar, bg="white", font=("Tahoma", 16))
-		self.notifTitle.place(anchor=NW)
+		self.notifTitle.grid(row=0, column=0, sticky=W)
+
+		self.wall = Frame(container, highlightthickness=0, bg="white", width=381, height=250)
+		self.wall.grid(row=1, column=0, sticky=W)
+		self.wall.pack_propagate(False)
+
+		wallScroll = Scrollbar(self.wall, orient=VERTICAL, relief=FLAT)
+		wallScroll.pack(fill=Y, side=RIGHT)
+
+		self.wallCanvas = Canvas(self.wall, highlightthickness=0, bg=backgroundColor, yscrollcommand=wallScroll.set)
+		self.wallCanvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+		wallScroll.config(command=self.wallCanvas.yview)
+
+		self.wallCanvas.xview_moveto(0)
+		self.wallCanvas.yview_moveto(0)
+
+		self.wallFrame = wframe = Frame(self.wallCanvas, bg="white")
+		wallFrameID = self.wallCanvas.create_window(0, 0, window=wframe, anchor=NW)
+		
+		def _configFrame(event):
+			size = (wframe.winfo_reqwidth(), wframe.winfo_reqheight())
+			self.wallCanvas.config(scrollregion="0 0 %s %s" % size)
+			if wframe.winfo_reqheight() != self.wallCanvas.winfo_width():
+				self.wallCanvas.config(width=wframe.winfo_reqwidth())
+		wframe.bind("<Configure>", _configFrame)
+
+		def _configCanvas(event):
+			if wframe.winfo_reqwidth() != self.wallCanvas.winfo_width():
+				self.wallCanvas.itemconfigure(wallFrameID, width=self.wallCanvas.winfo_width())
+		self.wallCanvas.bind("<Configure>", _configCanvas)
 
 	def setWindowVisibility(self, onoroff):
 		self.enabled = onoroff
@@ -1014,35 +1087,155 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.editProfileObject = editProfileGUI(self.container2)		
 		self.friendsPageObject = friendsPageGUI(self.container2)
 		self.friendViewerObject = friendViewer(self.container2)
+		self.coffeePoolObject = coffeePoolGUI(self.container2)
 
 		self.homepageLift()		
 				
 		self.createWidgets()
 	
-	def viewFriend(self, db):
-		print "hello"		
+	def viewFriend(self, ev, db):
 		self.friendViewerObject.receiveDatabase(db)
+		#print self.importer.get_name(), self.friendViewerObject.importer.get_friend_requests(), self.importer.get_name() in self.friendViewerObject.importer.get_friend_requests(), self.friendViewerObject.importer.get_friends()
+		if self.importer.get_name() in self.friendViewerObject.importer.get_friends():			#if activeUser is already friends with view
+			if self.friendViewerObject.approveFriendButton.winfo_ismapped() == True and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.approveFriendButton.place_forget()
+				self.friendViewerObject.notnowFriendButton.place_forget()
+			elif self.friendViewerObject.approveFriendButton.winfo_ismapped() == True and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.approveFriendButton.place_forget()
+			elif self.friendViewerObject.approveFriendButton.winfo_ismapped() == False and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.notnowFriendButton.place_forget()
+			else:
+				pass
+
+			if self.friendViewerObject.addFriendButton.winfo_ismapped() == False and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == False:
+				pass
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == False and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.cancelFriendButton.place_forget()
+			
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == True and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.addFriendButton.place_forget()
+			
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == True and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.cancelFriendButton.place_forget()
+				self.friendViewerObject.addFriendButton.place_forget()
+
+		elif self.friendViewerObject.importer.get_name() in self.importer.get_friend_requests() and self.importer.get_name() in self.friendViewerObject.importer.get_friend_requests_sent():			#user received a friend request
+			if self.friendViewerObject.approveFriendButton.winfo_ismapped() == False and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.approveFriendButton.place(anchor=CENTER, relx=0.082, rely=0.12)
+				self.friendViewerObject.notnowFriendButton.place(anchor=W, relx=0.026, rely=0.22)
+			elif self.friendViewerObject.approveFriendButton.winfo_ismapped() == False and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.approveFriendButton.place(anchor=CENTER, relx=0.082, rely=0.12)
+			elif self.friendViewerObject.approveFriendButton.winfo_ismapped() == True and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.notnowFriendButton.place(anchor=W, relx=0.026, rely=0.22)
+			else:
+				pass
+
+			if self.friendViewerObject.addFriendButton.winfo_ismapped() == False and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.cancelFriendButton.place_forget()
+			
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == True and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.addFriendButton.place_forget()
+			
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == True and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.cancelFriendButton.place_forget()
+				self.friendViewerObject.addFriendButton.place_forget()
+
+		elif self.importer.get_name() not in self.friendViewerObject.importer.get_friends() and self.friendViewerObject.importer.get_name() not in self.importer.get_friend_requests_sent():			#if activeUser is not friends with view
+			if self.friendViewerObject.approveFriendButton.winfo_ismapped() == True and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.approveFriendButton.place_forget()
+				self.friendViewerObject.notnowFriendButton.place_forget()
+			elif self.friendViewerObject.approveFriendButton.winfo_ismapped() == True and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.approveFriendButton.place_forget()
+			elif self.friendViewerObject.approveFriendButton.winfo_ismapped() == False and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.notnowFriendButton.place_forget()
+			else:
+				pass
+
+			if self.friendViewerObject.addFriendButton.winfo_ismapped() == False and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.addFriendButton.place(anchor=CENTER, relx=0.082, rely=0.12)
+				self.friendViewerObject.addFriendButton.config(state=NORMAL, bg=signatureColor, text="Add me up!")
+			
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == False and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.addFriendButton.place(anchor=CENTER, relx=0.082, rely=0.12)
+				self.friendViewerObject.addFriendButton.config(state=NORMAL, bg=signatureColor, text="Add me up!")
+				self.friendViewerObject.cancelFriendButton.place_forget()
+			
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == True and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == False:				
+				pass
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == True and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.cancelFriendButton.place_forget()		
+
+		elif self.importer.get_name() in self.friendViewerObject.importer.get_friend_requests() and self.friendViewerObject.importer.get_name() in self.importer.get_friend_requests_sent():		#if activeUser is in the process of sending friend request to view
+			if self.friendViewerObject.approveFriendButton.winfo_ismapped() == True and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.approveFriendButton.place_forget()
+				self.friendViewerObject.notnowFriendButton.place_forget()
+			elif self.friendViewerObject.approveFriendButton.winfo_ismapped() == True and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.approveFriendButton.place_forget()
+			elif self.friendViewerObject.approveFriendButton.winfo_ismapped() == False and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == True:
+				self.friendViewerObject.notnowFriendButton.place_forget()
+			else:
+				pass
+
+			if self.friendViewerObject.addFriendButton.winfo_ismapped() == False and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.addFriendButton.place(anchor=CENTER, relx=0.082, rely=0.12)
+				self.friendViewerObject.addFriendButton.config(state=DISABLED, bg="#CCCCCC", text="Request sent")
+				self.friendViewerObject.cancelFriendButton.place(anchor=W, relx=0.026, rely=0.22)
+			
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == False and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == True:				
+				self.friendViewerObject.addFriendButton.place(anchor=CENTER, relx=0.082, rely=0.12)
+				self.friendViewerObject.addFriendButton.config(state=DISABLED, bg="#CCCCCC", text="Request sent")
+			
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == True and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == False:
+				self.friendViewerObject.cancelFriendButton.place(anchor=W, relx=0.026, rely=0.22)
+
+			elif self.friendViewerObject.addFriendButton.winfo_ismapped() == True and self.friendViewerObject.cancelFriendButton.winfo_ismapped() == True:
+				pass
+
 		self.friendViewerObject.lift()
 	
-	def addFriend(self):
+	def addFriend(self):		
+		self.friendViewerObject.addFriendButton.place(anchor=CENTER, relx=0.082, rely=0.12)
 		self.friendViewerObject.addFriendButton.config(state=DISABLED, bg="#CCCCCC", text="Request sent")
-		self.friendViewerObject.cancelFriendButton.place(anchor=W, relx=0.026, rely=0.22)
+		self.friendViewerObject.cancelFriendButton.place(anchor=W, relx=0.026, rely=0.22)		
+		
 		self.friendObject.add_friend_gui(self.friendViewerObject.username)
+		self.importer.import_friends(self.importer.get_name())
+		self.importer.import_friend_requests(self.importer.get_name())
+		self.importer.import_friend_requests_sent(self.importer.get_name())
+		self.setDatabase(self.importer)
 
 	def approveFriendRequest(self):
+		self.friendViewerObject.approveFriendButton.place_forget()
+		self.friendViewerObject.notnowFriendButton.place_forget()
 		self.friendObject.approve_request_gui(self.friendViewerObject.username)
 
-		self.importer.import_all(self.importer.get_name())
-		#THREAD THIS PART
+		self.importer.registerFriends(self.friendViewerObject.username)
+
+		self.importer.import_friends(self.importer.get_name())
+		self.importer.import_friend_requests(self.importer.get_name())
+		self.importer.import_friend_requests_sent(self.importer.get_name())
 		self.setDatabase(self.importer)
+		tkMessageBox.showinfo("Newfound Friend", "You are now friends with %s! XD" % self.friendViewerObject.username)
+		self.homepageLift()
 
 	def cancelAddFriend(self):
 		self.friendViewerObject.addFriendButton.config(state=NORMAL, bg=signatureColor, text="Add me up!")
 		self.friendViewerObject.cancelFriendButton.place_forget()
 		self.friendObject.cancel_friend_request_gui(self.friendViewerObject.username)
+		self.importer.import_friends(self.importer.get_name())
+		self.importer.import_friend_requests(self.importer.get_name())
+		self.importer.import_friend_requests_sent(self.importer.get_name())
+		self.setDatabase(self.importer)
 
 	def disapproveFriendRequest(self):
-		pass
+		self.friendViewerObject.approveFriendButton.place_forget()
+		self.friendViewerObject.notnowFriendButton.place_forget()
+		self.friendObject.disapprove_request_gui(self.friendViewerObject.username)
+		self.importer.import_friends(self.importer.get_name())
+		self.importer.import_friend_requests(self.importer.get_name())
+		self.importer.import_friend_requests_sent(self.importer.get_name())
+		self.setDatabase(self.importer)
+		self.homepageLift()
 
 	def updateProfile(self):
 		self.editProfileObject.saveChanges()		#exporter function in the editprofileGUI class
@@ -1119,40 +1312,102 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.homePageObject.receiveDatabase(database)
 		self.editProfileObject.receiveDatabase(database, self.exporter)
 		self.friendsPageObject.receiveDatabase(database)
+		self.coffeePoolObject.receiveDatabase(database)
 
 		#Algorithm for putting the friends of logged-in user into a table (my algorithm!)
+		
+		for friend in self.friendsPageObject.importer.get_friends():
+			indivImporter = import_database()
+			try:
+				indivImporter.set_name(friend)
+				indivImporter.import_all(friend)
+				name = indivImporter.get_display_name()
+				dp = indivImporter.get_DP()
+				#newfriend = Button(self.friendsPageObject.wallFrame, text=name)
+				newfriend = thumbnailGUI(self.friendsPageObject.wallFrame, name, dp, indivImporter)				
+				newfriend.config(cursor="hand2")				
+			except IOError:								
+				newfriend = thumbnailGUI(self.friendsPageObject.wallFrame, "Inactive", "GUIE/default.gif", indivImporter)
+				#newfriend = Button(self.friendsPageObject.wallFrame, text="Inactive")
 
-		counter1 = 0
-		counter2 = 0		
+			self.friendsPageObject.friendsList.append(newfriend)
 
-		for i, friend in enumerate(self.friendsPageObject.friendsList):
-			
+		counter1 = counter2 = 0
+		for i, newfriend in enumerate(self.friendsPageObject.friendsList):				
 			if counter2 % 2 == 0:
 				if counter1 % 2 == 0:
-					friend.grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
-					friend.bind("<Button-1>", functools.partial(self.viewFriend, friend.get_database()))
+					self.friendsPageObject.friendsList[i].grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
+					if self.friendsPageObject.friendsList[i].name == "Inactive":
+						counter1 += 1
+						continue
+					self.friendsPageObject.friendsList[i].bind("<Leave>", lambda ev, db=self.friendsPageObject.friendsList[i].database: self.viewFriend(ev, db))
 					counter1 += 1
 					continue				
 				else:
-					friend.grid(row=counter2, column=1, pady=20, sticky=W)
-					friend.bind("<Button-1>", functools.partial(self.viewFriend, friend.get_database()))
+					self.friendsPageObject.friendsList[i].grid(row=counter2, column=1, pady=20, sticky=W)
+					if self.friendsPageObject.friendsList[i].name == "Inactive":
+						counter2 += 1
+						continue
+					self.friendsPageObject.friendsList[i].bind("<Leave>", lambda ev, db=self.friendsPageObject.friendsList[i].database: self.viewFriend(ev, db))
 			else:
 				if counter1 % 2 == 1:
-					friend.grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
-					friend.bind("<Button-1>", functools.partial(self.viewFriend, friend.get_database()))					
+					self.friendsPageObject.friendsList[i].grid(row=counter2, column=0, padx=20, pady=20, sticky=W)
+					if self.friendsPageObject.friendsList[i].name == "Inactive":
+						counter1 += 1
+						continue
+					self.friendsPageObject.friendsList[i].bind("<Leave>", lambda ev, db=self.friendsPageObject.friendsList[i].database: self.viewFriend(ev, db))					
 					counter1 += 1
 					continue				
 				else:
-					friend.grid(row=counter2, column=1, pady=20, sticky=W)
-					friend.bind("<Button-1>", functools.partial(self.viewFriend, friend.get_database()))
-			counter2 += 1			
-
-		#self.friendViewerObject.receiveDatabase(self.importer)
-		#self.friendViewerObject.lift()
+					self.friendsPageObject.friendsList[i].grid(row=counter2, column=1, pady=20, sticky=W)
+					if self.friendsPageObject.friendsList[i].name == "Inactive":
+						counter2 += 1
+						continue
+					self.friendsPageObject.friendsList[i].bind("<Leave>", lambda ev, db=self.friendsPageObject.friendsList[i].database: self.viewFriend(ev, db))
+			counter2 += 1	
 		
-		self.databaseUpdater = activePageThreading(self.importer, self.namer)
+		
+		for anonymous in self.coffeePoolObject.importer.get_pool():
+			indivImporter = import_database()
+			try:
+				indivImporter.set_name(anonymous)
+				indivImporter.import_all(anonymous)
+				name = indivImporter.get_display_name()
+				dp = indivImporter.get_DP()
+				#newfriend = Button(self.coffeePoolObject.wallFrame, text=name)
+				newfriend = thumbnailGUI(self.coffeePoolObject.wallFrame, name, dp, indivImporter)
+				newfriend.bind("<Leave>", lambda ev, db=newfriend.database: self.viewFriend(ev, db))
+				newfriend.config(cursor="hand2")				
+			except IOError:								
+				newfriend = thumbnailGUI(self.coffeePoolObject.wallFrame, "Inactive", "GUIE/default.gif", indivImporter)
+				#newfriend = Button(self.coffeePoolObject.wallFrame, text="Inactive")
+
+			self.coffeePoolObject.friendsList.append(newfriend)
+
+		counter1 = counter2 = 0
+		for i, friend in enumerate(self.coffeePoolObject.friendsList):
+			if counter2 % 2 == 0:
+				if counter1 % 2 == 0:
+					self.coffeePoolObject.friendsList[i].grid(row=counter2, column=0, padx=20, pady=20, sticky=W)					
+					counter1 += 1
+					continue				
+				else:
+					self.coffeePoolObject.friendsList[i].grid(row=counter2, column=1, pady=20, sticky=W)					
+			else:
+				if counter1 % 2 == 1:
+					self.coffeePoolObject.friendsList[i].grid(row=counter2, column=0, padx=20, pady=20, sticky=W)								
+					counter1 += 1
+					continue				
+				else:
+					self.coffeePoolObject.friendsList[i].grid(row=counter2, column=1, pady=20, sticky=W)					
+			
+			counter2 += 1	
+		
+		'''
+		self.databaseUpdater = activePageThreading(self.setDatabase, self.importer, self.namer)
 		self.databaseUpdater.setDaemon(True)
 		self.databaseUpdater.start()				
+		'''
 		
 	def setDP(self, databaseFile):
 		self.profilePageObject.setProfilePicture(databaseFile)
@@ -1197,6 +1452,10 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 
 		self.friendViewerObject.addFriendButton.config(command=self.addFriend)
 		self.friendViewerObject.cancelFriendButton.config(command=self.cancelAddFriend)
+		self.friendViewerObject.approveFriendButton.config(command=self.approveFriendRequest)
+		self.friendViewerObject.notnowFriendButton.config(command=self.disapproveFriendRequest)
+
+		self.profilePageObject.poolPageButton.config(command=self.viewPool)
 
 	def homepageLift(self):
 		self.homePageObject.lift()
@@ -1205,7 +1464,10 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.profilePageObject.lift()
 
 	def editprofileLift(self):
-		self.editProfileObject.lift()	
+		self.editProfileObject.lift()
+
+	def viewPool(self):
+		self.coffeePoolObject.lift()	
 
 
 class navClass(Frame):															# A GUI that combines the Login and Active Windows. Basically another Faҫade design pattern. Called navClass because of navigation (button fxns)

@@ -437,23 +437,27 @@ class registryDatabase(object):
                 f.write("\t"+x+"\n")
         f.close()
 
-    def registerFriends(self):                  # Still experimental
-        entry = self.get_name() + ": " + self.get_password() + "\n"
-        f = open("DATABASE/DATABASE", 'a')
-        g = open("DATABASE/DATABASE1", 'w')
+    def registerFriends(self, friendsName):                  # Still experimental
+		entry = self.get_name() + ": " + self.get_password() + "\n"
+		f = open("DATABASE/DATABASE", 'r')
+		g = open("DATABASE/DATABASE1", 'w')
 
-        while True:
-            if f.readline() == entry:
-                break
-            g.write(f.readline())               # Traverse through DB until entry is found
+		while True:
+			temp = f.readline()
+			if temp == entry:
+				g.write(temp)
+				break
+			g.write(temp)               # Traverse through DB until entry is found
 
-        '''
-        for x in self.get_friends():            # At the blank line, write the added friends
-            g.write("\t"+x+"\n")
-        '''
-        f.write("\n")                           # Then at the end, write the blank line for future friend adding
-        f.close()
-        g.close()
+		g.write("\t" + friendsName + "\n")
+		for line in f:
+			g.write(line)
+        
+		f.close()
+		g.close()
+
+		os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
+		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE") 
 
 
 class import_database(registryDatabase): #importing data from the profile's database
@@ -474,6 +478,8 @@ class import_database(registryDatabase): #importing data from the profile's data
         self.friend_requests_sent = []
         self.messages_copy = {}
         self.friend_requests_copy = []
+
+        self.pool = []
 
     def get_display_name(self):
         return self.displayname
@@ -517,6 +523,24 @@ class import_database(registryDatabase): #importing data from the profile's data
     def get_friend_requests_copy(self):
         return self.friend_requests_copy
 
+    def get_pool(self):
+        return self.pool
+
+    def import_pool(self, name):
+        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE", "r")        
+        for line in f:
+            if "\t" in line:
+                continue
+            else:
+                if line == "\n":
+                    continue
+                else:
+                    temp = line.split(": ")
+                    if temp[0] == name:
+                        continue
+                    self.pool.append(temp[0])       
+        f.close()
+
     def import_all(self, name):
         try:            
             self.import_display_name(name)
@@ -529,6 +553,7 @@ class import_database(registryDatabase): #importing data from the profile's data
             self.import_friend_requests(name)
             self.import_friend_requests_sent(name)
             self.import_wall(name)
+            self.import_pool(name)
         except:
             raise IOError
 

@@ -383,28 +383,19 @@ class friends():
                     self.friend_requests.append(str(self.name)) #Append yourself to the list of the reciever's friend requests
                     self.exporter.export_friend_request(add_friend, self.friend_requests) #Exporting the list of friend requests
 
-    def add_friend_gui(self, toBeAdded):
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + toBeAdded) is False: #Serching for a file with the inputed name in the database
-            return "USER DOES NOT EXIST"
-        else:
-            self.importer.import_friend_requests(self.name)
-            self.friend_requests = eval(self.importer.get_friend_requests())
-            if toBeAdded in self.friend_requests: #If the user has sent you a request
-                return "THIS PERSON ALREADY SENT A FRIEND REQUEST"
-            else:
-                self.importer.import_friend_requests_sent(self.name)
-                self.friend_requests_sent = eval(self.importer.get_friend_requests_sent())
-                '''
-                if str(toBeAdded) in self.friend_requests_sent: #If you already sent the user a request
-                    return "YOU ALREADY SENT A FRIEND REQUEST"
-                else:
-                '''
-                self.friend_requests_sent.append(str(toBeAdded)) #Append the friend to the list of your sent friend requests
-                self.exporter.export_friend_request_sent(self.name, self.friend_requests_sent) #Exporting the list of friend requests sent
-                self.importer.import_friend_requests(toBeAdded) #Import list of friend requests of the reciever
-                self.friend_requests = eval(self.importer.get_friend_requests())
-                self.friend_requests.append(str(self.name)) #Append yourself to the list of the reciever's friend requests
-                self.exporter.export_friend_request(toBeAdded, self.friend_requests) #Exporting the list of friend requests    
+    def add_friend_gui(self, toBeAdded):       
+        self.importer.import_friend_requests(self.name)
+        self.friend_requests = eval(self.importer.get_friend_requests())
+       
+        self.importer.import_friend_requests_sent(self.name)
+        self.friend_requests_sent = eval(self.importer.get_friend_requests_sent())                
+        self.friend_requests_sent.append(str(toBeAdded)) #Append the friend to the list of your sent friend requests
+        self.exporter.export_friend_request_sent(self.name, self.friend_requests_sent) #Exporting the list of friend requests sent
+        
+        self.importer.import_friend_requests(toBeAdded) #Import list of friend requests of the reciever
+        self.friend_requests = eval(self.importer.get_friend_requests())
+        self.friend_requests.append(str(self.name)) #Append yourself to the list of the reciever's friend requests
+        self.exporter.export_friend_request(toBeAdded, self.friend_requests) #Exporting the list of friend requests    
 
     def see_friend_requests(self): #Displaying the friend requests recieved and sent
         self.importer.import_friend_requests(self.name)
@@ -440,6 +431,7 @@ class friends():
         pass
 
     def cancel_friend_request_gui(self, tobeCancelled):
+        
         self.importer.import_friend_requests(tobeCancelled)
         self.friend_requests = eval(self.importer.get_friend_requests())
         self.friend_requests.remove(str(self.name))
@@ -497,6 +489,17 @@ class friends():
         self.friends.append(str(self.name))
         self.exporter.export_friends(toBeApproved, self.friends)
         self.exporter.export_friend_request_sent(toBeApproved, self.friend_requests_sent)
+
+    def disapprove_request_gui(self, toBeDisapproved):
+        self.importer.import_friend_requests(self.name)
+        self.friend_requests = eval(self.importer.get_friend_requests())
+        self.friend_requests.remove(str(toBeDisapproved))
+        self.exporter.export_friend_request(self.name, self.friend_requests)
+
+        self.importer.import_friend_requests_sent(toBeDisapproved)
+        self.friend_requests_sent = eval(self.importer.get_friend_requests_sent())
+        self.friend_requests_sent.remove(str(self.name))
+        self.exporter.export_friend_request_sent(toBeDisapproved, self.friend_requests_sent)
 
 class wall():
     def __init__(self, name):
