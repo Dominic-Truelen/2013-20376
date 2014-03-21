@@ -1,7 +1,7 @@
 from CC import import_database, export_database
 from time import strftime
 from collections import OrderedDict
-import glob, os, threading, Queue
+import glob, os, threading, Queue, collections
 
 class messages():
     def __init__(self, name):
@@ -120,6 +120,7 @@ class post(object): #Getters and Setters for posts
 		self.text = ''
 		self.date = ''
 		self.state = ''
+		self.enabled = True
 		self.tags = []
 		self.comments = [] #List of comment()s instances, not just a list, but INSTANCES OF THE COMMENT cLASS
 		self.exporter = export_database()
@@ -156,6 +157,9 @@ class post(object): #Getters and Setters for posts
 
 	def set_comments(self, comments):
 		self.comments.append(comments)
+
+	def set_enabled(self, ans):
+	    self.enabled = ans
 
 class comment(): #Getters and Setters for comments
 	def __init__(self): 
@@ -303,46 +307,66 @@ class profile_object(): #Getters and setters for profiles
     def set_education(self, education):
         self.education = education
 
-class status(post):
-    def __init__(self, name):
-        post.__init__(self)
-        self.state = 'Status'
-        self.status = {}
-        self.importer = import_database()
+class statusGUI(post):
+	def __init__(self, name):
+		post.__init__(self, name)
+		self.state = 'Status'
+		self.status = {}
+		self.importer = import_database()
 
-    def get_status(self): #Importing the status
-        self.importer.import_status(self.name)
-        self.status = eval(self.importer.get_status())
+	def get_status(self): #Importing the status
+		self.importer.import_status(self.name)
+		self.status = dict(self.importer.get_status())
 
-    def create_status(self): #Overwriting the status
-        status = str(raw_input("Enter your status: "))
-        date = strftime("%m/%d/%Y, %I.%M.%S%p")
-        self.exporter.export_status(self.name, status, date)
+	def create_status(self): #Overwriting the status
+		status = str(raw_input("Enter your status: "))
+		date = strftime("%m/%d/%Y, %I.%M.%S%p")
+		self.exporter.export_status(self.name, status, date)
 
-    def print_status(self):
-        print self.status
+	def print_status(self):
+		print self.status
 
-    def delete_status(self):
-        date = str(raw_input("Date of status: "))
-        self.get_status()
-        if self.status.has_key(date) is False:
-            return
-        self.status.pop(date)
-        f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-        g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', 'w')
-        while True:
-            temp = f.readline()
-            g.write(temp)
-            if "Status 2013-20376" in temp:
-                break
-        g.write(str(self.status) + '\n')
-        f.readline()
-        for line in f:
-            g.write(line)
-        f.close()
-        g.close()
-        os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-        os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + "1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+	def delete_status(self):
+		date = str(raw_input("Date of status: "))
+		self.get_status()
+		if self.status.has_key(date) is False:
+			return
+		self.status.pop(date)
+		f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+		g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', 'w')
+		while True:
+			temp = f.readline()
+			g.write(temp)
+			if "Status" in temp:
+				break
+		g.write(str(self.status) + '\n')
+		f.readline()
+		for line in f:
+			g.write(line)
+		f.close()
+		g.close()
+		os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + "1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+
+	def delete_status_gui(self, date):
+		self.get_status()
+		self.status.pop(date)
+		f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+		g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', 'w')
+		while True:
+			temp = f.readline()
+			g.write(temp)
+			if "Status" in temp:
+				break
+		g.write(str(self.status) + '\n')
+		f.readline()
+		for line in f:
+		    g.write(line)
+		f.close()
+		g.close()
+		os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + "1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+
 
 class friends():
     def __init__(self, name, database):
@@ -427,19 +451,27 @@ class friends():
                 friends.remove(self.name)
                 self.exporter.export_friends(delete, friends)
 
-    def delete_friends_gui(self):
-        pass
+    def delete_friends_gui(self, toBeDeleted):       
+		self.importer.import_friends(self.name)
+		self.friends = self.importer.get_friends()		
+		self.friends.remove(toBeDeleted)
+		self.exporter.export_friends(self.name, self.friends)
+		
+		self.importer.import_friends(toBeDeleted)
+		friends = self.importer.get_friends()
+		friends.remove(self.name)
+		self.exporter.export_friends(toBeDeleted, friends)
 
-    def cancel_friend_request_gui(self, tobeCancelled):
+    def cancel_friend_request_gui(self, toBeCancelled):
         
-        self.importer.import_friend_requests(tobeCancelled)
+        self.importer.import_friend_requests(toBeCancelled)
         self.friend_requests = eval(self.importer.get_friend_requests())
         self.friend_requests.remove(str(self.name))
-        self.exporter.export_friend_request(tobeCancelled, self.friend_requests)
+        self.exporter.export_friend_request(toBeCancelled, self.friend_requests)
         
         self.importer.import_friend_requests_sent(self.name)
         self.friend_requests_sent = eval(self.importer.get_friend_requests_sent())
-        self.friend_requests_sent.remove(str(tobeCancelled))
+        self.friend_requests_sent.remove(str(toBeCancelled))
         self.exporter.export_friend_request_sent(self.name, self.friend_requests_sent)
 
     def approve_request(self):

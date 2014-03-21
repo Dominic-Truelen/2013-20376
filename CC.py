@@ -438,16 +438,19 @@ class registryDatabase(object):
         f.close()
 
     def registerFriends(self, friendsName):                  # Still experimental
-		entry = self.get_name() + ": " + self.get_password() + "\n"
+		entry = self.get_name() + ": " + self.get_password() + "\n"        
 		f = open("DATABASE/DATABASE", 'r')
 		g = open("DATABASE/DATABASE1", 'w')
 
-		while True:
-			temp = f.readline()
-			if temp == entry:
-				g.write(temp)
-				break
-			g.write(temp)               # Traverse through DB until entry is found
+		try:
+			while True:
+				temp = f.readline()
+				if temp == entry:
+					g.write(temp)
+					break
+				g.write(temp)               # Traverse through DB until entry is found
+		except Exception:
+			raise IOError
 
 		g.write("\t" + friendsName + "\n")
 		for line in f:
@@ -457,7 +460,81 @@ class registryDatabase(object):
 		g.close()
 
 		os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
-		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE") 
+		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
+
+		f = open("DATABASE/DATABASE", 'r')
+		g = open("DATABASE/DATABASE1", 'w')
+
+		try:
+			while True:
+			    temp = f.readline()
+			    if friendsName in temp and "\t" not in temp:
+			        g.write(temp)
+			        break
+			    g.write(temp)               # Traverse through DB until entry is found
+		except Exception:
+			raise IOError
+
+		g.write("\t" + self.get_name() + "\n")
+		for line in f:
+		    g.write(line)
+
+		f.close()
+		g.close()
+
+		os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
+		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
+
+    def deleteFromRegistry(self, friendsName):
+		entry = self.get_name() + ": " + self.get_password() + "\n"
+		f = open("DATABASE/DATABASE", 'r')
+		g = open("DATABASE/DATABASE1", 'w')
+
+		try:
+			while True:
+				temp = f.readline()
+				if temp == entry:
+					g.write(temp)
+					break
+				g.write(temp)               # Traverse through DB until entry is found
+
+		except Exception:
+			raise IOError
+
+		for line in f:
+			if line == "\t" + friendsName + "\n":
+				continue
+			g.write(line)
+
+		f.close()
+		g.close()
+
+		os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
+		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
+
+		f = open("DATABASE/DATABASE", 'r')
+		g = open("DATABASE/DATABASE1", 'w')
+
+		try:
+		    while True:
+		        temp = f.readline()
+		        if friendsName in temp and "\t" not in temp:
+		            g.write(temp)
+		            break
+		        g.write(temp)               # Traverse through DB until entry is found
+		except Exception:
+			raise IOError
+
+		for line in f:
+		    if line == "\t" + self.get_name() +"\n":
+		        continue
+		    g.write(line)
+
+		f.close()
+		g.close()
+
+		os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
+		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/DATABASE")
 
 
 class import_database(registryDatabase): #importing data from the profile's database
