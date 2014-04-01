@@ -199,6 +199,18 @@ class loginPageGUI(Frame):														# The login GUI class Interface!
 				friend.destroy()
 			y.coffeePoolObject.friendsList[:] = []
 
+			for friend in y.messagePageObject.friendsList:
+				friend.destroy()
+			y.messagePageObject.friendsList[:] = []
+
+			for friend in y.messagePageObject.mymessagesList:
+				friend.destroy()
+			y.messagePageObject.mymessagesList[:] = []
+
+			for friend in y.messagePageObject.friendsmessagesList:
+				friend.destroy()
+			y.messagePageObject.friendsmessagesList[:] = []		
+
 			self.usernameInput.delete(0, END)									# Delete any text from login
 			self.passwordInput.delete(0, END)
 			self.usernameInput.focus()
@@ -529,7 +541,7 @@ class postGUI(Frame, post):
 		self.stateChanger()		
 		self.pack(anchor=W, pady=5)
 		self.createWidgets()
-		self.predicateLabel.bind("<Enter>", lambda a: self.predicate.set("(Delete this status)"))
+		self.predicateLabel.bind("<Enter>", lambda a: self.predicate.set("(Delete this)"))
 		self.predicateLabel.bind("<Leave>", lambda a: self.stateChanger())
 
 	def stateChanger(self):
@@ -537,6 +549,8 @@ class postGUI(Frame, post):
 			self.predicate.set("posted a status.")
 		elif self.get_state() == "Picture":
 			self.predicate.set("posted an image.")
+		elif self.get_state() == "Message":
+			self.predicate.set("said: ")
 
 	def createWidgets(self):
 		self.postFrame = Frame(self, width=450, bg=backgroundColor)
@@ -567,6 +581,23 @@ class postGUI(Frame, post):
 		postStatus.grid(row=1, column=1, sticky=W, columnspan=3, padx=(5,0))
 
 
+class messageGUI(postGUI):
+	def __init__(self, master=None, usernameDatabase=None, message=None, state=None):
+		Frame.__init__(self, master)
+		self.config(bg=backgroundColor)				
+		self.importer = usernameDatabase
+		post.__init__(self, self.importer.get_display_name())	
+		self.set_date(message.get_date())
+		self.set_text(message.get_text())
+		self.set_state(state)
+		self.predicate = StringVar()
+		self.stateChanger()		
+		self.pack(anchor=W, pady=5)
+		self.createWidgets()
+		self.predicateLabel.bind("<Enter>", lambda a: self.predicate.set("(Delete this)"))
+		self.predicateLabel.bind("<Leave>", lambda a: self.stateChanger())
+
+
 class thumbnailGUI(Frame):
 	def __init__(self, master=None, name=None, dp=None, db=None, **kw):
 		Frame.__init__(self, master, **kw)
@@ -577,8 +608,7 @@ class thumbnailGUI(Frame):
 
 	def createWidgets(self):
 		self.thumbnailFrame = Frame(self, width=450, bg=backgroundColor)
-		self.thumbnailFrame.pack()
-		#self.thumbnailFrame.pack_propagate(False)
+		self.thumbnailFrame.pack()		
 
 		DPThumbnailFrame = Frame(self.thumbnailFrame, width=40, height=40, bg="white")
 		DPThumbnailFrame.grid(row=0, column=0, rowspan=1, sticky=E)
@@ -617,6 +647,8 @@ class friendsPageGUI(Frame):
 		self.name = StringVar()
 
 		Label(self.container, textvariable=self.name, font=("Segoe UI Light", 28), bg=backgroundColor).place(anchor=CENTER, relx=0.3, rely=0.1)
+
+
 		
 		self.friendsFrame = Frame(self.container, bg=backgroundColor, width=500, height=350, padx=7, pady=7, highlightthickness=1, highlightbackground="#AAAAAA")
 		self.friendsFrame.place(anchor=CENTER, relx=0.5, rely=0.55)
@@ -910,14 +942,225 @@ class notificationWindow(Frame):
 class messagePageGUI(Frame):
 	def __init__(self, master=None):
 		Frame.__init__(self, master)
-		self.place(in_=master)
+		self.place(in_=master)		
+
+		self.friendsList = []
+		self.mymessagesList = []
+		self.friendsmessagesList = []
+
+		self.activeRecipient = ""
+
 		self.createWidgets()
 
 	def createWidgets(self):
-		pass
+		self.container = Frame(self, bg=backgroundColor, width=1000, height=550)
+		self.container.pack()
+		self.container.pack_propagate(False)
+
+		homeShadow = Canvas(self.container, width=1000, height=550, highlightthickness=0, bg=backgroundColor)
+		homeShadow.pack()
+		shadow = PhotoImage(file="GUIE/activePageShadow.gif")
+		homeShadow.create_image(500, 275, image=shadow)
+		homeShadow.image = shadow
+
+		Label(self.container, text="Messages", font=("Segoe UI Light", 28), bg=backgroundColor).place(anchor=CENTER, relx=0.25, rely=0.1)
+
+		self.sendTo = StringVar()
+		Label(self.container, textvariable=self.sendTo, font=defaultEntryStyle, bg=backgroundColor, fg="#555555").place(anchor=CENTER, relx=0.1, rely=0.9)
+
+		postMessage = Frame(self.container, bg=backgroundColor, highlightthickness=1, highlightbackground="#AAAAAA", padx=9, pady=7)
+		postMessage.place(anchor=CENTER, relx=0.625, rely=0.9)
+
+		Label(postMessage, text="Type your message:", font=defaultEntryStyle, bg=backgroundColor).grid(row=0, column=0, pady=(0,3), sticky=NW)
+
+		self.updateMessageEntry = Entry(postMessage, highlightthickness=1, width=61, font=defaultCreateStyle, fg="black", relief=FLAT)
+		self.updateMessageEntry.grid(row=1, column=0, sticky=W)
+
+		self.updateMessageButton = Button(postMessage, highlightthickness=0, width=5, relief=FLAT, bg="orange", fg="white", text="Send", font=("Tahoma", 9, "bold"))
+		self.updateMessageButton.grid(row=1, column=1, padx=(7,0), sticky=W)
+
+		
+		
+		self.friendsListFrame = Frame(self.container, bg=backgroundColor, width=230, height=350, padx=7, pady=7)
+		self.friendsListFrame.place(anchor=CENTER, relx=0.15, rely=0.49)
+		self.friendsListFrame.pack_propagate(False)
+
+		wallScroll0 = Scrollbar(self.friendsListFrame, orient=VERTICAL, relief=FLAT)
+		wallScroll0.pack(fill=Y, side=RIGHT)
+
+		self.wallCanvas0 = Canvas(self.friendsListFrame, highlightthickness=0, bg=backgroundColor, yscrollcommand=wallScroll0.set)
+		self.wallCanvas0.pack(side=LEFT, fill=BOTH, expand=TRUE)
+		wallScroll0.config(command=self.wallCanvas0.yview)
+
+		self.wallCanvas0.xview_moveto(0)
+		self.wallCanvas0.yview_moveto(0)
+
+		self.wallFrame0 = wframe0 = Frame(self.wallCanvas0, bg=backgroundColor)
+		self.wallFrame0.grid_columnconfigure(0, minsize=250)
+		wallFrameID0 = self.wallCanvas0.create_window(0, 0, window=wframe0, anchor=NW)
+
+		def _configFrame0(event):
+			size = (wframe0.winfo_reqwidth(), wframe0.winfo_reqheight())
+			self.wallCanvas0.config(scrollregion="0 0 %s %s" % size)
+			if wframe0.winfo_reqheight() != self.wallCanvas0.winfo_width():
+				self.wallCanvas0.config(width=wframe0.winfo_reqwidth())
+		wframe0.bind("<Configure>", _configFrame0)
+
+		def _configCanvas0(event):
+			if wframe0.winfo_reqwidth() != self.wallCanvas0.winfo_width():
+				self.wallCanvas0.itemconfigure(wallFrameID0, width=self.wallCanvas0.winfo_width())
+		self.wallCanvas0.bind("<Configure>", _configCanvas0)
+
+
+
+		self.friendsMessageFrame = Frame(self.container, bg=backgroundColor, width=340, height=350, padx=7, pady=7, highlightthickness=1, highlightbackground="#AAAAAA")
+		self.friendsMessageFrame.place(anchor=CENTER, relx=0.45, rely=0.49)
+		self.friendsMessageFrame.pack_propagate(False)
+
+		wallScroll = Scrollbar(self.friendsMessageFrame, orient=VERTICAL, relief=FLAT)
+		wallScroll.pack(fill=Y, side=RIGHT)
+
+		self.wallCanvas = Canvas(self.friendsMessageFrame, highlightthickness=0, bg=backgroundColor, yscrollcommand=wallScroll.set)
+		self.wallCanvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+		wallScroll.config(command=self.wallCanvas.yview)
+
+		self.wallCanvas.xview_moveto(0)
+		self.wallCanvas.yview_moveto(0)
+
+		self.wallFrame = wframe = Frame(self.wallCanvas, bg=backgroundColor)
+		self.wallFrame.grid_columnconfigure(0, minsize=250)
+		wallFrameID = self.wallCanvas.create_window(0, 0, window=wframe, anchor=NW)
+
+		def _configFrame(event):
+			size = (wframe.winfo_reqwidth(), wframe.winfo_reqheight())
+			self.wallCanvas.config(scrollregion="0 0 %s %s" % size)
+			if wframe.winfo_reqheight() != self.wallCanvas.winfo_width():
+				self.wallCanvas.config(width=wframe.winfo_reqwidth())
+		wframe.bind("<Configure>", _configFrame)
+
+		def _configCanvas(event):
+			if wframe.winfo_reqwidth() != self.wallCanvas.winfo_width():
+				self.wallCanvas.itemconfigure(wallFrameID, width=self.wallCanvas.winfo_width())
+		self.wallCanvas.bind("<Configure>", _configCanvas)
+
+		
+		
+		self.myMessageFrame = Frame(self.container, bg=backgroundColor, width=340, height=350, padx=7, pady=7, highlightthickness=1, highlightbackground="#AAAAAA")
+		self.myMessageFrame.place(anchor=CENTER, relx=0.8, rely=0.49)
+		self.myMessageFrame.pack_propagate(False)
+
+		wallscroll2 = Scrollbar(self.myMessageFrame, orient=VERTICAL, relief=FLAT)
+		wallscroll2.pack(fill=Y, side=RIGHT)
+
+		self.wallCanvas2 = Canvas(self.myMessageFrame, highlightthickness=0, bg=backgroundColor, yscrollcommand=wallscroll2.set)
+		self.wallCanvas2.pack(side=LEFT, fill=BOTH, expand=TRUE)
+		wallscroll2.config(command=self.wallCanvas2.yview)
+
+		self.wallCanvas2.xview_moveto(0)
+		self.wallCanvas2.yview_moveto(0)
+
+		self.wallFrame2 = wframe2 = Frame(self.wallCanvas2, bg=backgroundColor)
+		self.wallFrame2.grid_columnconfigure(0, minsize=250)
+		wallFrameID2 = self.wallCanvas2.create_window(0, 0, window=wframe2, anchor=NW)
+
+		def _configFrame2(event):
+			size = (wframe2.winfo_reqwidth(), wframe2.winfo_reqheight())
+			self.wallCanvas2.config(scrollregion="0 0 %s %s" % size)
+			if wframe2.winfo_reqheight() != self.wallCanvas2.winfo_width():
+				self.wallCanvas2.config(width=wframe2.winfo_reqwidth())
+		wframe2.bind("<Configure>", _configFrame2)
+
+		def _configCanvas2(event):
+			if wframe2.winfo_reqwidth() != self.wallCanvas2.winfo_width():
+				self.wallCanvas2.itemconfigure(wallFrameID2, width=self.wallCanvas2.winfo_width())
+		self.wallCanvas2.bind("<Configure>", _configCanvas2)												# wallFrame0 == List of Friends; wallFrame == List of their messeages; wallFrame1 == List of my messages
+
+	def putFriendsMessages(self, importer):
+		tempimporter = importer
+		self.activeRecipient = tempimporter.get_name()
+		self.sendTo.set("Send to: " + self.activeRecipient)		
+
+		if len(self.mymessagesList) != 0:
+			for msg in self.mymessagesList:
+				msg.destroy()
+			self.mymessagesList[:] = []	
+
+		if len(self.friendsmessagesList) != 0:
+			for msg in self.friendsmessagesList:
+				msg.destroy()
+			self.friendsmessagesList[:] = []		
+
+		try:		
+
+			for message in self.importer.get_messages()[self.activeRecipient]:						# for messages in self's received, with recepient as the one cliked inside msgpageGUI
+				friendmessage = messageGUI(self.wallFrame, tempimporter, message, state="Message")
+				friendmessage.predicateLabel.bind("<Button-1>", lambda a: self.deleteMessage(friendmessage))
+				friendmessage.pack(anchor=NW, pady=5)
+				self.friendsmessagesList.append(friendmessage)
+
+			for post in self.friendsmessagesList:
+				post.pack(anchor=W, pady=5)
+
+		except KeyError:
+			pass
+
+		try:
+
+			for message in tempimporter.get_messages()[self.importer.get_name()]:
+				mymessage = messageGUI(self.wallFrame2, self.importer, message, state="Message")
+				mymessage.predicateLabel.bind("<Button-1>", lambda date=mymessage.get_date(): self.deleteMessage(date))
+				mymessage.pack(anchor=NW, pady=5)
+				self.mymessagesList.append(mymessage)
+
+			for post in self.mymessagesList:
+				post.pack(anchor=W, pady=5)
+
+		except KeyError:
+			pass
+		
+
+	def refresh(self):
+		if self.activeRecipient == "":
+			return
+		indivimporter = import_database()
+		indivimporter.import_all(self.activeRecipient)
+		self.receiveDatabase(self.importer)
+		self.putFriendsMessages(indivimporter)
+
+	def deleteMessage(self, date):
+		self.messageObject.delete_message_gui(self.activeRecipient, date)
+		self.importer.import_all(self.importer.get_name())
+		self.receiveDatabase(self.importer)
+		self.refresh()
 
 	def receiveDatabase(self, database):
-		pass
+		self.importer = database
+
+		self.messageObject = messages(self.importer.get_name())
+
+		if len(self.friendsList) != 0:
+			for msg in self.friendsList:
+				msg.destroy()
+			self.friendsList[:] = []			
+
+		for friend in self.importer.get_friends():
+			if friend == self.importer.get_name():
+				continue
+			indivImporter = import_database()
+			
+			try:
+				indivImporter.set_name(friend)
+				indivImporter.import_all(friend)
+				name = indivImporter.get_display_name()
+				dp = indivImporter.get_DP()				
+				newfriend = thumbnailGUI(self.wallFrame0, name, dp, indivImporter)
+				newfriend.posterName.bind("<Button-1>", lambda a, db=indivImporter: self.putFriendsMessages(db))				
+				newfriend.pack(anchor=W, pady=5)				
+				newfriend.config(cursor="hand2")				
+			except IOError:								
+				newfriend = thumbnailGUI(self.wallFrame0, "Inactive", "GUIE/default.gif", indivImporter)				
+
+			self.friendsList.append(newfriend)
 
 
 
@@ -1136,7 +1379,6 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 			for post in self.friendViewerObject.postlist:
 				post.destroy()
 			self.friendViewerObject.postlist[:] = []
-		#print self.importer.get_name(), self.friendViewerObject.importer.get_friend_requests(), self.importer.get_name() in self.friendViewerObject.importer.get_friend_requests(), self.friendViewerObject.importer.get_friends()
 		if self.importer.get_name() in self.friendViewerObject.importer.get_friends():			#if activeUser is already friends with view
 			if self.friendViewerObject.approveFriendButton.winfo_ismapped() == True and self.friendViewerObject.notnowFriendButton.winfo_ismapped() == True:
 				self.friendViewerObject.approveFriendButton.place_forget()
@@ -1275,6 +1517,9 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.friendViewerObject.lift()
 
 	def viewFriendsList(self, database):
+		self.friendsPageObject.wallCanvas.xview_moveto(0)
+		self.friendsPageObject.wallCanvas.yview_moveto(0)
+
 		self.friendsPageObject.receiveDatabase(database)
 		for friend in self.friendsPageObject.importer.get_friends():
 			if friend == self.importer.get_name():
@@ -1374,12 +1619,15 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.setDatabase(self.importer)
 		self.homepageLift()
 
-	def unfriend(self):		
-		self.friendObject.delete_friends_gui(self.friendViewerObject.username)
-		self.importer.deleteFromRegistry(self.friendViewerObject.username)
-		self.importer.import_friends(self.importer.get_name())		
-		self.setDatabase(self.importer)
-		self.homepageLift()
+	def unfriend(self):
+		if tkMessageBox.askyesno("Unfriend alert!", "Do you really want to unfriend %s?" % self.friendViewerObject.importer.get_first_name()):		
+			self.friendObject.delete_friends_gui(self.friendViewerObject.username)
+			self.importer.deleteFromRegistry(self.friendViewerObject.username)
+			self.importer.import_friends(self.importer.get_name())		
+			self.setDatabase(self.importer)
+			self.homepageLift()
+		else:
+			return
 
 	def updateProfile(self):
 		self.editProfileObject.saveChanges()		#exporter function in the editprofileGUI class
@@ -1436,11 +1684,32 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.importer.import_status(self.importer.get_name())
 		self.setDatabase(self.importer)
 
+	def message(self):
+		if self.messagePageObject.updateMessageEntry.get() == "":
+			tkMessageBox.showerror("Nothing", "You have nothing to send :D")
+			return
+		try:
+			if self.messagePageObject.activeRecipient == "":
+				raise IOError
+			self.messageObject.send_message_gui(self.messagePageObject.updateMessageEntry.get(), self.messagePageObject.activeRecipient)
+		except IOError:
+			tkMessageBox.showerror("Error", "Please select the message's recipient.")
+			return
+		self.importer.import_messages(self.importer.get_name())
+		self.importer.import_messages_sent(self.importer.get_name())
+		self.setDatabase(self.importer)
+		self.messagePageObject.refresh()
+		self.messagePageObject.updateMessageEntry.delete(0, END)
+		self.master.focus()
+		self.homepageLift()
+
 	def setDatabase(self, database):
 		self.importer = database
 
 		self.friendObject = friends(self.importer.get_name(), self.importer)
 		self.statusObject = statusGUI(self.importer.get_name())
+		self.messageObject = messages(self.importer.get_name())
+		self.wallObject = wall(self.importer.get_name())
 
 		if len(self.profilePageQueue) != 0:
 			for post in self.profilePageQueue:
@@ -1448,9 +1717,7 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 			self.profilePageQueue[:] = []
 
 		for date in self.importer.get_status().keys():
-			newpost = postGUI(self.profilePageObject.wallFrame, self.importer, date, state="Status")
-			#newpost.bind_class("button1", "<Button-1>", lambda ev, date=date: self.deleteStatus(ev, date))
-			newpost.update()
+			newpost = postGUI(self.profilePageObject.wallFrame, self.importer, date, state="Status")			
 			newpost.predicateLabel.bind("<Button-1>", lambda event, date=date: self.deleteStatus(event, date))
 			
 			newpost.pack_forget()			
@@ -1463,6 +1730,7 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.homePageObject.receiveDatabase(database)
 		self.editProfileObject.receiveDatabase(database, self.exporter)
 		self.coffeePoolObject.receiveDatabase(database)
+		self.messagePageObject.receiveDatabase(database)
 
 		#Algorithm for putting the friends of logged-in user into a table (my algorithm!)		
 		
@@ -1472,14 +1740,12 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 				indivImporter.set_name(anonymous)
 				indivImporter.import_all(anonymous)
 				name = indivImporter.get_display_name()
-				dp = indivImporter.get_DP()
-				#newfriend = Button(self.coffeePoolObject.wallFrame, text=name)
+				dp = indivImporter.get_DP()				
 				newfriend = thumbnailGUI(self.coffeePoolObject.wallFrame, name, dp, indivImporter)
 				newfriend.posterName.bind("<Button-1>", lambda ev, db=newfriend.database: self.viewFriend(ev, db))
 				newfriend.config(cursor="hand2")				
 			except IOError:								
-				newfriend = thumbnailGUI(self.coffeePoolObject.wallFrame, "Inactive", "GUIE/default.gif", indivImporter)
-				#newfriend = Button(self.coffeePoolObject.wallFrame, text="Inactive")
+				newfriend = thumbnailGUI(self.coffeePoolObject.wallFrame, "Inactive", "GUIE/default.gif", indivImporter)				
 
 			self.coffeePoolObject.friendsList.append(newfriend)
 
@@ -1530,6 +1796,10 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 		self.homePageObject.updateStatusEntry.delete(0, END)
 		self.master.focus()		
 					
+	def viewMessages(self):
+		#self.messagePageObject.activeRecipient = self.friendViewerObject.username
+		self.messagePageObject.lift()
+
 	def createWidgets(self):
 		self.topLayerObject.profilepageButton.config(command=self.profilePageObject.lift)
 		self.topLayerObject.homepageButton.config(command=self.homePageObject.lift)
@@ -1559,13 +1829,20 @@ class activePageGUI(Frame, Singleton):											# This is basically a SINGLETON
 
 		self.profilePageObject.poolPageButton.config(command=self.viewPool)
 
-		self.friendViewerObject.messageFriendButton.config()
+		self.messagePageObject.updateMessageButton.config(command=self.message)
+
+		self.profilePageObject.messagesPageButton.config(command=self.viewMessages)
+		self.friendViewerObject.messageFriendButton.config(command=self.viewMessages)
 		self.friendViewerObject.deleteFriendButton.config(command= self.unfriend)
 
 	def homepageLift(self):
+		self.homePageObject.wallCanvas.xview_moveto(0)
+		self.homePageObject.wallCanvas.yview_moveto(0)
 		self.homePageObject.lift()
 
 	def profilepageLift(self):
+		self.profilePageObject.wallCanvas.xview_moveto(0)
+		self.profilePageObject.wallCanvas.yview_moveto(0)
 		self.profilePageObject.lift()
 
 	def editprofileLift(self):
@@ -1745,13 +2022,14 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			
 			try:
 				a = self.loginPageObject.login_logout.login()
-			except:
+			except Exception, e:
 				tkMessageBox.showerror("ERROR", "Something's wrong with your database!")
 				self.loginPageObject.usernameInput.delete(0, END)									# Delete any text from login
 				self.loginPageObject.passwordInput.delete(0, END)
 				self.loginPageObject.login_logout.set_name("")
 				self.loginPageObject.login_logout.set_password("")
 				self.loginPageObject.usernameInput.focus()
+				print e
 				return
 			
 			if a == "SETUPCREATED":														# IF SETUPCREATED (Meaning account is newly created), show the setup window

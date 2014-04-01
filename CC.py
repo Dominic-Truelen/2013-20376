@@ -501,9 +501,12 @@ class registryDatabase(object):
 		except Exception:
 			raise IOError
 
+		counter = 0
 		for line in f:
-			if line == "\t" + friendsName + "\n":
-				continue
+			if counter == 0:
+				if line == "\t" + friendsName + "\n":
+					counter = 1
+					continue
 			g.write(line)
 
 		f.close()
@@ -522,13 +525,17 @@ class registryDatabase(object):
 		            g.write(temp)
 		            break
 		        g.write(temp)               # Traverse through DB until entry is found
+		
 		except Exception:
 			raise IOError
 
+		counter = 0
 		for line in f:
-		    if line == "\t" + self.get_name() +"\n":
-		        continue
-		    g.write(line)
+			if counter == 0:
+				if line == "\t" + self.get_name() + "\n":
+					counter = 1
+		        	continue
+			g.write(line)
 
 		f.close()
 		g.close()
@@ -700,9 +707,11 @@ class import_database(registryDatabase): #importing data from the profile's data
             temp = f.readline()
             if temp == "Messages Recieved\n":
                 break
-        messages = f.readline()
-        f.close()
-        messages = eval(messages)
+        messages = f.readline()        
+        f.close()        
+        messages = eval(messages)       
+        self.messages = messages
+        
         self.messages = {}
         for key in messages.iterkeys():
             a = []
@@ -715,7 +724,7 @@ class import_database(registryDatabase): #importing data from the profile's data
                 x.set_text(temp[1])
                 a.append(x)
             self.messages[key] = a
-
+        
     def import_messages_sent(self, name):
         f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + name + "/" + name)
         while True: #scanning untill it reaches the messages
