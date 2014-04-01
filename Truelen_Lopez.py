@@ -55,9 +55,9 @@ profilePic = 175
 
 def anotherUser():																# Instantiate multiple users
 	try:
-		subprocess.Popen("GUI_Basic_1.exe")
+		subprocess.Popen("Truelen_Lopez.exe")
 	except:
-		subprocess.Popen("python GUI_Basic_1.py", shell=True)
+		subprocess.Popen("python Truelen_Lopez.py", shell=True)
 
 
 class welcome(Frame):
@@ -86,7 +86,7 @@ class welcome(Frame):
 			return
 
 		if glob.glob("DATABASE") == []:
-			os.makedirs(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE")
+			os.makedirs("DATABASE")
 
 		if glob.glob("DATABASE/DATABASE") == []:                                       # For a first time user who logged in without creating an account first (error is handled by creating the database folder)
 			f = open("DATABASE/DATABASE", "w")
@@ -1322,7 +1322,7 @@ class setupPageGUI(Frame, CC):
 		
 	def reset(self, x):
 		if tkMessageBox.askyesno("Quitting Setup", "Are you sure you want to quit setup?"):
-			shutil.rmtree(os.path.abspath(os.path.dirname(__file__)) + '/DATABASE/' + self.get_name())			
+			shutil.rmtree('DATABASE/' + self.get_name())			
 			self.master.title("Welcome to Caffy!")
 			x.login_logout.set_name("")
 			x.login_logout.set_password("")
@@ -1956,7 +1956,7 @@ class navClass(Frame):															# A GUI that combines the Login and Active 
 			self.loginPageObject.login_logout.set_name("")
 			self.loginPageObject.login_logout.set_password("")
 			self.loginPageObject.lift()
-			shutil.rmtree(os.path.abspath(os.path.dirname(__file__)) + '/DATABASE/' + self.activePageObject.importer.get_name())
+			shutil.rmtree('DATABASE/' + self.activePageObject.importer.get_name())
 		else:
 			return
 

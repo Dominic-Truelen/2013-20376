@@ -41,7 +41,7 @@ class messages():
     def send_message(self): #Sending messages
         reciever = str(raw_input("Send to: ")) #The reciever of the message
 
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + reciever) is False: #Searching for a file with the inputed name in the database
+        if os.path.isdir("DATABASE/" + reciever) is False: #Searching for a file with the inputed name in the database
             print "User does not exist"
         elif reciever == self.name:
             print "You cannot send messages to yourself"
@@ -59,7 +59,7 @@ class messages():
 
     def delete_message(self):
         sender = str(raw_input("Delete whose message: "))
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender) is False:
+        if os.path.isdir("DATABASE/" + sender) is False:
             print "User does not exist"
             return
         elif self.messages.has_key(sender) is False:
@@ -76,8 +76,8 @@ class messages():
             if date == item.get_date(): #If the date inputed is equal to the date of the message
                 messages.pop(counter) #That message would be removed
 
-                f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-                g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', 'w')
+                f = open("DATABASE/" + self.name + "/" + self.name)
+                g = open("DATABASE/" + self.name + "/" + self.name + '1', 'w')
                 
                 for line in f:
                     if sender and date not in line: #If the line is not the messages line in the file
@@ -90,15 +90,15 @@ class messages():
 
                 f.close()
                 g.close()
-                os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-                os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+                os.remove("DATABASE/" + self.name + "/" + self.name)
+                os.rename("DATABASE/" + self.name + "/" + self.name + '1', "DATABASE/" + self.name + "/" + self.name)
                 
                 self.get_messages_sent(sender)
                 messages = self.messages_sent[self.name]
                 messages.pop(counter)
 
-                f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender)
-                g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender + '1', 'w')
+                f = open("DATABASE/" + sender + "/" + sender)
+                g = open("DATABASE/" + sender + "/" + sender + '1', 'w')
                 
                 for line in f:
                     if self.name and date not in line:
@@ -111,8 +111,8 @@ class messages():
 
                 f.close()
                 g.close()
-                os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender)
-                os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender)
+                os.remove("DATABASE/" + sender + "/" + sender)
+                os.rename("DATABASE/" + sender + "/" + sender + '1', "DATABASE/" + sender + "/" + sender)
 
                 counter += 1 #Counter would be the number of times this has looped
 
@@ -129,8 +129,8 @@ class messages():
             if date == item.get_date(): #If the date inputed is equal to the date of the message
                 messages.pop(counter) #That message would be removed
 
-                f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-                g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', 'w')
+                f = open("DATABASE/" + self.name + "/" + self.name)
+                g = open("DATABASE/" + self.name + "/" + self.name + '1', 'w')
                 
                 for line in f:
                     if sender and date not in line: #If the line is not the messages line in the file
@@ -143,15 +143,15 @@ class messages():
 
                 f.close()
                 g.close()
-                os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-                os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+                os.remove("DATABASE/" + self.name + "/" + self.name)
+                os.rename("DATABASE/" + self.name + "/" + self.name + '1', "DATABASE/" + self.name + "/" + self.name)
                 
                 self.get_messages_sent(sender)
                 messages = self.messages_sent[self.name]
                 messages.pop(counter)
 
-                f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender)
-                g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender + '1', 'w')
+                f = open("DATABASE/" + sender + "/" + sender)
+                g = open("DATABASE/" + sender + "/" + sender + '1', 'w')
                 
                 for line in f:
                     if self.name and date not in line:
@@ -164,8 +164,8 @@ class messages():
 
                 f.close()
                 g.close()
-                os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender)
-                os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender + '1', os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + sender + "/" + sender)
+                os.remove("DATABASE/" + sender + "/" + sender)
+                os.rename("DATABASE/" + sender + "/" + sender + '1', "DATABASE/" + sender + "/" + sender)
 
                 counter += 1 #Counter would be the number of times this has looped        
 
@@ -387,8 +387,8 @@ class statusGUI(post):
 		if self.status.has_key(date) is False:
 			return
 		self.status.pop(date)
-		f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-		g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', 'w')
+		f = open("DATABASE/" + self.name + "/" + self.name)
+		g = open("DATABASE/" + self.name + "/" + self.name + '1', 'w')
 		while True:
 			temp = f.readline()
 			g.write(temp)
@@ -400,14 +400,14 @@ class statusGUI(post):
 			g.write(line)
 		f.close()
 		g.close()
-		os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + "1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+		os.remove("DATABASE/" + self.name + "/" + self.name)
+		os.rename("DATABASE/" + self.name + "/" + self.name + "1", "DATABASE/" + self.name + "/" + self.name)
 
 	def delete_status_gui(self, date):
 		self.get_status()
 		self.status.pop(date)
-		f = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-		g = open(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + '1', 'w')
+		f = open("DATABASE/" + self.name + "/" + self.name)
+		g = open("DATABASE/" + self.name + "/" + self.name + '1', 'w')
 		while True:
 			temp = f.readline()
 			g.write(temp)
@@ -419,8 +419,8 @@ class statusGUI(post):
 		    g.write(line)
 		f.close()
 		g.close()
-		os.remove(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
-		os.rename(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name + "1", os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + self.name + "/" + self.name)
+		os.remove("DATABASE/" + self.name + "/" + self.name)
+		os.rename("DATABASE/" + self.name + "/" + self.name + "1", "DATABASE/" + self.name + "/" + self.name)
 
 
 class friends():
@@ -440,7 +440,7 @@ class friends():
 
     def add_friend(self): #Adding new friends
         add_friend = str(raw_input("Add who? "))
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + add_friend) is False: #Serching for a file with the inputed name in the database
+        if os.path.isdir("DATABASE/" + add_friend) is False: #Serching for a file with the inputed name in the database
             print "User does not exist"
         elif add_friend == self.name:
             print "You cannot send yourself a friend request"
@@ -491,7 +491,7 @@ class friends():
 
     def delete_friends(self):
         delete = raw_input("Delete who? ")
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + delete) is False:
+        if os.path.isdir("DATABASE/" + delete) is False:
             print "User does not exist"
         else:
             self.importer.import_friends(self.name)
@@ -531,7 +531,7 @@ class friends():
 
     def approve_request(self):
         friend = str(raw_input("Approve who? "))
-        if os.path.isdir(os.path.abspath(os.path.dirname(__file__)) + "/DATABASE/" + friend) is False:
+        if os.path.isdir("DATABASE/" + friend) is False:
             print "This user does not exist"
         else:
             self.importer.import_friend_requests(self.name)
